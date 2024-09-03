@@ -18,4 +18,4 @@ jobs:
           pip install numpy pytest
       - name: Test with pytest
         run: pytest --verbose
-        working-directory: Python/tutorial_notebooks
+        working-directory: python
