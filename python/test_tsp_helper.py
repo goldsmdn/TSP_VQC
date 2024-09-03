@@ -9,7 +9,7 @@ from helper_functions_tsp import convert_PT_string_to_matrix, calculate_penalty_
 from helper_functions_tsp import calculate_distance
 
 def test_wrong_shape():
-    """Checks that the correct error message is thrown for an array of the wrong shape"""
+    """Checks that the correct error message is thrown for an array of the wrong shape """
     filename = 'data/wrong_shape.txt'
     locs = 5
     array = np.genfromtxt(filename)
