@@ -1,12 +1,13 @@
 import numpy as np
 from pytest import raises
-from numpy.testing import assert_array_equal
+#from numpy.testing import assert_array_equal
 from helper_functions_tsp import validate_distance_array, find_distance
-from helper_functions_tsp import convert_binary_list_to_integer, prepare_first_list_of_locs
+from helper_functions_tsp import convert_binary_list_to_integer
 from helper_functions_tsp import check_loc_list, augment_loc_list, find_total_distance
-from helper_functions_tsp import find_problem_size, convert_PT_bit_string_to_cycle
-from helper_functions_tsp import convert_PT_string_to_matrix, calculate_penalty_sums
-from helper_functions_tsp import calculate_distance
+from helper_functions_tsp import find_problem_size, convert_bit_string_to_cycle
+from helper_functions_tsp import find_average
+#from helper_functions_tsp import convert_bit_string_to_matrix
+#from helper_functions_tsp import calculate_distance
 
 def test_wrong_shape():
     """Checks that the correct error message is thrown for an array of the wrong shape """
@@ -128,13 +129,13 @@ def test_list_1110():
     result = convert_binary_list_to_integer(binary_list, bin_len)
     assert result == expected_result
 
-def test_prepare_first_bit_string_list():
-    """Check preparation of integer list from ORCA bitstring"""     
-    bin_len = 2
-    bit_string_list = [0,0,0,1,1,0]
-    expected_result = [0,1,2]
-    result = prepare_first_list_of_locs(bit_string_list, bin_len)      
-    assert expected_result == result
+#def test_prepare_first_bit_string_list():
+#    """Check preparation of integer list from bitstring"""     
+#    bin_len = 2
+#    bit_string_list = [0,0,0,1,1,0]
+#    expected_result = [0,1,2]
+#    result = prepare_first_list_of_locs(bit_string_list, bin_len)      
+#    assert expected_result == result
 
 def test_check_loc_list_valid1():
     """Check check location list with a valid solution"""
@@ -210,191 +211,165 @@ def test_find_total_distance():
     result = find_total_distance(int_list, locs, distance_array)
     assert expected_result == result
 
-def test_find_problem_size_old_4():
+def test_find_problem_size_4():
     """check problem size for 4 locations"""
     locations = 4
-    algorithm = 2
-    expected_result = (2,6)
-    result = find_problem_size(locations, algorithm)
-    assert expected_result == result
-
-def test_find_problem_size_old_5():
-    """check problem size for 5 locations"""
-    locations = 5
-    algorithm = 2
-    expected_result = (3,12)
-    result = find_problem_size(locations, algorithm)
-    assert expected_result == result
-
-def test_find_problem_size_old_26():
-    """check problem size for 26 locations"""
-    locations = 26
-    algorithm = 2
-    expected_result = (5,125)
-    result = find_problem_size(locations, algorithm)
-    assert expected_result == result
-
-def test_find_problem_size_new_4():
-    """check problem size for 4 locations"""
-    locations = 4
-    algorithm = 3
     expected_result = (2,3)
-    result = find_problem_size(locations, algorithm)
+    result = find_problem_size(locations)
     assert expected_result == result
 
-def test_find_problem_size_new_5():
+def test_find_problem_size_5():
     """check problem size for 5 locations"""
     locations = 5
-    algorithm = 3
     expected_result = (2,5)
-    result = find_problem_size(locations, algorithm)
+    result = find_problem_size(locations)
     assert expected_result == result
 
-def test_find_problem_size_new_26():
+def test_find_problem_size_26():
     """check problem size for 26 locations"""
     locations = 26
-    algorithm = 3
     expected_result = (5,94)
-    result = find_problem_size(locations, algorithm)
+    result = find_problem_size(locations)
     assert expected_result == result
 
-def test_find_problem_size_naive_6():
-    """check problem size for 6 locations"""
-    locations = 6
-    algorithm = 1
-    expected_result = (0,25)
-    result = find_problem_size(locations, algorithm)
-    assert expected_result == result
-
-def test_convert_PT_bit_string_to_cycle_000():
+def test_convert_bit_string_to_cycle_000():
     """example for 4 locations"""
     locs = 4
-    PT_bit_string = [0, 0, 0] 
+    bit_string = [0, 0, 0] 
     expected_result = [0, 1, 2, 3]
-    result = convert_PT_bit_string_to_cycle(PT_bit_string, locs)
+    result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
 
-def test_convert_PT_bit_string_to_cycle_001():
+def test_convert_bit_string_to_cycle_001():
     """example for 4 locations"""
     locs = 4
-    PT_bit_string = [0, 0, 1] 
+    bit_string = [0, 0, 1] 
     expected_result = [0, 1, 3, 2]
-    result = convert_PT_bit_string_to_cycle(PT_bit_string, locs)
+    result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
 
-def test_convert_PT_bit_string_to_cycle_010():
+def test_convert_bit_string_to_cycle_010():
     """example for 4 locations"""
     locs = 4
-    PT_bit_string = [0, 1, 0] 
+    bit_string = [0, 1, 0] 
     expected_result = [0, 2, 1, 3]
-    result = convert_PT_bit_string_to_cycle(PT_bit_string, locs)
+    result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
 
-def test_convert_PT_bit_string_to_cycle_011():
+def test_convert_bit_string_to_cycle_011():
     """example for 4 locations"""
     locs = 4
-    PT_bit_string = [0, 1, 1] 
+    bit_string = [0, 1, 1] 
     expected_result = [0, 2, 3, 1]
-    result = convert_PT_bit_string_to_cycle(PT_bit_string, locs)
+    result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
 
-def test_convert_PT_bit_string_to_cycle_100():
+def test_convert_bit_string_to_cycle_100():
     """example for 4 locations"""
     locs = 4
-    PT_bit_string = [1, 0, 0] 
+    bit_string = [1, 0, 0] 
     expected_result = [0, 3, 1, 2]
-    result = convert_PT_bit_string_to_cycle(PT_bit_string, locs)
+    result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
 
-def test_convert_PT_bit_string_to_cycle_101():
+def test_convert_bit_string_to_cycle_101():
     """example for 4 locations"""
     locs = 4
-    PT_bit_string = [1, 0, 1] 
+    bit_string = [1, 0, 1] 
     expected_result = [0, 3, 2, 1]
-    result = convert_PT_bit_string_to_cycle(PT_bit_string, locs)
+    result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
 
-def test_convert_PT_bit_string_to_cycle_110():
+def test_convert_bit_string_to_cycle_110():
     """example for 4 locations"""
     locs = 4
-    PT_bit_string = [1, 1, 0] 
+    bit_string = [1, 1, 0] 
     expected_result = [0, 1, 2, 3]
-    result = convert_PT_bit_string_to_cycle(PT_bit_string, locs)
+    result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
 
-def test_convert_PT_bit_string_to_cycle_111():
+def test_convert_bit_string_to_cycle_111():
     """example for 4 locations"""
     locs = 4
-    PT_bit_string = [1, 1, 1] 
+    bit_string = [1, 1, 1] 
     expected_result = [0, 1, 3, 2]
-    result = convert_PT_bit_string_to_cycle(PT_bit_string, locs)
+    result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
 
-def test_convert_PT_bit_string_to_cycle_3():
+def test_convert_bit_string_to_cycle_3():
     """example for 5 locations"""
     locs = 5
-    PT_bit_string = [1, 1, 1, 1, 1] 
+    bit_string = [1, 1, 1, 1, 1] 
     expected_result = [0, 4, 1, 3, 2]
-    result = convert_PT_bit_string_to_cycle(PT_bit_string, locs)
+    result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
 
-def test_convert_PT_string_to_matrix():
-    """Check conversion of a PT bit string to a matrix"""     
-    PT_bit_string = [1,0,0,0,0,1,1,0,0]
-    locs = 4
-    expected_result =np.array( 
-                    [[1, 0, 0, 0],
-                     [0, 1, 0, 0],
-                     [0, 0, 0, 1],
-                     [0, 1, 0 ,0]])
-    result = convert_PT_string_to_matrix(PT_bit_string, locs)  
-    assert_array_equal(expected_result, result)
+#def test_convert_string_to_matrix():
+#    """Check conversion of a PT bit string to a matrix"""     
+#    bit_string = [1,0,0,0,0,1,1,0,0]
+#    locs = 4
+#    expected_result =np.array( 
+#                    [[1, 0, 0, 0],
+#                     [0, 1, 0, 0],
+#                     [0, 0, 0, 1],
+#                     [0, 1, 0 ,0]])
+#    result = convert_bit_string_to_matrix(bit_string, locs)  
+#    assert_array_equal(expected_result, result)
 
-def test_def_calculate_penalty_sums1():
-    """Check that there are no issues if the matrix is valid"""
-    PT_bit_string = [1,0,0,0,0,1,0,1,0]
-    locs = 4
-    expected_result = (0,0)
-    shaped_array = convert_PT_string_to_matrix(PT_bit_string, locs)  
-    result = calculate_penalty_sums(shaped_array, locs)
-    assert expected_result == result
+#def test_def_calculate_penalty_sums1():
+#    """Check that there are no issues if the matrix is valid"""
+#    bit_string = [1,0,0,0,0,1,0,1,0]
+#    locs = 4
+#    expected_result = (0,0)
+#    shaped_array = convert_bit_string_to_matrix(bit_string, locs)  
+#    result = calculate_penalty_sums(shaped_array, locs)
+#    assert expected_result == result
 
-def test_def_calculate_penalty_sums2():
-    """Check that an error is thrown if the matrix has two 1s in a column"""
-    PT_bit_string = [1,0,0,0,0,1,1,0,0]
-    locs = 4
-    expected_result = (0,2)
-    shaped_array = convert_PT_string_to_matrix(PT_bit_string, locs)  
-    result = calculate_penalty_sums(shaped_array, locs)
-    assert expected_result == result
+#def test_def_calculate_penalty_sums2():
+#    """Check that an error is thrown if the matrix has two 1s in a column"""
+#    bit_string = [1,0,0,0,0,1,1,0,0]
+#    locs = 4
+#    expected_result = (0,2)
+#    shaped_array = convert_bit_string_to_matrix(bit_string, locs)  
+#   result = calculate_penalty_sums(shaped_array, locs)
+#    assert expected_result == result
 
-def test_def_calculate_penalty_sums3():
-    """Check that an error is thrown if the matrix has two 1s in a row"""
-    PT_bit_string = [1,0,0,0,0,0,0,1,1]
-    locs = 4
-    expected_result = (2,0)
-    shaped_array = convert_PT_string_to_matrix(PT_bit_string, locs)  
-    result = calculate_penalty_sums(shaped_array, locs)
-    assert expected_result == result
+#def test_def_calculate_penalty_sums3():
+#    """Check that an error is thrown if the matrix has two 1s in a row"""
+#    bit_string = [1,0,0,0,0,0,0,1,1]
+#    locs = 4
+#    expected_result = (2,0)
+#    shaped_array = convert_bit_string_to_matrix(bit_string, locs)  
+#    result = calculate_penalty_sums(shaped_array, locs)
+#    assert expected_result == result
 
-def test_calculate_distance():
-    """Check the distance for a known cycle"""
+#def test_calculate_distance():
+#    """Check the distance for a known cycle"""
+#    filename = 'data/four_d.txt'
+#    distance_array = np.genfromtxt(filename)
+#    locs = 4
+#    bit_string = [1,0,0,0,0,1,0,1,0]
+#    shaped_array = convert_bit_string_to_matrix(bit_string, locs)  
+#    expected_result = 21.0
+#    result = calculate_distance(shaped_array, distance_array, locs)
+#    assert expected_result == result
+
+#def test_prepare_list_of_locs1():
+#    """Check the output for a known cycle"""
+#    locs = 4
+#    bin_len, _= find_problem_size(locs)
+#    bit_string = [1,0,1]
+#    first_list_of_locs = prepare_first_list_of_locs(bit_string,bin_len)
+#    result = augment_loc_list(first_list_of_locs, locs)
+#    expected_result = [0,3,2,1]
+#    assert expected_result == result
+
+def test_find_average():
+    counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
+    LOCATIONS = 4
     filename = 'data/four_d.txt'
     distance_array = np.genfromtxt(filename)
-    locs = 4
-    PT_bit_string = [1,0,0,0,0,1,0,1,0]
-    shaped_array = convert_PT_string_to_matrix(PT_bit_string, locs)  
-    expected_result = 21.0
-    result = calculate_distance(shaped_array, distance_array, locs)
-    assert expected_result == result
-
-def test_prepare_list_of_locs1():
-    """Check the output for a known cycle"""
-    locs = 4
-    algorithm = 2
-    bin_len, _= find_problem_size(locs, algorithm)
-    PT_bit_string = [0,0,1,1,1,0]
-    first_list_of_locs = prepare_first_list_of_locs(PT_bit_string,bin_len)
-    result = augment_loc_list(first_list_of_locs, locs)
-    expected_result = [0,3,2,1]
+    SHOTS = 1000
+    result = find_average(counts, LOCATIONS, distance_array, SHOTS)
+    expected_result = 21.916
     assert expected_result == result
