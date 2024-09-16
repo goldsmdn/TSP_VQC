@@ -387,8 +387,8 @@ def convert_bit_string_to_list(bit_string):
     """
     [bits for bits in bit_string]
 
-def find_average(counts, locs, distance_array, shots, debug=False):
-    """finds the average of the relevant counts
+def find_stats(counts, locs, distance_array, shots, debug=False):
+    """finds the average of the relevant counts, and the shortest distance
     
     Parameters
     ----------
@@ -406,7 +406,9 @@ def find_average(counts, locs, distance_array, shots, debug=False):
     Returns
     ----------
     average : float
-        The average over the top relevant values
+        The average value
+    lowest_dist : float
+        The lowest distance
     """
     #if relevant_values > 100:
     #    raise Exception('Relevant_values should be less or equal to 100%')
@@ -416,11 +418,19 @@ def find_average(counts, locs, distance_array, shots, debug=False):
     #dist_list = []
     total_counts = 0
     total_dist = 0
+    first = True
     for key, value in counts.items():
         bit_list = [int(bits) for bits in key]
         dist = cost_fn(bit_list,locs,distance_array,debug)
+        if first == True:
+            lowest_dist = dist
+            first = False
+        else:
+            if dist < lowest_dist:
+                lowest_dist = dist
         if debug:
             print(f'The distance for string {key} is {dist} and the counts are {value}')
+            print(f'The lowest_distance is {lowest_dist}')
         total_counts += value
         total_dist += dist * value
         #dist_list.append(total_dist)
@@ -433,7 +443,7 @@ def find_average(counts, locs, distance_array, shots, debug=False):
         #print(f'The relevant list values are {np_dist}')
         print(f'The total_counts_are {total_counts}')
     if shots != total_counts:
-        raise Exception('The total counts does not agree to the shots')
+        raise Exception(f'The t {total_counts=} does not agree to the {shots=}')
 
-    average = total_dist / total_counts
-    return(average)
+    average_dist = total_dist / total_counts
+    return(average_dist, lowest_dist)
