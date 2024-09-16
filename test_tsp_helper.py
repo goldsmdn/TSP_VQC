@@ -5,7 +5,7 @@ from helper_functions_tsp import validate_distance_array, find_distance
 from helper_functions_tsp import convert_binary_list_to_integer
 from helper_functions_tsp import check_loc_list, augment_loc_list, find_total_distance
 from helper_functions_tsp import find_problem_size, convert_bit_string_to_cycle
-from helper_functions_tsp import find_average
+from helper_functions_tsp import find_stats
 #from helper_functions_tsp import convert_bit_string_to_matrix
 #from helper_functions_tsp import calculate_distance
 
@@ -128,14 +128,6 @@ def test_list_1110():
     expected_result = 14
     result = convert_binary_list_to_integer(binary_list, bin_len)
     assert result == expected_result
-
-#def test_prepare_first_bit_string_list():
-#    """Check preparation of integer list from bitstring"""     
-#    bin_len = 2
-#    bit_string_list = [0,0,0,1,1,0]
-#    expected_result = [0,1,2]
-#    result = prepare_first_list_of_locs(bit_string_list, bin_len)      
-#    assert expected_result == result
 
 def test_check_loc_list_valid1():
     """Check check location list with a valid solution"""
@@ -303,73 +295,23 @@ def test_convert_bit_string_to_cycle_3():
     expected_result = [0, 4, 1, 3, 2]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
-
-#def test_convert_string_to_matrix():
-#    """Check conversion of a PT bit string to a matrix"""     
-#    bit_string = [1,0,0,0,0,1,1,0,0]
-#    locs = 4
-#    expected_result =np.array( 
-#                    [[1, 0, 0, 0],
-#                     [0, 1, 0, 0],
-#                     [0, 0, 0, 1],
-#                     [0, 1, 0 ,0]])
-#    result = convert_bit_string_to_matrix(bit_string, locs)  
-#    assert_array_equal(expected_result, result)
-
-#def test_def_calculate_penalty_sums1():
-#    """Check that there are no issues if the matrix is valid"""
-#    bit_string = [1,0,0,0,0,1,0,1,0]
-#    locs = 4
-#    expected_result = (0,0)
-#    shaped_array = convert_bit_string_to_matrix(bit_string, locs)  
-#    result = calculate_penalty_sums(shaped_array, locs)
-#    assert expected_result == result
-
-#def test_def_calculate_penalty_sums2():
-#    """Check that an error is thrown if the matrix has two 1s in a column"""
-#    bit_string = [1,0,0,0,0,1,1,0,0]
-#    locs = 4
-#    expected_result = (0,2)
-#    shaped_array = convert_bit_string_to_matrix(bit_string, locs)  
-#   result = calculate_penalty_sums(shaped_array, locs)
-#    assert expected_result == result
-
-#def test_def_calculate_penalty_sums3():
-#    """Check that an error is thrown if the matrix has two 1s in a row"""
-#    bit_string = [1,0,0,0,0,0,0,1,1]
-#    locs = 4
-#    expected_result = (2,0)
-#    shaped_array = convert_bit_string_to_matrix(bit_string, locs)  
-#    result = calculate_penalty_sums(shaped_array, locs)
-#    assert expected_result == result
-
-#def test_calculate_distance():
-#    """Check the distance for a known cycle"""
-#    filename = 'data/four_d.txt'
-#    distance_array = np.genfromtxt(filename)
-#    locs = 4
-#    bit_string = [1,0,0,0,0,1,0,1,0]
-#    shaped_array = convert_bit_string_to_matrix(bit_string, locs)  
-#    expected_result = 21.0
-#    result = calculate_distance(shaped_array, distance_array, locs)
-#    assert expected_result == result
-
-#def test_prepare_list_of_locs1():
-#    """Check the output for a known cycle"""
-#    locs = 4
-#    bin_len, _= find_problem_size(locs)
-#    bit_string = [1,0,1]
-#    first_list_of_locs = prepare_first_list_of_locs(bit_string,bin_len)
-#    result = augment_loc_list(first_list_of_locs, locs)
-#    expected_result = [0,3,2,1]
-#    assert expected_result == result
-
+  
 def test_find_average():
     counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
     LOCATIONS = 4
     filename = 'data/four_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    result = find_average(counts, LOCATIONS, distance_array, SHOTS)
+    average, _ = find_stats(counts, LOCATIONS, distance_array, SHOTS)
     expected_result = 21.916
-    assert expected_result == result
+    assert expected_result == average
+
+def test_find_lowest():
+    counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
+    LOCATIONS = 4
+    filename = 'data/four_d.txt'
+    distance_array = np.genfromtxt(filename)
+    SHOTS = 1000
+    _ , lowest = find_stats(counts, LOCATIONS, distance_array, SHOTS)
+    expected_result = 21.0
+    assert expected_result == lowest
