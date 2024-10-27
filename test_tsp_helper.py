@@ -1,13 +1,10 @@
 import numpy as np
 from pytest import raises
-#from numpy.testing import assert_array_equal
 from helper_functions_tsp import validate_distance_array, find_distance
 from helper_functions_tsp import convert_binary_list_to_integer
 from helper_functions_tsp import check_loc_list, augment_loc_list, find_total_distance
 from helper_functions_tsp import find_problem_size, convert_bit_string_to_cycle
-from helper_functions_tsp import find_stats
-#from helper_functions_tsp import convert_bit_string_to_matrix
-#from helper_functions_tsp import calculate_distance
+from helper_functions_tsp import find_stats, cost_fn_fact
 
 def test_wrong_shape():
     """Checks that the correct error message is thrown for an array of the wrong shape """
@@ -97,36 +94,84 @@ def test_list_00():
     result = convert_binary_list_to_integer(binary_list, bin_len)
     assert result == expected_result
 
+def test_list_00_gray():
+    """Check conversion of list [0,0] with gray codes"""
+    bin_len = 2
+    binary_list = [0,0]
+    expected_result = 0
+    result = convert_binary_list_to_integer(binary_list, bin_len, gray=True)
+    assert result == expected_result
+
 def test_list_01():
     """Check conversion of list [0,1]"""
-    bin_len = 2
+    #bin_len = 2
     binary_list = [0,1]
     expected_result = 1
-    result = convert_binary_list_to_integer(binary_list, bin_len)
+    result = convert_binary_list_to_integer(binary_list)
+    assert result == expected_result
+
+def test_list_01_gray():
+    """Check conversion of list [0,1] with gray codes"""
+    #bin_len = 2
+    binary_list = [0,1]
+    expected_result = 1
+    result = convert_binary_list_to_integer(binary_list, gray=True)
     assert result == expected_result
 
 def test_list_10():
     """Check conversion of list [1,0]"""
-    bin_len = 2
+    #bin_len = 2
     binary_list = [1,0]
     expected_result = 2
-    result = convert_binary_list_to_integer(binary_list, bin_len)
+    result = convert_binary_list_to_integer(binary_list)
+    assert result == expected_result
+
+def test_list_10_gray():
+    """Check conversion of list [1,0] with gray codes"""
+    #bin_len = 2
+    binary_list = [1,0]
+    expected_result = 3
+    result = convert_binary_list_to_integer(binary_list, gray=True)
     assert result == expected_result
 
 def test_list_11():
     """Check conversion of list [1,1]"""
-    bin_len = 2
+    #bin_len = 2
     binary_list = [1,1]
     expected_result = 3
-    result = convert_binary_list_to_integer(binary_list, bin_len)
+    result = convert_binary_list_to_integer(binary_list)
+    assert result == expected_result
+
+def test_list_11_gray():
+    """Check conversion of list [1,1]"""
+    #bin_len = 2
+    binary_list = [1,1]
+    expected_result = 2
+    result = convert_binary_list_to_integer(binary_list, gray=True)
     assert result == expected_result
 
 def test_list_1110():
     """Check conversion of list [1,1,1,0]"""
-    bin_len = 4
+    #bin_len = 4
     binary_list = [1,1,1,0]
     expected_result = 14
-    result = convert_binary_list_to_integer(binary_list, bin_len)
+    result = convert_binary_list_to_integer(binary_list)
+    assert result == expected_result
+
+def test_list_1110_gray():
+    """Check conversion of list [1,1,1,0] with gray codes"""
+    #bin_len = 4
+    binary_list = [1,1,1,0]
+    expected_result = 11
+    result = convert_binary_list_to_integer(binary_list, gray=True)
+    assert result == expected_result
+
+def test_list_1000_gray():
+    """Check conversion of list [1,0,0,0] with gray codes"""
+    #bin_len = 4
+    binary_list = [1,0,0,0]
+    expected_result = 15
+    result = convert_binary_list_to_integer(binary_list, gray=True)
     assert result == expected_result
 
 def test_check_loc_list_valid1():
@@ -295,6 +340,14 @@ def test_convert_bit_string_to_cycle_3():
     expected_result = [0, 4, 1, 3, 2]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
+
+def test_convert_bit_string_to_cycle_4():
+    """example for 5 locations"""
+    locs = 5
+    bit_string = [1, 0, 1, 1, 1] 
+    expected_result = [0, 3, 1, 4, 2]
+    result = convert_bit_string_to_cycle(bit_string, locs)
+    assert expected_result == result
   
 def test_find_average():
     counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
@@ -302,7 +355,8 @@ def test_find_average():
     filename = 'data/four_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    average, _ = find_stats(counts, LOCATIONS, distance_array, SHOTS)
+    cost_fn = cost_fn_fact(LOCATIONS, distance_array, verbose=False)
+    average, _, _ = find_stats(cost_fn, counts, SHOTS, verbose=False)
     expected_result = 21.916
     assert expected_result == average
 
@@ -312,6 +366,7 @@ def test_find_lowest():
     filename = 'data/four_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    _ , lowest = find_stats(counts, LOCATIONS, distance_array, SHOTS)
+    cost_fn = cost_fn_fact(LOCATIONS, distance_array, verbose=False)
+    _ , lowest, _ = find_stats(cost_fn, counts, SHOTS, verbose=False)
     expected_result = 21.0
     assert expected_result == lowest
