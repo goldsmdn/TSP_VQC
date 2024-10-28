@@ -17,7 +17,6 @@ def cost_func_evaluate(cost_fn, bc: QuantumCircuit,
     cost, lowest, lowest_energy_bit_string = find_stats(cost_fn, counts, shots)
     return(cost, lowest, lowest_energy_bit_string)
 
-
 def my_gradient(cost_fn, qc: QuantumCircuit, 
                 params: list, rots: list, epsilon: float = np.pi/2, 
                 shots:  int=1024, verbose: bool=False) -> list:
@@ -54,8 +53,6 @@ def define_parameters(qubits: int, mode: int=1) -> list:
     params = []
     if mode in [1,2]:
         for i in range(qubits):
-            #text1 = "param " + str(i)
-            #text2 = "param " + str(2*i +1 )
             text1 = "param " + str(i)
             text2 = "param " + str(qubits+i)
             params.append(Parameter(text1))
@@ -92,9 +89,16 @@ def vqc_circuit(qubits: int, params: list, mode:int=1) -> QuantumCircuit:
     qc.measure_all()
     return qc
 
-def create_initial_rotations(qubits: int) -> list:
+def create_initial_rotations(qubits: int, mode: int, hot_start: bool=False) -> list:
     """initialise parameters with random weights"""
-    init_rots= [random.random() * 2 * math.pi for i in range(qubits * 2)]
+    if mode in [1,2]:
+        param_num = 2 * qubits
+    else:
+        raise Exception(f'Mode {mode} is not yet coded')
+    if hot_start:
+        init_rots = [0 for i in range(param_num)]
+    else:
+        init_rots= [random.random() * 2 * math.pi for i in range(param_num)]
     return(init_rots)
 
 def bind_weights(params:list, rots:list, qc:QuantumCircuit) -> QuantumCircuit:

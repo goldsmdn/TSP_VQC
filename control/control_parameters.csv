@@ -1,0 +1,3 @@
+﻿id,locations,mode,eta,updates,print_frequency,gray,verbose,optimiser
+0,5,1,0.005,50,5,1,1,tbc
+1,5,2,0.005,50,5,1,1,tbc
