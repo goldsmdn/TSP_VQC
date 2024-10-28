@@ -4,7 +4,8 @@ from helper_functions_tsp import validate_distance_array, find_distance
 from helper_functions_tsp import convert_binary_list_to_integer
 from helper_functions_tsp import check_loc_list, augment_loc_list, find_total_distance
 from helper_functions_tsp import find_problem_size, convert_bit_string_to_cycle
-from helper_functions_tsp import find_stats, cost_fn_fact
+from helper_functions_tsp import find_stats, cost_fn_fact, hot_start
+from helper_functions_tsp import hot_start_list_to_string
 
 def test_wrong_shape():
     """Checks that the correct error message is thrown for an array of the wrong shape """
@@ -333,6 +334,15 @@ def test_convert_bit_string_to_cycle_111():
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
 
+def test_convert_bit_string_to_cycle_111_gray():
+    """example for 4 locations"""
+    locs = 4
+    gray = True
+    bit_string = [1, 1, 1] 
+    expected_result = [0, 3, 2, 1]
+    result = convert_bit_string_to_cycle(bit_string, locs, gray)
+    assert expected_result == result
+
 def test_convert_bit_string_to_cycle_3():
     """example for 5 locations"""
     locs = 5
@@ -370,3 +380,44 @@ def test_find_lowest():
     _ , lowest, _ = find_stats(cost_fn, counts, SHOTS, verbose=False)
     expected_result = 21.0
     assert expected_result == lowest
+
+def test_hot_start_4():
+    LOCATIONS = 4
+    filename = 'data/four_d.txt'
+    distance_array = np.genfromtxt(filename)
+    actual_result = hot_start(distance_array, LOCATIONS)
+    expected_result = [0, 1, 2, 3]
+    assert expected_result == actual_result
+
+def test_hot_start_5_list():
+    LOCATIONS = 5
+    filename = 'data/five_d.txt'
+    distance_array = np.genfromtxt(filename)
+    actual_result = hot_start(distance_array, LOCATIONS)
+    expected_result = [0, 3, 2, 1, 4]
+    assert expected_result == actual_result
+
+def test_hot_start_5_distance():
+    LOCATIONS = 5
+    filename = 'data/five_d.txt'
+    distance_array = np.genfromtxt(filename)
+    list = hot_start(distance_array, LOCATIONS)
+    actual_result = find_total_distance(list, LOCATIONS, distance_array)
+    expected_result = 21
+    assert expected_result == actual_result
+
+def test_hot_start_list_to_string_101():
+    LOCATIONS = 4
+    GRAY = False
+    hot_start_list = [0, 3, 2, 1]
+    actual_result = hot_start_list_to_string(hot_start_list, LOCATIONS, GRAY)
+    expected_result = [1, 0, 1]
+    assert expected_result == actual_result
+
+def test_hot_start_list_to_string_101():
+    LOCATIONS = 4
+    GRAY = True
+    hot_start_list = [0, 3, 2, 1]
+    actual_result = hot_start_list_to_string(hot_start_list, LOCATIONS, GRAY)
+    expected_result = [1, 1, 1]
+    assert expected_result == actual_result

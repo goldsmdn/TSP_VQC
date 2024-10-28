@@ -2,6 +2,32 @@ import numpy as np
 import math
 import copy
 import graycode
+import csv
+from itertools import count
+
+def read_index(filename, encoding):
+    """Reads CSV file and returns and dictionary
+     
+    Parameters
+    ----------
+    filename : str
+        The filename of the CSV file.  
+    encoding : str
+        The expected coding.  If this is missed 
+        get odd charactors at start of the file
+
+    Returns
+    -------
+    dict : dict
+        A dictionary with the contents on the CSV file
+    """
+    dict = {}
+    index = count()
+    with open( filename, 'r', encoding=encoding) as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        for row in csv_reader:
+            dict[next(index)] = row
+    return(dict)
 
 def read_file_name(locations, data_sources):
     """Find the filename for a certain number of locations
@@ -117,7 +143,7 @@ def convert_binary_list_to_integer(binary_list, reverse=False, gray=False):
     string = ''
     for item in binary_list:
         string += str(item)
-    result= int(string, base=2) 
+    result= int(string, base=2)
     if gray:
         result = graycode.gray_code_to_tc(result)
     return(result)
@@ -190,8 +216,11 @@ def find_total_distance(int_list, locs, distance_array, verbose=False):
     Returns
     ----------
     total_distance : float
-        The total distance for the cycle represented by that bit string
+        The total distance for the cycle represented by that integer list
     """
+    if len(int_list) != locs:
+        raise Exception(f'The list supplied has {len(int_list)} entries and {locs} are expected')
+
     total_distance = 0
     for i in range(0, locs):
         if i < locs-1:
@@ -233,7 +262,7 @@ def convert_bit_string_to_cycle(bit_string,locs,gray=False):
     Returns
     ----------
     end_cycle_list : list
-        A list of integers showing a cycle
+        A list of integers showing a cycle.  The bit string is processed from left to right
     """
     
     bit_string_copy = copy.deepcopy(bit_string)
@@ -243,10 +272,17 @@ def convert_bit_string_to_cycle(bit_string,locs,gray=False):
     for i in range(locs-1, 1, -1):
         bin_len = find_bin_length(i)
         bin_string = []
+        #print(f'i = {i}, bin_len ={bin_len}')
         for count in range(bin_len):
-            j = bin_len - 1 - count
-            bin_string.append(bit_string_copy.pop(j))
-        position = convert_binary_list_to_integer(bin_string, reverse=True, gray=gray)
+            #j = bin_len - 1 - count
+            #bin_string.append(bit_string_copy.pop(j))
+            #position = convert_binary_list_to_integer(bin_string, reverse=True, gray=gray)
+            #print(f'count = {count} old bit_string_copy = {bit_string_copy}')
+            bin_string.append(bit_string_copy.pop(0)) #pop the most left hand item
+            #print(f'new bit_string_copy = {bit_string_copy}')
+            #print(f'bit_string = {bin_string}')
+        position = convert_binary_list_to_integer(bin_string, gray=gray)
+        #print(f'position = {position}')
         index = position % i    
         end_cycle_list.append(start_cycle_list.pop(index))
     end_cycle_list.append(start_cycle_list.pop(0)) #only one entry left if i =1
@@ -255,55 +291,6 @@ def convert_bit_string_to_cycle(bit_string,locs,gray=False):
     if bit_string_copy != []:
         raise Exception(f'bit_string not consumed {bit_string_copy} left')
     return(end_cycle_list)
-
-#def find_stats(counts, locs, distance_array, shots, verbose=False):
-#    """finds the average of the relevant counts, and the shortest distance
-#    
-#    Parameters
-#    ----------
-#    counts : dict
-#        Dictionary holding the binary string and the counts observed
-#    locs: integer
-#        Number of locations
-#    distance_array : array
-#        array holding distances
-#    shots: integer
-#        number of shots
-#    verbose: bool
-#        determines in printout is made#
-#
-#    Returns
-#    ----------
-#    average : float
-#        The average value
-#    lowest_dist : float
-#        The lowest distance
- #   """
- #   total_counts = 0
- #   total_dist = 0
-#    first = True
-#    for key, value in counts.items():
-#        bit_list = [int(bits) for bits in key]
-#        cost_fn = cost_fn_fact(locs,distance_array,verbose=False)
-#        dist = cost_fn(bit_list)
-#        if first == True:
-#            lowest_dist = dist
-#            first = False
-#        else:
-#            if dist < lowest_dist:
-#                lowest_dist = dist
-#        if verbose:
-#            print(f'The distance for string {key} is {dist} and the counts are {value}')
-#            print(f'The lowest_distance is {lowest_dist}')
-#        total_counts += value
-#        total_dist += dist * value
-#    if verbose:
-#        print(f'The total_counts_are {total_counts}')
-#    if shots != total_counts:
-#        raise Exception(f'The t {total_counts=} does not agree to the {shots=}')#
-#
-#    average_dist = total_dist / total_counts
-#    return(average_dist, lowest_dist)
 
 def find_stats(cost_fn, counts, shots, verbose=False):
     """finds the average energy of the relevant counts, and the lowest energy
@@ -351,3 +338,82 @@ def find_stats(cost_fn, counts, shots, verbose=False):
 
     average_energy = total_energy / total_counts
     return(average_energy, lowest_energy, lowest_energy_bit_string)
+
+def hot_start(distance_array: np.array, locs: int) -> list:
+    """finds a route from a distance array where the distance to the next point is the shortest available"""
+    validate_distance_array(distance_array, locs)
+    #starting_cycle_list = [i for i in range(locs)]
+    remaining_cycle_list = [i for i in range(locs)]
+    end_cycle_list = []
+    end_cycle_list.append(remaining_cycle_list.pop(0)) #start point of cycle is always 0
+    #print(distance_array[first_item])
+    #print(f'remaining cycle list is {remaining_cycle_list}')
+    next_row = 0
+    for i in range(locs-1):
+        for j, column in enumerate(remaining_cycle_list):
+            distance = distance_array[next_row][column]
+            if j == 0:
+                #print(f'i = {j} remaining_cycle_list[j] {remaining_cycle_list[j]}, distance = {distance}')
+                #first time around the loop
+                arg_min = j
+                lowest_distance = distance
+            else:
+                #print(f'i = {j} remaining_cycle_list[j] {remaining_cycle_list[j]}, distance = {distance}')
+                if distance < lowest_distance:
+                    arg_min = j
+                    #print(f'Arg min is now {arg_min}')
+                    lowest_distance = distance
+        next_row = remaining_cycle_list.pop(arg_min)
+        #print(f'Next row is {next_row}')
+        end_cycle_list.append(next_row)
+    #end_cycle_list.append(0) #cycle always ends at zero
+    return(end_cycle_list)
+
+def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bin) -> list:
+    """invert the hot start integer list into a string"""
+    if len(hot_start_list) != locations:
+        raise Exception(f'The hot start list should be length {locations}')
+    
+    first_item = hot_start_list.pop(0)
+    #remove the first item for the list which should be zero
+    if first_item != 0:
+        raise Exception(f'The first item of the list must be zero')
+    
+    initial_list = [i for i in range(1, locations)]
+    print(initial_list)
+    
+    #hot_start_list_copy = copy.deepcopy(hot_start_list)
+    total_binary_string = ''
+    result_list = []
+    print(hot_start_list)
+    
+    for i, integer in enumerate(hot_start_list):
+        bin_len = find_bin_length(len(initial_list))
+        if bin_len > 0:
+        ## need some coding for gray codes
+        #find the index of integer in hot start list
+            print(f'bin_len - {bin_len}')
+            index = initial_list.index(integer)
+            print(f'index = {index} integer = {integer}, hot_start_list = {hot_start_list}, initial_list, {initial_list}')
+            if gray:
+                binary_string = bin(graycode.tc_to_gray_code(index))
+            else:
+                binary_string = bin(index)
+            print(binary_string)
+            binary_string = binary_string[2:] #remove the 0b charactor
+            print(binary_string)
+            binary_string = binary_string.zfill(bin_len)
+            print(binary_string)
+            total_binary_string += binary_string
+            initial_list.pop(index)
+    #result_list = list(total_binary_string)
+    for i in range(len(total_binary_string)):
+        result_list.append(int(total_binary_string[i]))
+    #result_list = [int(str) for str in total_binary_string.split()]
+    return(result_list)
+    
+
+
+
+
+    
