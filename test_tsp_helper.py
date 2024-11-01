@@ -89,23 +89,21 @@ def test_distance_4():
 
 def test_list_00():
     """Check conversion of list [0,0]"""
-    bin_len = 2
     binary_list = [0,0]
     expected_result = 0
-    result = convert_binary_list_to_integer(binary_list, bin_len)
+    result = convert_binary_list_to_integer(binary_list )
     assert result == expected_result
 
 def test_list_00_gray():
     """Check conversion of list [0,0] with gray codes"""
-    bin_len = 2
+    gray = True
     binary_list = [0,0]
     expected_result = 0
-    result = convert_binary_list_to_integer(binary_list, bin_len, gray=True)
+    result = convert_binary_list_to_integer(binary_list, gray)
     assert result == expected_result
 
 def test_list_01():
     """Check conversion of list [0,1]"""
-    #bin_len = 2
     binary_list = [0,1]
     expected_result = 1
     result = convert_binary_list_to_integer(binary_list)
@@ -113,15 +111,14 @@ def test_list_01():
 
 def test_list_01_gray():
     """Check conversion of list [0,1] with gray codes"""
-    #bin_len = 2
+    gray = True
     binary_list = [0,1]
     expected_result = 1
-    result = convert_binary_list_to_integer(binary_list, gray=True)
+    result = convert_binary_list_to_integer(binary_list, gray)
     assert result == expected_result
 
 def test_list_10():
     """Check conversion of list [1,0]"""
-    #bin_len = 2
     binary_list = [1,0]
     expected_result = 2
     result = convert_binary_list_to_integer(binary_list)
@@ -129,15 +126,14 @@ def test_list_10():
 
 def test_list_10_gray():
     """Check conversion of list [1,0] with gray codes"""
-    #bin_len = 2
+    gray = True
     binary_list = [1,0]
     expected_result = 3
-    result = convert_binary_list_to_integer(binary_list, gray=True)
+    result = convert_binary_list_to_integer(binary_list, gray)
     assert result == expected_result
 
 def test_list_11():
     """Check conversion of list [1,1]"""
-    #bin_len = 2
     binary_list = [1,1]
     expected_result = 3
     result = convert_binary_list_to_integer(binary_list)
@@ -145,15 +141,14 @@ def test_list_11():
 
 def test_list_11_gray():
     """Check conversion of list [1,1]"""
-    #bin_len = 2
+    gray = True
     binary_list = [1,1]
     expected_result = 2
-    result = convert_binary_list_to_integer(binary_list, gray=True)
+    result = convert_binary_list_to_integer(binary_list, gray)
     assert result == expected_result
 
 def test_list_1110():
     """Check conversion of list [1,1,1,0]"""
-    #bin_len = 4
     binary_list = [1,1,1,0]
     expected_result = 14
     result = convert_binary_list_to_integer(binary_list)
@@ -161,18 +156,18 @@ def test_list_1110():
 
 def test_list_1110_gray():
     """Check conversion of list [1,1,1,0] with gray codes"""
-    #bin_len = 4
+    gray = True
     binary_list = [1,1,1,0]
     expected_result = 11
-    result = convert_binary_list_to_integer(binary_list, gray=True)
+    result = convert_binary_list_to_integer(binary_list, gray)
     assert result == expected_result
 
 def test_list_1000_gray():
     """Check conversion of list [1,0,0,0] with gray codes"""
-    #bin_len = 4
+    gray = True
     binary_list = [1,0,0,0]
     expected_result = 15
-    result = convert_binary_list_to_integer(binary_list, gray=True)
+    result = convert_binary_list_to_integer(binary_list, gray)
     assert result == expected_result
 
 def test_check_loc_list_valid1():
@@ -358,6 +353,46 @@ def test_convert_bit_string_to_cycle_4():
     expected_result = [0, 3, 1, 4, 2]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
+
+def test_convert_bit_string_to_cycle_15_gray():
+    """example for 15 locations with Gray code"""
+    locs = 15
+    gray = True
+    expected_result = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    bit_string = [1, 0, 1, 1, \
+                  1 ,0 ,1, 0, \
+                  1, 1, 1, 0, \
+                  1, 1, 1, 1, \
+                  1, 1, 0, 1, \
+                  1, 1, 0, 0, \
+                  1, 0, 0, \
+                  1, 0, 1, \
+                  1, 1, 1, \
+                  1, 1, 0, \
+                  1, 0, 1, 1, 1]
+    
+    result = convert_bit_string_to_cycle(bit_string, locs, gray)
+    assert expected_result == result   
+
+def test_convert_bit_string_to_cycle_15():
+    """example for 15 locations without Gray code"""
+    locs = 15
+    gray = False
+    expected_result = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    bit_string = [1, 1, 0, 1, \
+                  1 ,1 ,0, 0, \
+                  1, 0, 1, 1, \
+                  1, 0, 1, 0, \
+                  1, 0, 0, 1, \
+                  1, 0, 0, 0, \
+                  1, 1, 1, \
+                  1, 1, 0, \
+                  1, 0, 1, \
+                  1, 0, 0, \
+                  1, 1, 1, 0, 1]
+
+    result = convert_bit_string_to_cycle(bit_string, locs, gray)
+    assert expected_result == result 
   
 def test_find_average():
     """test find_stats in average mode"""

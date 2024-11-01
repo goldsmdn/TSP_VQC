@@ -5,7 +5,7 @@ import graycode
 import csv
 from itertools import count
 
-def read_index(filename, encoding):
+def read_index(filename: str, encoding: str) -> dict:
     """Reads CSV file and returns and dictionary
      
     Parameters
@@ -29,7 +29,7 @@ def read_index(filename, encoding):
             dict[next(index)] = row
     return(dict)
 
-def read_file_name(locations, data_sources):
+def read_file_name(locations: int, data_sources: dict) -> str:
     """Find the filename for a certain number of locations
     
     Parameters
@@ -47,7 +47,7 @@ def read_file_name(locations, data_sources):
     filename = data_sources[locations]['file']
     return(filename)       
 
-def validate_distance_array(array, locs):
+def validate_distance_array(array :np.array, locs: int):
     """Validates the distance array and raises an Exception if the 
     array is not valid.  Checks the array is the correct shape, and
     is symmetric
@@ -71,7 +71,7 @@ def validate_distance_array(array, locs):
             if array[i,j] != array[j,i]:
                 raise Exception('The array is not symmetrical')
 
-def find_distance(loc1, loc2, distance_array,verbose=False):
+def find_distance(loc1: int, loc2: int, distance_array: np.array, verbose: bool=False) -> float:
     """Finds the distance between locations using the distance matrix
     
     Parameters
@@ -80,6 +80,8 @@ def find_distance(loc1, loc2, distance_array,verbose=False):
         First location
     loc2 : int
         Second location
+    distance_array : np.array
+        An array containing the distances between locations
 
     Returns
     ----------
@@ -92,12 +94,12 @@ def find_distance(loc1, loc2, distance_array,verbose=False):
         print(f'The distance from location {loc1} to location {loc2} is {distance}')
     return(distance)
 
-def find_bin_length(i):
+def find_bin_length(i: int) -> int:
     """find the length of a binary string to represent integer i"""
     bin_len = math.ceil((np.log2(i)))
     return(bin_len) 
 
-def find_problem_size(locations):
+def find_problem_size(locations:int) -> tuple:
     """Finds the number of binary variables needed
     
     Parameters
@@ -110,7 +112,7 @@ def find_problem_size(locations):
     bin_len : int
         Length of the longest bit string needed to hold the next integer in the cycle
     pb_dim : int
-        Length of the Bit string needed to store the problem
+        Length of the bit string needed to store the problem
     """
     pb_dim = 0
     bin_len = find_bin_length(locations)  
@@ -120,17 +122,13 @@ def find_problem_size(locations):
         pb_dim += bin_len
     return(bin_len, pb_dim)
 
-def convert_binary_list_to_integer(binary_list, reverse=False, gray=False):
+def convert_binary_list_to_integer(binary_list: list, gray:bool=False)->int:
     """Converts list of binary numbers to an integer
     
     Parameters
     ----------
     binary_list : list
         List of binary numbers
-    bin_len: int
-        Length of the list of binary numbers
-    reverse: bool
-        reverse the string
 
     Returns
     ----------
@@ -138,8 +136,8 @@ def convert_binary_list_to_integer(binary_list, reverse=False, gray=False):
         The integer represented by the concatenated binary string
     """
 
-    if reverse:
-       binary_list.reverse()
+    #if reverse:
+    #   binary_list.reverse()
     string = ''
     for item in binary_list:
         string += str(item)
@@ -148,7 +146,7 @@ def convert_binary_list_to_integer(binary_list, reverse=False, gray=False):
         result = graycode.gray_code_to_tc(result)
     return(result)
 
-def check_loc_list(loc_list, locs):
+def check_loc_list(loc_list:list, locs:int) -> bool:
     """checks that the location list is a valid cycle with no repetition of nodes.
     
     Parameters
@@ -175,8 +173,7 @@ def check_loc_list(loc_list, locs):
                     valid = False
     return(valid)
     
-
-def augment_loc_list(loc_list, locs):
+def augment_loc_list(loc_list:list, locs:int)-> list:
     """completes the cycle by adding the missing location to the end of the cycle.
     
     Parameters
@@ -200,9 +197,8 @@ def augment_loc_list(loc_list, locs):
     loc_list.append(add_item)
     return(loc_list)
 
-def find_total_distance(int_list, locs, distance_array, verbose=False):
+def find_total_distance(int_list: list, locs: int, distance_array :np.array)-> float:
     """finds the total distance for a valid formatted bit string representing a cycle.
-    If relevant applies a distance penalty
     
     Parameters
     ----------
@@ -211,10 +207,10 @@ def find_total_distance(int_list, locs, distance_array, verbose=False):
     locs: int
         The number of locations
     distance_array : array
-        Numpy symmetric array with distances
+        Numpy symmetric array with distances between locations
 
     Returns
-    ----------
+    -------
     total_distance : float
         The total distance for the cycle represented by that integer list
     """
@@ -230,12 +226,30 @@ def find_total_distance(int_list, locs, distance_array, verbose=False):
             j = 0
         else:
             raise Exception('Unexpected values of i in loop')
-        distance = find_distance(int_list[i], int_list[j], distance_array, verbose)
+        distance = find_distance(int_list[i], int_list[j], distance_array)
         total_distance += distance
     return total_distance
 
-def cost_fn_fact(locs,distance_array,gray=False,verbose=False):
-    """ returns a function"""
+def cost_fn_fact(locs: int,distance_array: np.array,gray: bool=False,verbose: bool=False):
+    """ returns a function
+
+    Parameters
+    ----------
+    locs: int
+        The number of locations in the problem
+    distance_array: array
+        Numpy symmetric array with distances between locations
+    gray: bool
+        If True Gray codes are used
+    verbose: bool
+        If True more information is printed out
+    
+    Returns
+    -------
+    cost_fn: cost function
+        A function of a bit string evaluating a distance for that bit string
+    
+    """
     def cost_fn(bit_string):
         """returns the value of the objective function for a bit_string"""
         full_list_of_locs = convert_bit_string_to_cycle(bit_string, locs, gray)
@@ -249,7 +263,7 @@ def cost_fn_fact(locs,distance_array,gray=False,verbose=False):
             return total_distance
     return(cost_fn)
 
-def convert_bit_string_to_cycle(bit_string,locs,gray=False):
+def convert_bit_string_to_cycle(bit_string: list,locs: int,gray: bool=False) -> list:
     """converts a bit string to a cycle.
     
     Parameters
@@ -258,6 +272,8 @@ def convert_bit_string_to_cycle(bit_string,locs,gray=False):
         A list of zeros and ones produced by the quantum computer
     locs: int
         The number of locations
+    gray: bool
+        If True Gray codes are used
 
     Returns
     ----------
@@ -272,31 +288,25 @@ def convert_bit_string_to_cycle(bit_string,locs,gray=False):
     for i in range(locs-1, 1, -1):
         bin_len = find_bin_length(i)
         bin_string = []
-        #print(f'i = {i}, bin_len ={bin_len}')
         for count in range(bin_len):
-            #j = bin_len - 1 - count
-            #bin_string.append(bit_string_copy.pop(j))
-            #position = convert_binary_list_to_integer(bin_string, reverse=True, gray=gray)
-            #print(f'count = {count} old bit_string_copy = {bit_string_copy}')
             bin_string.append(bit_string_copy.pop(0)) #pop the most left hand item
-            #print(f'new bit_string_copy = {bit_string_copy}')
-            #print(f'bit_string = {bin_string}')
         position = convert_binary_list_to_integer(bin_string, gray=gray)
-        #print(f'position = {position}')
         index = position % i    
         end_cycle_list.append(start_cycle_list.pop(index))
-    end_cycle_list.append(start_cycle_list.pop(0)) #only one entry left if i =1
+    end_cycle_list.append(start_cycle_list.pop(0))
     if start_cycle_list != []:
         raise Exception('Cycle returned may not be complete')
     if bit_string_copy != []:
         raise Exception(f'bit_string not consumed {bit_string_copy} left')
     return(end_cycle_list)
 
-def find_stats(cost_fn, counts, shots, verbose=False):
+def find_stats(cost_fn, counts: dict, shots: int, verbose: bool=False)-> tuple:
     """finds the average energy of the relevant counts, and the lowest energy
     
     Parameters
     ----------
+    cost_fn: function
+        A function of a bit string evaluating an energy(distance) for that bit string
     counts : dict
         Dictionary holding the binary string and the counts observed
     shots: integer
@@ -310,6 +320,8 @@ def find_stats(cost_fn, counts, shots, verbose=False):
         The average energy
     lowest_dist : float
         The lowest energy
+    lowest_energy_bit_string: list
+        A list of the bits for the lowest energy bit string
     """
     total_counts = 0
     total_energy = 0
@@ -340,36 +352,58 @@ def find_stats(cost_fn, counts, shots, verbose=False):
     return(average_energy, lowest_energy, lowest_energy_bit_string)
 
 def hot_start(distance_array: np.array, locs: int) -> list:
-    """finds a route from a distance array where the distance to the next point is the shortest available"""
+    """finds a route from a distance array where the distance to the next point is the shortest available
+    
+    Parameters
+    ----------
+    locs: int
+        The number of locations in the problem
+    distance_array: array
+        Numpy symmetric array with distances between locations
+
+    Returns
+    -------
+    end_cycle_list: list
+        A list of integers showing the an estimate of the lowest cycle
+    
+    """
     validate_distance_array(distance_array, locs)
     remaining_cycle_list = [i for i in range(locs)]
     end_cycle_list = []
     end_cycle_list.append(remaining_cycle_list.pop(0)) #start point of cycle is always 0
-    #print(distance_array[first_item])
-    #print(f'remaining cycle list is {remaining_cycle_list}')
     next_row = 0
     for i in range(locs-1):
         for j, column in enumerate(remaining_cycle_list):
             distance = distance_array[next_row][column]
             if j == 0:
-                #print(f'i = {j} remaining_cycle_list[j] {remaining_cycle_list[j]}, distance = {distance}')
-                #first time around the loop
                 arg_min = j
                 lowest_distance = distance
             else:
-                #print(f'i = {j} remaining_cycle_list[j] {remaining_cycle_list[j]}, distance = {distance}')
                 if distance < lowest_distance:
                     arg_min = j
-                    #print(f'Arg min is now {arg_min}')
                     lowest_distance = distance
         next_row = remaining_cycle_list.pop(arg_min)
-        #print(f'Next row is {next_row}')
         end_cycle_list.append(next_row)
-    #end_cycle_list.append(0) #cycle always ends at zero
     return(end_cycle_list)
 
 def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bin) -> list:
-    """invert the hot start integer list into a string"""
+    """invert the hot start integer list into a string
+    
+    Parameters:
+    hot_start_list: list
+        A list of integers showing the an estimate of the lowest cycle
+    locations: int 
+        The number of location in the problem
+    gray:bin
+        If True Gray codes are used
+
+    Returns
+    -------
+    result_list: list
+        A list of bits that represents the bit string for the lowest cycle
+    
+    """
+
     if len(hot_start_list) != locations:
         raise Exception(f'The hot start list should be length {locations}')
     
@@ -383,35 +417,25 @@ def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bin) -> 
     
     total_binary_string = ''
     result_list = []
-    print(f'hot_start_list {hot_start_list})
     
     for i, integer in enumerate(hot_start_list):
         bin_len = find_bin_length(len(initial_list))
         if bin_len > 0:
         #find the index of integer in hot start list
-            print(f'bin_len - {bin_len}')
+            #print(f'bin_len - {bin_len}')
             index = initial_list.index(integer)
-            print(f'index = {index} integer = {integer}, hot_start_list = {hot_start_list}, initial_list, {initial_list}')
+            #print(f'index = {index} integer = {integer}, hot_start_list = {hot_start_list}, initial_list, {initial_list}')
             if gray:
-               # binary_string = bin(graycode.tc_to_gray_code(index))
-               binary_string = 
+               binary_string = bin(graycode.tc_to_gray_code(index))
             else:
                 binary_string = bin(index)
-            print(binary_string)
+            #print(binary_string)
             binary_string = binary_string[2:] #remove the 0b charactor
-            print(binary_string)
+            #print(binary_string)
             binary_string = binary_string.zfill(bin_len)
-            print(binary_string)
+            #print(binary_string)
             total_binary_string += binary_string
             initial_list.pop(index)
-    #result_list = list(total_binary_string)
     for i in range(len(total_binary_string)):
         result_list.append(int(total_binary_string[i]))
-    #result_list = [int(str) for str in total_binary_string.split()]
     return(result_list)
-    
-
-
-
-
-    
