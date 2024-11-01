@@ -89,23 +89,21 @@ def test_distance_4():
 
 def test_list_00():
     """Check conversion of list [0,0]"""
-    bin_len = 2
     binary_list = [0,0]
     expected_result = 0
-    result = convert_binary_list_to_integer(binary_list, bin_len)
+    result = convert_binary_list_to_integer(binary_list )
     assert result == expected_result
 
 def test_list_00_gray():
     """Check conversion of list [0,0] with gray codes"""
-    bin_len = 2
+    gray = True
     binary_list = [0,0]
     expected_result = 0
-    result = convert_binary_list_to_integer(binary_list, bin_len, gray=True)
+    result = convert_binary_list_to_integer(binary_list, gray)
     assert result == expected_result
 
 def test_list_01():
     """Check conversion of list [0,1]"""
-    #bin_len = 2
     binary_list = [0,1]
     expected_result = 1
     result = convert_binary_list_to_integer(binary_list)
@@ -113,15 +111,14 @@ def test_list_01():
 
 def test_list_01_gray():
     """Check conversion of list [0,1] with gray codes"""
-    #bin_len = 2
+    gray = True
     binary_list = [0,1]
     expected_result = 1
-    result = convert_binary_list_to_integer(binary_list, gray=True)
+    result = convert_binary_list_to_integer(binary_list, gray)
     assert result == expected_result
 
 def test_list_10():
     """Check conversion of list [1,0]"""
-    #bin_len = 2
     binary_list = [1,0]
     expected_result = 2
     result = convert_binary_list_to_integer(binary_list)
@@ -129,15 +126,14 @@ def test_list_10():
 
 def test_list_10_gray():
     """Check conversion of list [1,0] with gray codes"""
-    #bin_len = 2
+    gray = True
     binary_list = [1,0]
     expected_result = 3
-    result = convert_binary_list_to_integer(binary_list, gray=True)
+    result = convert_binary_list_to_integer(binary_list, gray)
     assert result == expected_result
 
 def test_list_11():
     """Check conversion of list [1,1]"""
-    #bin_len = 2
     binary_list = [1,1]
     expected_result = 3
     result = convert_binary_list_to_integer(binary_list)
@@ -145,15 +141,14 @@ def test_list_11():
 
 def test_list_11_gray():
     """Check conversion of list [1,1]"""
-    #bin_len = 2
+    gray = True
     binary_list = [1,1]
     expected_result = 2
-    result = convert_binary_list_to_integer(binary_list, gray=True)
+    result = convert_binary_list_to_integer(binary_list, gray)
     assert result == expected_result
 
 def test_list_1110():
     """Check conversion of list [1,1,1,0]"""
-    #bin_len = 4
     binary_list = [1,1,1,0]
     expected_result = 14
     result = convert_binary_list_to_integer(binary_list)
@@ -161,18 +156,18 @@ def test_list_1110():
 
 def test_list_1110_gray():
     """Check conversion of list [1,1,1,0] with gray codes"""
-    #bin_len = 4
+    gray = True
     binary_list = [1,1,1,0]
     expected_result = 11
-    result = convert_binary_list_to_integer(binary_list, gray=True)
+    result = convert_binary_list_to_integer(binary_list, gray)
     assert result == expected_result
 
 def test_list_1000_gray():
     """Check conversion of list [1,0,0,0] with gray codes"""
-    #bin_len = 4
+    gray = True
     binary_list = [1,0,0,0]
     expected_result = 15
-    result = convert_binary_list_to_integer(binary_list, gray=True)
+    result = convert_binary_list_to_integer(binary_list, gray)
     assert result == expected_result
 
 def test_check_loc_list_valid1():
@@ -358,8 +353,49 @@ def test_convert_bit_string_to_cycle_4():
     expected_result = [0, 3, 1, 4, 2]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
+
+def test_convert_bit_string_to_cycle_15_gray():
+    """example for 15 locations with Gray code"""
+    locs = 15
+    gray = True
+    expected_result = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    bit_string = [1, 0, 1, 1, \
+                  1 ,0 ,1, 0, \
+                  1, 1, 1, 0, \
+                  1, 1, 1, 1, \
+                  1, 1, 0, 1, \
+                  1, 1, 0, 0, \
+                  1, 0, 0, \
+                  1, 0, 1, \
+                  1, 1, 1, \
+                  1, 1, 0, \
+                  1, 0, 1, 1, 1]
+    
+    result = convert_bit_string_to_cycle(bit_string, locs, gray)
+    assert expected_result == result   
+
+def test_convert_bit_string_to_cycle_15():
+    """example for 15 locations without Gray code"""
+    locs = 15
+    gray = False
+    expected_result = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    bit_string = [1, 1, 0, 1, \
+                  1 ,1 ,0, 0, \
+                  1, 0, 1, 1, \
+                  1, 0, 1, 0, \
+                  1, 0, 0, 1, \
+                  1, 0, 0, 0, \
+                  1, 1, 1, \
+                  1, 1, 0, \
+                  1, 0, 1, \
+                  1, 0, 0, \
+                  1, 1, 1, 0, 1]
+
+    result = convert_bit_string_to_cycle(bit_string, locs, gray)
+    assert expected_result == result 
   
 def test_find_average():
+    """test find_stats in average mode"""
     counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
     LOCATIONS = 4
     filename = 'data/four_d.txt'
@@ -371,6 +407,7 @@ def test_find_average():
     assert expected_result == average
 
 def test_find_lowest():
+    """test find_stats in lowest mode"""
     counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
     LOCATIONS = 4
     filename = 'data/four_d.txt'
@@ -382,6 +419,7 @@ def test_find_lowest():
     assert expected_result == lowest
 
 def test_hot_start_4():
+    """hot start list with four locations"""
     LOCATIONS = 4
     filename = 'data/four_d.txt'
     distance_array = np.genfromtxt(filename)
@@ -390,6 +428,7 @@ def test_hot_start_4():
     assert expected_result == actual_result
 
 def test_hot_start_5_list():
+    """hot start list with five locations"""
     LOCATIONS = 5
     filename = 'data/five_d.txt'
     distance_array = np.genfromtxt(filename)
@@ -398,6 +437,7 @@ def test_hot_start_5_list():
     assert expected_result == actual_result
 
 def test_hot_start_5_distance():
+    """hot start distance with five locations"""
     LOCATIONS = 5
     filename = 'data/five_d.txt'
     distance_array = np.genfromtxt(filename)
@@ -407,6 +447,7 @@ def test_hot_start_5_distance():
     assert expected_result == actual_result
 
 def test_hot_start_list_to_string_101():
+    """hot start list with four locations in descending order"""
     LOCATIONS = 4
     GRAY = False
     hot_start_list = [0, 3, 2, 1]
@@ -415,9 +456,50 @@ def test_hot_start_list_to_string_101():
     assert expected_result == actual_result
 
 def test_hot_start_list_to_string_101():
+    """hot start list with four locations in descending order with Gray code"""
     LOCATIONS = 4
     GRAY = True
     hot_start_list = [0, 3, 2, 1]
     actual_result = hot_start_list_to_string(hot_start_list, LOCATIONS, GRAY)
     expected_result = [1, 1, 1]
+    assert expected_result == actual_result
+
+def test_hot_start_list_to_string_15_locs_no_gray():
+    """hot start list with fifteen locations in descending order without Gray code"""
+    LOCATIONS = 15
+    GRAY = False
+    hot_start_list = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    actual_result = hot_start_list_to_string(hot_start_list, LOCATIONS, GRAY)
+    expected_result = [1, 1, 0, 1, \
+                       1 ,1 ,0, 0, \
+                       1, 0, 1, 1, \
+                       1, 0, 1, 0, \
+                       1, 0, 0, 1, \
+                       1, 0, 0, 0, \
+                       1, 1, 1, \
+                       1, 1, 0, \
+                       1, 0, 1, \
+                       1, 0, 0, \
+                       1, 1, 1, 0, 1]
+
+    assert expected_result == actual_result
+
+def test_hot_start_list_to_string_15_locs_gray():
+    """hot start list with fifteen locations in descending order with Gray code"""
+    LOCATIONS = 15
+    GRAY = True
+    hot_start_list = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    actual_result = hot_start_list_to_string(hot_start_list, LOCATIONS, GRAY)
+    expected_result = [1, 0, 1, 1, \
+                       1 ,0 ,1, 0, \
+                       1, 1, 1, 0, \
+                       1, 1, 1, 1, \
+                       1, 1, 0, 1, \
+                       1, 1, 0, 0, \
+                       1, 0, 0, \
+                       1, 0, 1, \
+                       1, 1, 1, \
+                       1, 1, 0, \
+                       1, 0, 1, 1, 1]
+
     assert expected_result == actual_result
