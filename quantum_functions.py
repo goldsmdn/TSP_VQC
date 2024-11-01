@@ -4,7 +4,7 @@ from qiskit_aer.primitives import SamplerV2
 import random
 import math
 import copy
-from helper_functions_tsp import find_stats
+from helper_functions_tsp import find_stats, hot_start
 import numpy as np
 
 def cost_func_evaluate(cost_fn, bc: QuantumCircuit, 
@@ -109,11 +109,16 @@ def define_parameters(qubits: int, mode: int=1) -> list:
     """
     params = []
     if mode in [1,2]:
-        for i in range(qubits):
-            text1 = "param " + str(i)
-            text2 = "param " + str(qubits+i)
-            params.append(Parameter(text1))
-            params.append(Parameter(text2))
+        num_params = 2 * qubits
+        #for i in range(qubits):
+        #    text1 = "param " + str(i)
+        #    text2 = "param " + str(qubits+i)
+        #    print(f'text1 {text1}, text2 {text2}, i {i}. qubits+i {qubits+i}')
+        #    params.append(Parameter(text1))
+        #    params.append(Parameter(text2))
+        for i in range(num_params):
+            text = "param " + str(i)
+            params.append(Parameter(text))
         return params
     else:   
         raise Exception(f'Mode {mode} has not been coded for')
@@ -141,8 +146,10 @@ def vqc_circuit(qubits: int, params: list, mode:int=1) -> QuantumCircuit:
     if mode == 1:
         for i in range(qubits):
             qc.h(i)
-            qc.ry(params[2*i], i)
-            qc.rx(params[2*i+1], i)
+            #qc.ry(params[2*i], i)
+            #qc.rx(params[2*i+1], i)
+            qc.ry(params[i], i)
+            qc.rx(params[qubits+i], i)
         for i in range(qubits):
             if i < qubits-1:
                 qc.cx(i,i+1)
@@ -151,19 +158,25 @@ def vqc_circuit(qubits: int, params: list, mode:int=1) -> QuantumCircuit:
                 #ensure circuit is fully entangled
     elif mode == 2:
         for i in range(qubits):
-            qc.rx(params[2*i], i)
+            #qc.rx(params[2*i], i)
+            qc.rx(params[i], i)
         for i in range(qubits):
                 if i < qubits-1:
-                    qc.rxx(params[2*i+1], i, i+1, )
+                    #print(f'i = {i}, qubits+i {qubits+i}, qubits+1+i {qubits+1+i}')
+                #    qc.rxx(params[2*i+1], i, i+1, )
+                    qc.rxx(params[qubits+i], i, i+1,)
                 else:
-                    qc.rxx(params[2*i+1], i, 0, )
+                #    qc.rxx(params[2*i+1], i, 0, )
+                    qc.rxx(params[qubits+i], i, 0,)
+                    #print(f'i = {i}, qubits+i {qubits+i}, qubits+1+i 0')
                 #ensure circuit is fully entangled
     else:
         raise Exception(f'Mode {mode} has not been coded for')
     qc.measure_all()
     return qc
 
-def create_initial_rotations(qubits: int, mode: int, hot_start: bool=False) -> list:
+def create_initial_rotations(qubits: int, mode: int, bin_hot_start_list: list=[], 
+                             hot_start: bool=False) -> list:
     """initialise parameters with random weights
 
     Parameters
@@ -186,7 +199,12 @@ def create_initial_rotations(qubits: int, mode: int, hot_start: bool=False) -> l
     else:
         raise Exception(f'Mode {mode} is not yet coded')
     if hot_start:
+        if mode in [1]:
+            raise Exception('Cannot use a hot start for mode {mode}')
         init_rots = [0 for i in range(param_num)]
+        for i, item in enumerate(bin_hot_start_list):
+            if item == 1:
+                init_rots[i] = np.pi
     else:
         init_rots= [random.random() * 2 * math.pi for i in range(param_num)]
     return(init_rots)
