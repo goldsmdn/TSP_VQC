@@ -360,6 +360,7 @@ def test_convert_bit_string_to_cycle_4():
     assert expected_result == result
   
 def test_find_average():
+    """test find_stats in average mode"""
     counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
     LOCATIONS = 4
     filename = 'data/four_d.txt'
@@ -371,6 +372,7 @@ def test_find_average():
     assert expected_result == average
 
 def test_find_lowest():
+    """test find_stats in lowest mode"""
     counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
     LOCATIONS = 4
     filename = 'data/four_d.txt'
@@ -382,6 +384,7 @@ def test_find_lowest():
     assert expected_result == lowest
 
 def test_hot_start_4():
+    """hot start list with four locations"""
     LOCATIONS = 4
     filename = 'data/four_d.txt'
     distance_array = np.genfromtxt(filename)
@@ -390,6 +393,7 @@ def test_hot_start_4():
     assert expected_result == actual_result
 
 def test_hot_start_5_list():
+    """hot start list with five locations"""
     LOCATIONS = 5
     filename = 'data/five_d.txt'
     distance_array = np.genfromtxt(filename)
@@ -398,6 +402,7 @@ def test_hot_start_5_list():
     assert expected_result == actual_result
 
 def test_hot_start_5_distance():
+    """hot start distance with five locations"""
     LOCATIONS = 5
     filename = 'data/five_d.txt'
     distance_array = np.genfromtxt(filename)
@@ -407,6 +412,7 @@ def test_hot_start_5_distance():
     assert expected_result == actual_result
 
 def test_hot_start_list_to_string_101():
+    """hot start list with four locations in descending order"""
     LOCATIONS = 4
     GRAY = False
     hot_start_list = [0, 3, 2, 1]
@@ -415,9 +421,50 @@ def test_hot_start_list_to_string_101():
     assert expected_result == actual_result
 
 def test_hot_start_list_to_string_101():
+    """hot start list with four locations in descending order with Gray code"""
     LOCATIONS = 4
     GRAY = True
     hot_start_list = [0, 3, 2, 1]
     actual_result = hot_start_list_to_string(hot_start_list, LOCATIONS, GRAY)
     expected_result = [1, 1, 1]
+    assert expected_result == actual_result
+
+def test_hot_start_list_to_string_15_locs_no_gray():
+    """hot start list with fifteen locations in descending order without Gray code"""
+    LOCATIONS = 15
+    GRAY = False
+    hot_start_list = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    actual_result = hot_start_list_to_string(hot_start_list, LOCATIONS, GRAY)
+    expected_result = [1, 1, 0, 1, \
+                       1 ,1 ,0, 0, \
+                       1, 0, 1, 1, \
+                       1, 0, 1, 0, \
+                       1, 0, 0, 1, \
+                       1, 0, 0, 0, \
+                       1, 1, 1, \
+                       1, 1, 0, \
+                       1, 0, 1, \
+                       1, 0, 0, \
+                       1, 1, 1, 0, 1]
+
+    assert expected_result == actual_result
+
+def test_hot_start_list_to_string_15_locs_gray():
+    """hot start list with fifteen locations in descending order with Gray code"""
+    LOCATIONS = 15
+    GRAY = True
+    hot_start_list = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    actual_result = hot_start_list_to_string(hot_start_list, LOCATIONS, GRAY)
+    expected_result = [1, 0, 1, 1, \
+                       1 ,0 ,1, 0, \
+                       1, 1, 1, 0, \
+                       1, 1, 1, 1, \
+                       1, 1, 0, 1, \
+                       1, 1, 0, 0, \
+                       1, 0, 0, \
+                       1, 0, 1, \
+                       1, 1, 1, \
+                       1, 1, 0, \
+                       1, 0, 1, 1, 1]
+
     assert expected_result == actual_result

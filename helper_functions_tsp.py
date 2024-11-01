@@ -342,7 +342,6 @@ def find_stats(cost_fn, counts, shots, verbose=False):
 def hot_start(distance_array: np.array, locs: int) -> list:
     """finds a route from a distance array where the distance to the next point is the shortest available"""
     validate_distance_array(distance_array, locs)
-    #starting_cycle_list = [i for i in range(locs)]
     remaining_cycle_list = [i for i in range(locs)]
     end_cycle_list = []
     end_cycle_list.append(remaining_cycle_list.pop(0)) #start point of cycle is always 0
@@ -380,23 +379,22 @@ def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bin) -> 
         raise Exception(f'The first item of the list must be zero')
     
     initial_list = [i for i in range(1, locations)]
-    print(initial_list)
+    print(f'initial_list {initial_list}')
     
-    #hot_start_list_copy = copy.deepcopy(hot_start_list)
     total_binary_string = ''
     result_list = []
-    print(hot_start_list)
+    print(f'hot_start_list {hot_start_list})
     
     for i, integer in enumerate(hot_start_list):
         bin_len = find_bin_length(len(initial_list))
         if bin_len > 0:
-        ## need some coding for gray codes
         #find the index of integer in hot start list
             print(f'bin_len - {bin_len}')
             index = initial_list.index(integer)
             print(f'index = {index} integer = {integer}, hot_start_list = {hot_start_list}, initial_list, {initial_list}')
             if gray:
-                binary_string = bin(graycode.tc_to_gray_code(index))
+               # binary_string = bin(graycode.tc_to_gray_code(index))
+               binary_string = 
             else:
                 binary_string = bin(index)
             print(binary_string)
