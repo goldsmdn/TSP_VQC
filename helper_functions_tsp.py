@@ -412,9 +412,7 @@ def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bin) -> 
     if first_item != 0:
         raise Exception(f'The first item of the list must be zero')
     
-    initial_list = [i for i in range(1, locations)]
-    print(f'initial_list {initial_list}')
-    
+    initial_list = [i for i in range(1, locations)]    
     total_binary_string = ''
     result_list = []
     
@@ -422,18 +420,13 @@ def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bin) -> 
         bin_len = find_bin_length(len(initial_list))
         if bin_len > 0:
         #find the index of integer in hot start list
-            #print(f'bin_len - {bin_len}')
             index = initial_list.index(integer)
-            #print(f'index = {index} integer = {integer}, hot_start_list = {hot_start_list}, initial_list, {initial_list}')
             if gray:
                binary_string = bin(graycode.tc_to_gray_code(index))
             else:
                 binary_string = bin(index)
-            #print(binary_string)
             binary_string = binary_string[2:] #remove the 0b charactor
-            #print(binary_string)
             binary_string = binary_string.zfill(bin_len)
-            #print(binary_string)
             total_binary_string += binary_string
             initial_list.pop(index)
     for i in range(len(total_binary_string)):
