@@ -259,7 +259,7 @@ def cost_fn_fact(locs: int,distance_array: np.array,gray: bool=False,verbose: bo
             raise Exception('Algorithm returned incorrect cycle')
         else:
             if verbose:
-                print(f'bitstring = {bit_string}, full_list_of_locs = {full_list_of_locs}, distance = {total_distance}')
+                print(f'bitstring = {bit_string}, full_list_of_locs = {full_list_of_locs}, total_distance = {total_distance}')
             return total_distance
     return(cost_fn)
 
@@ -339,7 +339,7 @@ def find_stats(cost_fn, counts: dict, shots: int, verbose: bool=False)-> tuple:
                 lowest_energy_bit_string = bit_list
         if verbose:
             print(f'The energy for string {key} is {energy} and the counts are {value}')
-            print(f'The lowest_distance is {energy}')
+            print(f'The lowest_distance is {lowest_energy}')
             print(f'The lowest energy bit string is {lowest_energy_bit_string }')
         total_counts += value
         total_energy += energy * value
@@ -349,6 +349,9 @@ def find_stats(cost_fn, counts: dict, shots: int, verbose: bool=False)-> tuple:
         raise Exception(f'The t {total_counts=} does not agree to the {shots=}')
 
     average_energy = total_energy / total_counts
+    if verbose:
+        print(f'Returning average_energy, lowest_energy, lowest_energy_bit_string')
+        print(f'{average_energy}, {lowest_energy}, {lowest_energy_bit_string}')
     return(average_energy, lowest_energy, lowest_energy_bit_string)
 
 def hot_start(distance_array: np.array, locs: int) -> list:

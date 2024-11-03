@@ -8,7 +8,7 @@ from helper_functions_tsp import find_stats, hot_start
 import numpy as np
 
 def cost_func_evaluate(cost_fn, bc: QuantumCircuit, 
-                       shots: int = 1024) -> tuple:
+                       shots: int = 1024, verbose:bool=False) -> tuple:
     """evaluate cost function
     
     Parameters
@@ -34,11 +34,11 @@ def cost_func_evaluate(cost_fn, bc: QuantumCircuit,
     job = sampler.run([bc])
     results = job.result()
     counts = results[0].data.meas.get_counts()
-    cost, lowest, lowest_energy_bit_string = find_stats(cost_fn, counts, shots)
+    cost, lowest, lowest_energy_bit_string = find_stats(cost_fn, counts, shots, verbose)
     return(cost, lowest, lowest_energy_bit_string)
 
 def my_gradient(cost_fn, qc: QuantumCircuit, 
-                params: list, rots: list, epsilon: float = np.pi/2, 
+                params: list, rots: list, s: float = 0.5, 
                 shots:  int=1024, verbose: bool=False) -> list:
     """calculate gradient for a quantum circuit with parameters and rotations
     
@@ -67,24 +67,28 @@ def my_gradient(cost_fn, qc: QuantumCircuit,
     gradient = []
     
     new_rots = copy.deepcopy(rots)
-    for i, rot in enumerate(rots):
+    for i, theta in enumerate(rots):
         if verbose:
             print(f'processing {i}th weight')
-            print(f'rot = {rot} i={i}')
+            print(f'rot = {theta} i={i}')
 
-        new_rots[i] = rot + epsilon
+        #new_rots[i] = rot + epsilon
+        new_rots[i] = theta + np.pi/(4*s)
+
         if verbose:
             print(f'New rots+ = {new_rots}')
         bc = bind_weights(params, new_rots, qc)
         cost_plus, _, _ = cost_func_evaluate(cost_fn, bc, shots)
 
-        new_rots[i] = rot - epsilon
+        #new_rots[i] = rot - epsilon
+        new_rots[i] = theta - np.pi/(4*s)
         if verbose:
             print(f'New rots- = {new_rots}')
         bc = bind_weights(params, new_rots, qc)
         cost_minus, _, _ = cost_func_evaluate(cost_fn, bc, shots)
 
-        delta = (cost_plus - cost_minus) / 2
+        #delta = (cost_plus - cost_minus) / 2
+        delta = s * (cost_plus - cost_minus)
         if verbose:
             print(f'cost+ = {cost_plus} cost- = {cost_minus}, delta = {delta}')
         gradient.append(delta)
@@ -110,12 +114,6 @@ def define_parameters(qubits: int, mode: int=1) -> list:
     params = []
     if mode in [1,2]:
         num_params = 2 * qubits
-        #for i in range(qubits):
-        #    text1 = "param " + str(i)
-        #    text2 = "param " + str(qubits+i)
-        #    print(f'text1 {text1}, text2 {text2}, i {i}. qubits+i {qubits+i}')
-        #    params.append(Parameter(text1))
-        #    params.append(Parameter(text2))
         for i in range(num_params):
             text = "param " + str(i)
             params.append(Parameter(text))
@@ -146,8 +144,6 @@ def vqc_circuit(qubits: int, params: list, mode:int=1) -> QuantumCircuit:
     if mode == 1:
         for i in range(qubits):
             qc.h(i)
-            #qc.ry(params[2*i], i)
-            #qc.rx(params[2*i+1], i)
             qc.ry(params[i], i)
             qc.rx(params[qubits+i], i)
         for i in range(qubits):
@@ -158,17 +154,12 @@ def vqc_circuit(qubits: int, params: list, mode:int=1) -> QuantumCircuit:
                 #ensure circuit is fully entangled
     elif mode == 2:
         for i in range(qubits):
-            #qc.rx(params[2*i], i)
             qc.rx(params[i], i)
         for i in range(qubits):
                 if i < qubits-1:
-                    #print(f'i = {i}, qubits+i {qubits+i}, qubits+1+i {qubits+1+i}')
-                #    qc.rxx(params[2*i+1], i, i+1, )
                     qc.rxx(params[qubits+i], i, i+1,)
                 else:
-                #    qc.rxx(params[2*i+1], i, 0, )
                     qc.rxx(params[qubits+i], i, 0,)
-                    #print(f'i = {i}, qubits+i {qubits+i}, qubits+1+i 0')
                 #ensure circuit is fully entangled
     else:
         raise Exception(f'Mode {mode} has not been coded for')
@@ -204,7 +195,9 @@ def create_initial_rotations(qubits: int, mode: int, bin_hot_start_list: list=[]
         init_rots = [0 for i in range(param_num)]
         for i, item in enumerate(bin_hot_start_list):
             if item == 1:
-                init_rots[i] = np.pi
+                #init_rots[i] = np.pi
+                init_rots[qubits-i-1] = np.pi 
+                #need to reverse order because of qiskit convention
     else:
         init_rots= [random.random() * 2 * math.pi for i in range(param_num)]
     return(init_rots)
