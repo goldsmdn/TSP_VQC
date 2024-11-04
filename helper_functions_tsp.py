@@ -483,13 +483,15 @@ def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bin) -> 
         result_list.append(int(total_binary_string[i]))
     return(result_list)
 
-def update_paramaters_using_gradient(locations, iterations, print_frequency, params, 
+def update_parameters_using_gradient(locations, iterations, print_frequency, params, 
                                      rots, cost_fn, qc, shots, s, eta, 
                                      average_slice, gray, verbose):
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
+    average_list = []
     for i in range(iterations):
         bc = bind_weights(params, rots, qc)
         cost, lowest, lowest_energy_bit_string = cost_func_evaluate(cost_fn, bc, shots, average_slice, verbose)
+        average, _ , _ = cost_func_evaluate(cost_fn, bc, shots, average_slice=1, verbose=verbose)
         if verbose:
             print(f'cost, lowest, lowest_energy_bit_string = {cost}, {lowest}, {lowest_energy_bit_string}')
         if i == 0:
@@ -509,6 +511,7 @@ def update_paramaters_using_gradient(locations, iterations, print_frequency, par
         index_list.append(i)
         cost_list.append(cost)
         lowest_list.append(lowest_to_date)
+        average_list.append(average)
         gradient = np.array(my_gradient(cost_fn, qc, params, rots, s, shots))
         gradient_list.append(gradient)
         if i % print_frequency == 0:
@@ -518,7 +521,7 @@ def update_paramaters_using_gradient(locations, iterations, print_frequency, par
             if verbose:
                 print(f'The gradient is {gradient}')
         rots = rots - eta * gradient
-    return index_list, cost_list, lowest_list, gradient_list
+    return index_list, cost_list, lowest_list, gradient_list, average_list
     
 def cost_func_evaluate(cost_fn, bc: QuantumCircuit, 
                        shots: int = 1024, average_slice=1, verbose:bool=False) -> tuple:

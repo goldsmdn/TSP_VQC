@@ -7,15 +7,21 @@ def parameter_graph(filename: str, index_list: list, gradient_list:list, legend:
     plt.legend(p, legend)
     plt.title('Evolution of parameters with iterations')
     plt.tight_layout()
+    plt.xlabel('Iteration')
+    plt.ylabel('Parameter value in radians')
     plt.savefig(filename)
     plt.show()
 
-def cost_graph(filename: str, index_list: list, cost_list: list, lowest_list: list, title: str=''):
+def cost_graph(filename: str, index_list: list, cost_list: list, 
+               lowest_list: list, average_list: list, title: str=''):
     """plots a graph of the cost function by interation"""
     plt.style.use('seaborn-v0_8-colorblind')
-    plt.plot(index_list, cost_list, linewidth=1.0, label='Average')
+    plt.plot(index_list, cost_list, linewidth=1.0, color='orange', label='Sliced Average')
+    plt.plot(index_list, average_list, linewidth=1.0, color='blue', label='Average of all points')
     plt.step(index_list, lowest_list, linewidth=1.0, color = 'red', label='Lowest')
     plt.grid(axis='x', color='0.95')
+    plt.xlabel('Iteration')
+    plt.ylabel('Energy (distance)')
     plt.title(title)
     plt.legend(loc='upper right')
     plt.tight_layout()
