@@ -418,6 +418,121 @@ def test_find_lowest():
     expected_result = 21.0
     assert expected_result == lowest
 
+def test_find_average_slice1():
+    """test average slice functionality"""
+    counts = {'11010': 1000}
+    LOCATIONS = 5
+    filename = 'data/five_d.txt'
+    distance_array = np.genfromtxt(filename)
+    SHOTS = 1000
+    GRAY = True
+    AVERAGE_SLICE = 0.6
+    cost_fn = cost_fn_fact(LOCATIONS, distance_array, gray=GRAY, verbose=False)
+    average , _ , _ = find_stats(cost_fn, counts, SHOTS, AVERAGE_SLICE, verbose=False)
+    expected_result = 21.0
+    assert expected_result == average
+
+def test_find_average_slice2():
+    """test average slice functionality - ensure no change"""
+    counts = {'11010': 1000}
+    LOCATIONS = 5
+    filename = 'data/five_d.txt'
+    distance_array = np.genfromtxt(filename)
+    SHOTS = 1000
+    GRAY = True
+    cost_fn = cost_fn_fact(LOCATIONS, distance_array, gray=GRAY, verbose=False)
+    average , _ , _ = find_stats(cost_fn, counts, SHOTS, verbose=False)
+    expected_result = 21.0
+    assert expected_result == average
+
+def test_find_average_slice2b():
+    """test average slice functionality - ensure no change"""
+    counts = {'00000': 1000}
+    LOCATIONS = 5
+    filename = 'data/five_d.txt'
+    distance_array = np.genfromtxt(filename)
+    SHOTS = 1000
+    GRAY = True
+    cost_fn = cost_fn_fact(LOCATIONS, distance_array, gray=GRAY, verbose=False)
+    average , _ , _ = find_stats(cost_fn, counts, SHOTS, verbose=False)
+    expected_result = 25.0
+    assert expected_result == average
+
+def test_find_average_slice3():
+    """test average slice functionality - ensure no change"""
+    counts = {'11010': 500,
+              '00000': 500}
+    LOCATIONS = 5
+    filename = 'data/five_d.txt'
+    distance_array = np.genfromtxt(filename)
+    SHOTS = 1000
+    GRAY = True
+    AVERAGE_SLICE = 0.4
+    cost_fn = cost_fn_fact(LOCATIONS, distance_array, gray=GRAY, verbose=False)
+    average , _ , _ = find_stats(cost_fn, counts, SHOTS, AVERAGE_SLICE, verbose=False)
+    expected_result = 21
+    assert expected_result == average
+
+def test_find_average_slice4():
+    """test average slice functionality - ensure no change"""
+    counts = {'11010': 500,
+              '00000': 500}
+    LOCATIONS = 5
+    filename = 'data/five_d.txt'
+    distance_array = np.genfromtxt(filename)
+    SHOTS = 1000
+    GRAY = True
+    AVERAGE_SLICE = 0.6
+    cost_fn = cost_fn_fact(LOCATIONS, distance_array, gray=GRAY, verbose=False)
+    average , _ , _ = find_stats(cost_fn, counts, SHOTS, AVERAGE_SLICE, verbose=False)
+    expected_result = 21.3333
+    assert expected_result - average < 0.0001
+
+def test_find_average_slice5():
+    counts = {'11010': 200, #Energy = 21
+          '00000': 300, #Energy = 25
+          '01101': 500} #Energy = 19
+    LOCATIONS = 5
+    filename = 'data/five_d.txt'
+    distance_array = np.genfromtxt(filename)
+    SHOTS = 1000
+    GRAY = True
+    AVERAGE_SLICE = 0.8
+    cost_fn = cost_fn_fact(LOCATIONS, distance_array, gray=GRAY, verbose=True)
+    average , _ , _ = find_stats(cost_fn, counts, SHOTS, AVERAGE_SLICE, verbose=True)
+    expected_result = 20.25
+    assert expected_result == average
+
+def test_find_average_slice6():
+    counts = {'11010': 200, #Energy = 21
+          '00000': 300, #Energy = 25
+          '01101': 500} #Energy = 19
+    LOCATIONS = 5
+    filename = 'data/five_d.txt'
+    distance_array = np.genfromtxt(filename)
+    SHOTS = 1000
+    GRAY = True
+    AVERAGE_SLICE = 1
+    cost_fn = cost_fn_fact(LOCATIONS, distance_array, gray=GRAY, verbose=True)
+    average , _ , _ = find_stats(cost_fn, counts, SHOTS, AVERAGE_SLICE, verbose=True)
+    expected_result = 21.2
+    assert expected_result == average
+
+def test_find_average_slice7():
+    counts = {'11010': 200, #Energy = 21
+          '00000': 300, #Energy = 25
+          '01101': 500} #Energy = 19
+    LOCATIONS = 5
+    filename = 'data/five_d.txt'
+    distance_array = np.genfromtxt(filename)
+    SHOTS = 1000
+    GRAY = True
+    AVERAGE_SLICE = 0.2
+    cost_fn = cost_fn_fact(LOCATIONS, distance_array, gray=GRAY, verbose=True)
+    average , _ , _ = find_stats(cost_fn, counts, SHOTS, AVERAGE_SLICE, verbose=True)
+    expected_result = 19.0
+    assert expected_result == average
+
 def test_hot_start_4():
     """hot start list with four locations"""
     LOCATIONS = 4
@@ -455,7 +570,7 @@ def test_hot_start_list_to_string_101():
     expected_result = [1, 0, 1]
     assert expected_result == actual_result
 
-def test_hot_start_list_to_string_101():
+def test_hot_start_list_to_string_101_gray():
     """hot start list with four locations in descending order with Gray code"""
     LOCATIONS = 4
     GRAY = True

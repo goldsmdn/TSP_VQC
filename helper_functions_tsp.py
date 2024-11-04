@@ -4,6 +4,14 @@ import copy
 import graycode
 import csv
 from itertools import count
+##from quantum_functions import bind_weights, cost_func_evaluate, my_gradient
+
+from qiskit.circuit import Parameter
+from qiskit import QuantumCircuit
+from qiskit_aer.primitives import SamplerV2
+import random
+#import math
+#import copy
 
 def read_index(filename: str, encoding: str) -> dict:
     """Reads CSV file and returns and dictionary
@@ -230,7 +238,7 @@ def find_total_distance(int_list: list, locs: int, distance_array :np.array)-> f
         total_distance += distance
     return total_distance
 
-def cost_fn_fact(locs: int,distance_array: np.array,gray: bool=False,verbose: bool=False):
+def cost_fn_fact(locs: int, distance_array: np.array, gray: bool=False, verbose: bool=False):
     """ returns a function
 
     Parameters
@@ -263,7 +271,7 @@ def cost_fn_fact(locs: int,distance_array: np.array,gray: bool=False,verbose: bo
             return total_distance
     return(cost_fn)
 
-def convert_bit_string_to_cycle(bit_string: list,locs: int,gray: bool=False) -> list:
+def convert_bit_string_to_cycle(bit_string: list, locs: int, gray: bool=False) -> list:
     """converts a bit string to a cycle.
     
     Parameters
@@ -300,7 +308,8 @@ def convert_bit_string_to_cycle(bit_string: list,locs: int,gray: bool=False) -> 
         raise Exception(f'bit_string not consumed {bit_string_copy} left')
     return(end_cycle_list)
 
-def find_stats(cost_fn, counts: dict, shots: int, verbose: bool=False)-> tuple:
+def find_stats(cost_fn, counts: dict, shots: int, 
+               average_slice: float=1, verbose: bool=False)-> tuple:
     """finds the average energy of the relevant counts, and the lowest energy
     
     Parameters
@@ -311,8 +320,12 @@ def find_stats(cost_fn, counts: dict, shots: int, verbose: bool=False)-> tuple:
         Dictionary holding the binary string and the counts observed
     shots: integer
         number of shots
+    average_slice: float
+        average over this slice of the energy.  eg
+        If average_slice = 1 then average over all energies.  
+        If average_slice = 0.2 then average over the bottom 20% of energies
     verbose: bool
-        determines in printout is made
+        determines if data is printed out
 
     Returns
     ----------
@@ -323,12 +336,27 @@ def find_stats(cost_fn, counts: dict, shots: int, verbose: bool=False)-> tuple:
     lowest_energy_bit_string: list
         A list of the bits for the lowest energy bit string
     """
-    total_counts = 0
-    total_energy = 0
+    if average_slice > 1:
+        raise Exception(f'The average_slice must be less or equal to 1, not {average_slice}')
+    elif average_slice <=0:
+        raise Exception(f'The average_slice must be greater than zero, not {average_slice}')
+    elif average_slice == 1:
+        slicing = False
+    else:
+        slicing = True
+    total_counts, total_energy = 0, 0
     first = True
-    for key, value in counts.items():
+    if slicing:
+        energy_dict = {}
+    for key, count in counts.items():
         bit_list = [int(bits) for bits in key]
         energy = cost_fn(bit_list)
+        if slicing:
+            #if already in dictionary increment
+            if energy in energy_dict.keys():
+                energy_dict[energy] +=count
+            else:
+                energy_dict[energy] =count
         if first == True:
             lowest_energy = energy
             first = False
@@ -338,20 +366,39 @@ def find_stats(cost_fn, counts: dict, shots: int, verbose: bool=False)-> tuple:
                 lowest_energy = energy
                 lowest_energy_bit_string = bit_list
         if verbose:
-            print(f'The energy for string {key} is {energy} and the counts are {value}')
+            print(f'The energy for string {key} is {energy} and the counts are {count}')
             print(f'The lowest_distance is {lowest_energy}')
             print(f'The lowest energy bit string is {lowest_energy_bit_string }')
-        total_counts += value
-        total_energy += energy * value
-    if verbose:
-        print(f'The total_counts_are {total_counts}')
-    if shots != total_counts:
-        raise Exception(f'The t {total_counts=} does not agree to the {shots=}')
+            if slicing:
+                print(f'Slicing in progress and unsorted energy_dict = {energy_dict}')
 
+        total_counts += count
+        total_energy += energy * count
+
+    if shots != total_counts:
+        raise Exception(f'The total_counts {total_counts=} does not agree to the {shots=}')
+
+    if slicing:
+        accum, total_energy, total_counts = 0, 0, 0
+        stop = shots * average_slice
+        sorted_energy_dict = dict(sorted(energy_dict.items()))
+        if verbose:
+            print(f'The sorted energy dict is {sorted_energy_dict}')
+        for energy, count in sorted_energy_dict.items():
+            if accum < stop:
+                if accum + count < stop:
+                    total_energy += energy * count
+                    total_counts += count
+                else:
+                    total_counts += stop - accum
+                    total_energy += energy * (stop - accum)
+            accum += count
     average_energy = total_energy / total_counts
     if verbose:
+        print(f'Slicing = {slicing}. The total_counts_are {total_counts}')
         print(f'Returning average_energy, lowest_energy, lowest_energy_bit_string')
         print(f'{average_energy}, {lowest_energy}, {lowest_energy_bit_string}')
+
     return(average_energy, lowest_energy, lowest_energy_bit_string)
 
 def hot_start(distance_array: np.array, locs: int) -> list:
@@ -435,3 +482,266 @@ def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bin) -> 
     for i in range(len(total_binary_string)):
         result_list.append(int(total_binary_string[i]))
     return(result_list)
+
+def update_paramaters_using_gradient(locations, iterations, print_frequency, params, 
+                                     rots, cost_fn, qc, shots, s, eta, 
+                                     average_slice, gray, verbose):
+    cost_list, lowest_list, index_list, gradient_list = [], [], [], []
+    for i in range(iterations):
+        bc = bind_weights(params, rots, qc)
+        cost, lowest, lowest_energy_bit_string = cost_func_evaluate(cost_fn, bc, shots, average_slice, verbose)
+        if verbose:
+            print(f'cost, lowest, lowest_energy_bit_string = {cost}, {lowest}, {lowest_energy_bit_string}')
+        if i == 0:
+            lowest_string_to_date = lowest_energy_bit_string
+            lowest_to_date = lowest
+        else:
+            if verbose:
+                print(f'lowest,  lowest_to_date {lowest}, {lowest_to_date}')
+            if lowest < lowest_to_date:
+                if verbose:
+                    print('Lowest less than lowest to date')
+                lowest_to_date = lowest
+                lowest_string_to_date = lowest_energy_bit_string
+                if verbose:
+                    print(f'lowest,  lowest_to_date {lowest}, {lowest_to_date}')
+        route_list = convert_bit_string_to_cycle(lowest_string_to_date, locations, gray)
+        index_list.append(i)
+        cost_list.append(cost)
+        lowest_list.append(lowest_to_date)
+        gradient = np.array(my_gradient(cost_fn, qc, params, rots, s, shots))
+        gradient_list.append(gradient)
+        if i % print_frequency == 0:
+            print(f'For iteration {i} the average cost from the sample is {cost} and the lowest cost from the sample is {lowest}')
+            print(f'The lowest cost to date is {lowest_to_date} corresponding to bit string {lowest_string_to_date} ')
+            print(f'and route {route_list}')
+            if verbose:
+                print(f'The gradient is {gradient}')
+        rots = rots - eta * gradient
+    return index_list, cost_list, lowest_list, gradient_list
+    
+def cost_func_evaluate(cost_fn, bc: QuantumCircuit, 
+                       shots: int = 1024, average_slice=1, verbose:bool=False) -> tuple:
+    """evaluate cost function
+    
+    Parameters
+    ----------
+    cost_fn: function
+        A function of a bit string evaluating a distance for that bit string
+    bc: QuantumCircuit
+        A quantum circuit with bound weights for which the energy is to be found
+    shots: int
+        The number of shots for which the quantum circuit is to be run
+    average_slice: float
+        average over this slice of the energy.  For example:
+        If average_slice = 1 then average over all energies.  
+        If average_slice = 0.2 then average over the bottom 20% of energies
+    verbose: bool
+        If true outputs more data for debugging
+    
+    Returns
+    -------
+    cost: float
+        The average cost evaluated
+    lowest: float
+        The lowest cost found
+    lowest_energy_bit_string: string
+        A list of the bits for the lowest energy bit string
+    """
+
+    sampler = SamplerV2()
+    job = sampler.run([bc])
+    results = job.result()
+    counts = results[0].data.meas.get_counts()
+    if verbose:
+        print(f'The counts directory is {counts}')
+    cost, lowest, lowest_energy_bit_string = find_stats(cost_fn, counts, shots, average_slice, verbose)
+    return(cost, lowest, lowest_energy_bit_string)
+
+def my_gradient(cost_fn, qc: QuantumCircuit, 
+                params: list, rots: list, s: float = 0.5, 
+                shots:  int=1024, average_slice: float=1, verbose: bool=False) -> list:
+    """calculate gradient for a quantum circuit with parameters and rotations
+    
+    Parameters
+    ----------
+    cost_fn: function
+        A function of a bit string evaluating an energy (distance) for that bit string
+    qc: QuantumCircuit
+        A quantum circuit for which the gradient is to be found, without the weights being bound
+    params: list
+        A list of parameters (the texts)
+    rots: list
+        The exact values for the parameters, which are rotations of quantum gates
+    s: float
+        Determines the rotation for evaluating the gradient
+    shots: int
+        The number of shots for which the quantum circuit is to be run in each estimation of a parameter point
+    verbose: bool
+        If True then more information is printed
+
+    Returns
+    -------
+    gradient:list
+        The gradient for each parameter
+    """
+    gradient = []
+    
+    new_rots = copy.deepcopy(rots)
+    for i, theta in enumerate(rots):
+        if verbose:
+            print(f'processing {i}th weight')
+            print(f'rot = {theta} i={i}')
+
+        new_rots[i] = theta + np.pi/(4*s)
+
+        if verbose:
+            print(f'New rots+ = {new_rots}')
+        bc = bind_weights(params, new_rots, qc)
+        cost_plus, _, _ = cost_func_evaluate(cost_fn, bc, shots, 
+                                             average_slice, verbose)
+
+        new_rots[i] = theta - np.pi/(4*s)
+        if verbose:
+            print(f'New rots- = {new_rots}')
+        bc = bind_weights(params, new_rots, qc)
+        cost_minus, _, _ = cost_func_evaluate(cost_fn, bc, shots, 
+                                              average_slice, verbose)
+
+        delta = s * (cost_plus - cost_minus)
+        if verbose:
+            print(f'cost+ = {cost_plus} cost- = {cost_minus}, delta = {delta}')
+        gradient.append(delta)
+
+    return gradient
+
+def define_parameters(qubits: int, mode: int=1) -> list:
+    """set up parameters and initialise text
+    
+    Parameters
+    ----------
+    qubits: int
+        The number of qubits in the circuit
+    mode: int
+        Controls setting the circuit up in different modes
+
+    Returns
+    -------
+    params: list
+        A list of parameters (the texts)
+
+    """
+    params = []
+    if mode in [1,2]:
+        num_params = 2 * qubits
+        for i in range(num_params):
+            text = "param " + str(i)
+            params.append(Parameter(text))
+        return params
+    else:   
+        raise Exception(f'Mode {mode} has not been coded for')
+
+def vqc_circuit(qubits: int, params: list, mode:int=1) -> QuantumCircuit:
+    """set up a variational quantum circuit
+
+    Parameters
+    ----------
+    qubits: int
+        The number of qubits in the circuit
+    params: list
+        A list of parameters (the texts)
+    mode: int
+        Controls setting the circuit up in different modes
+
+    Returns
+    -------
+    qc: Quantum Circuit
+        A quantum circuit without bound weights
+    
+    """
+
+    qc = QuantumCircuit(qubits)
+    if mode == 1:
+        for i in range(qubits):
+            qc.h(i)
+            qc.ry(params[i], i)
+            qc.rx(params[qubits+i], i)
+        for i in range(qubits):
+            if i < qubits-1:
+                qc.cx(i,i+1)
+            else:
+                qc.cx(i,0)
+                #ensure circuit is fully entangled
+    elif mode == 2:
+        for i in range(qubits):
+            qc.rx(params[i], i)
+        for i in range(qubits):
+                if i < qubits-1:
+                    qc.rxx(params[qubits+i], i, i+1,)
+                else:
+                    qc.rxx(params[qubits+i], i, 0,)
+                #ensure circuit is fully entangled
+    else:
+        raise Exception(f'Mode {mode} has not been coded for')
+    qc.measure_all()
+    return qc
+
+def create_initial_rotations(qubits: int, mode: int, bin_hot_start_list: list=[], 
+                             hot_start: bool=False) -> list:
+    """initialise parameters with random weights
+
+    Parameters
+    ----------
+    qubits: int
+        The number of qubits in the circuit
+    mode: int
+        Controls setting the circuit up in different modes
+    hot_start: bool
+        If true hot start values are used
+
+    Returns
+    -------
+    init_rots: list
+        initial rotations
+    
+    """
+    if mode in [1,2]:
+        param_num = 2 * qubits
+    else:
+        raise Exception(f'Mode {mode} is not yet coded')
+    if hot_start:
+        if mode in [1]:
+            raise Exception('Cannot use a hot start for mode {mode}')
+        init_rots = [0 for i in range(param_num)]
+        for i, item in enumerate(bin_hot_start_list):
+            if item == 1:
+                #init_rots[i] = np.pi
+                init_rots[qubits-i-1] = np.pi 
+                #need to reverse order because of qiskit convention
+    else:
+        init_rots= [random.random() * 2 * math.pi for i in range(param_num)]
+    return(init_rots)
+
+def bind_weights(params:list, rots:list, qc:QuantumCircuit) -> QuantumCircuit:
+    """bind parameters to rotations and return a bound quantum circuit
+
+    Parameters
+    ----------
+    params: list
+        A list of parameters (the texts)
+    rots: list
+        The exact values for the parameters, which are rotations of quantum gates
+    qc: Quantum Circuit
+        A quantum circuit without bound weights  
+
+    Returns
+    -------
+    bc: Quantum Circuit
+        A quantum circuit with including bound weights, ready to run an evaluation
+    """
+
+    binding_dict = {}
+    for i, rot in enumerate(rots):
+        binding_dict[str(params[i])] = rot
+    bc = qc.assign_parameters(binding_dict)
+    return(bc)    

@@ -1,5 +1,5 @@
 from qiskit.circuit import QuantumCircuit, QuantumRegister, Parameter
-from quantum_functions import bind_weights, my_gradient
+from helper_functions_tsp import my_gradient
 import numpy as np
 import pytest as py
 
@@ -20,7 +20,7 @@ def test_gradient_1():
     qc.measure_all()
     init_rots = [0]
     params = [a]
-    actual_results = my_gradient(my_cost_function1, qc, params, init_rots, np.pi/2)
+    actual_results = my_gradient(my_cost_function1, qc, params, init_rots)
     expected_results = [0]
 
     assert actual_results == py.approx(expected_results, abs=0.1)
@@ -34,7 +34,7 @@ def test_gradient_2():
     qc.measure_all()
     init_rots = [np.pi]
     params = [a]
-    actual_results = my_gradient(my_cost_function1, qc, params, init_rots, np.pi/2)
+    actual_results = my_gradient(my_cost_function1, qc, params, init_rots)
     expected_results = [0]
 
     assert actual_results == py.approx(expected_results, abs=0.1)
@@ -48,7 +48,7 @@ def test_gradient_3():
     qc.measure_all()
     init_rots = [np.pi/2]
     params = [a]
-    actual_results = my_gradient(my_cost_function1, qc, params, init_rots, np.pi/2)
+    actual_results = my_gradient(my_cost_function1, qc, params, init_rots)
     expected_results = [0.5]
 
     assert actual_results == py.approx(expected_results, abs=0.1)
@@ -66,7 +66,7 @@ def test_gradient_4():
     qc.measure_all() 
     init_rots = [np.pi / 4, np.pi / 2]
     params = [a, b]
-    actual_results = my_gradient(my_cost_function1, qc, params, init_rots, np.pi/2)
+    actual_results = my_gradient(my_cost_function1, qc, params, init_rots)
     expected_results = [-0.353, 0.0] #qiskit results
 
     assert actual_results == py.approx(expected_results, abs=0.1)

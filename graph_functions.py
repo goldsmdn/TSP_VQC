@@ -22,7 +22,8 @@ def cost_graph(filename: str, index_list: list, cost_list: list, lowest_list: li
     plt.savefig(filename)
     plt.show()
 
-def param_cost_graph(filename: str, x_list :list, cost_list :list, lowest_list: list, best: float):
+def param_cost_graph(filename: str, x_list :list, cost_list :list, 
+                     lowest_list: list,sliced_list: list, best: float):
     """plots a graph of the cost functions against the parameters"""
     length = len(cost_list)
     if length % 2 != 0:
@@ -34,29 +35,21 @@ def param_cost_graph(filename: str, x_list :list, cost_list :list, lowest_list: 
     #calculated points for best possible line
     x1 =  [0, x_list[-1]]
     y1 =  [best, best]
-    #xmin, xmax = 0, int(x_list[-1])
     ymin, ymax = int(best-1), int(best*1.5) 
-    #ygap = int((ymax-ymin)/4)
-    #xticks = [i for i in range(xmin, xmax, 1)]
-    #yticks = [i for i in range(ymin, ymax, ygap)]
 
     for count in range(length):
         if count < rows:
             i, j = count, 0
         else:
             i, j = count - rows, 1
-        #print(f'Plotting graph row = {i}, column = {j}')
         axs[i,j].plot(x1, y1, linewidth=1.0, color = 'black', label='Lowest possible')
         axs[i,j].step(x_list, lowest_list[i], linewidth=1.0, color = 'red', label='Lowest found')
-        axs[i,j].plot(x_list, cost_list[i], linewidth=1.0, label='Average')
+        axs[i,j].plot(x_list, cost_list[i], linewidth=1.0, color = 'blue', label='Average')
+        axs[i,j].plot(x_list, sliced_list[i], linewidth=1.0, color = 'orange', label='Sliced Average')
         axs[i,j].grid(axis='x', color='0.95')
         axs[i,j].axis(ymin=ymin, ymax=ymax)
         axs[i,j].set_xlabel('Gate rotation in Radians', fontsize=6)
         axs[i,j].set_ylabel('Energy (Distance)', fontsize=6)
-        #axs[i,j].set_xticks(xticks)
-        #axs[i,j].set_yticks(yticks)
-        #axs[i,j].tick_params(axis='both', which='major', labelsize=6)
-        #axs[i,j].tick_params(axis='both', which='minor', labelsize=6)
         axs[i,j].xaxis.set_tick_params(labelsize=7)
         axs[i,j].yaxis.set_tick_params(labelsize=7)
         title = f'Parameter {count}'
