@@ -483,15 +483,24 @@ def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bin) -> 
         result_list.append(int(total_binary_string[i]))
     return(result_list)
 
-def update_parameters_using_gradient(locations, iterations, print_frequency, params, 
-                                     rots, cost_fn, qc, shots, s, eta, 
-                                     average_slice, gray, verbose):
+def update_parameters_using_gradient(locations: int, iterations: int, 
+                                     print_frequency: int, params: list, 
+                                     rots: list, cost_fn, 
+                                     qc: QuantumCircuit, shots: int, 
+                                     s: float, eta: float, 
+                                     average_slice: float, 
+                                     gray: bool, verbose: bool
+                                     ):
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
     average_list = []
     for i in range(iterations):
         bc = bind_weights(params, rots, qc)
-        cost, lowest, lowest_energy_bit_string = cost_func_evaluate(cost_fn, bc, shots, average_slice, verbose)
+        cost, lowest, lowest_energy_bit_string = cost_func_evaluate(cost_fn, bc, 
+                                                                    shots, average_slice, 
+                                                                    verbose)
+        #cost is the top-sliced energy
         average, _ , _ = cost_func_evaluate(cost_fn, bc, shots, average_slice=1, verbose=verbose)
+        #average is the average energy with no top slicing
         if verbose:
             print(f'cost, lowest, lowest_energy_bit_string = {cost}, {lowest}, {lowest_energy_bit_string}')
         if i == 0:
@@ -512,11 +521,17 @@ def update_parameters_using_gradient(locations, iterations, print_frequency, par
         cost_list.append(cost)
         lowest_list.append(lowest_to_date)
         average_list.append(average)
-        gradient = np.array(my_gradient(cost_fn, qc, params, rots, s, shots))
+        gradient = np.array(my_gradient(cost_fn, qc, params, rots, s, shots,
+                                        average_slice=average_slice,
+                                        verbose=False
+                                        )
+                            )
         gradient_list.append(gradient)
         if i % print_frequency == 0:
-            print(f'For iteration {i} the average cost from the sample is {cost} and the lowest cost from the sample is {lowest}')
-            print(f'The lowest cost to date is {lowest_to_date} corresponding to bit string {lowest_string_to_date} ')
+            print(f'For iteration {i} using the bottom {average_slice*100} percent of the results')
+            print(f'The average cost from the sample is {average:.3f} and the top-sliced average is {cost:.3f}')
+            print(f'The lowest cost from the sample is {lowest:.3f}')
+            print(f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date} ')
             print(f'and route {route_list}')
             if verbose:
                 print(f'The gradient is {gradient}')
@@ -524,7 +539,8 @@ def update_parameters_using_gradient(locations, iterations, print_frequency, par
     return index_list, cost_list, lowest_list, gradient_list, average_list
     
 def cost_func_evaluate(cost_fn, bc: QuantumCircuit, 
-                       shots: int = 1024, average_slice=1, verbose:bool=False) -> tuple:
+                       shots: int = 1024, average_slice=1, 
+                       verbose:bool=False) -> tuple:
     """evaluate cost function
     
     Parameters
@@ -580,6 +596,9 @@ def my_gradient(cost_fn, qc: QuantumCircuit,
         Determines the rotation for evaluating the gradient
     shots: int
         The number of shots for which the quantum circuit is to be run in each estimation of a parameter point
+    average_slice: float
+        Controls the amount of data to be included in the average.  
+        For example, 0.2 means that the lowest 20% of distances found is included in the average.
     verbose: bool
         If True then more information is printed
 
