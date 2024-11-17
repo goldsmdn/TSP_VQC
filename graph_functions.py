@@ -12,26 +12,6 @@ def parameter_graph(filename: str, index_list: list, gradient_list:list, legend:
     plt.savefig(filename)
     plt.show()
 
-#def cost_graph(filename: str, 
-#               index_list: list, 
-#               av_list: list, 
-#               lowest_list: list, 
-#               sliced_list: list, 
-#               title: str=''):
-#    """plots a graph of the cost function by interation"""
-#    plt.style.use('seaborn-v0_8-colorblind')
-#    plt.plot(index_list, sliced_list, linewidth=1.0, color='orange', label='Sliced Average')
-#    plt.plot(index_list, av_list, linewidth=1.0, color='blue', label='Average of all points')
-#    plt.step(index_list, lowest_list, linewidth=1.0, color = 'red', label='Lowest')
-#    plt.grid(axis='x', color='0.95')
-#    plt.xlabel('Iteration')
-#    plt.ylabel('Energy (distance)')
-#    plt.title(title)
-#    plt.legend(loc='upper right')
-#    plt.tight_layout()
-#    plt.savefig(filename)
-#    plt.show()
-
 def find_size(cost_list):
     """find the number of subplots"""
     length = len(cost_list)
@@ -87,52 +67,14 @@ def cost_graph_multi(filename: str,
         axs[i,j].plot(x1, y1, linewidth=1.0, color = 'black', label='Lowest known')
         axs[i,j].grid(axis='x', color='0.95')
         axs[i,j].axis(ymin=ymin, ymax=ymax)
-        #axs[i,j].set_xlabel('Iterations', fontsize=6)
         axs[i,j].set_xlabel(x_label, fontsize=6)
         axs[i,j].set_ylabel('Energy (Distance)', fontsize=6)
         axs[i,j].xaxis.set_tick_params(labelsize=7)
         axs[i,j].yaxis.set_tick_params(labelsize=7)
         if sub_title != '':
             sub_title_full = sub_title + f'{parameter_list[count]}'
-            #axs[i,j].set_title(f'Results with slicing ratio {parameter[count]}', fontsize=6)
             axs[i,j].set_title(sub_title_full, fontsize=6)
         axs[i,j].legend(fontsize=6, loc='upper right')
     fig.tight_layout()
     fig.savefig(filename)
     fig.show()
-
-#def param_cost_graph(filename: str, 
-#                     x_list :list, 
-#                     av_list :list, 
-#                     lowest_list: list,
-#                     sliced_list: list,
-#                     best: float,
-#                     main_title: str=''
-#                     ):
-#    """plots a graph of the cost functions against the parameters"""
-#    length, rows, columns = find_size(av_list)
-#    fig, axs = plt.subplots(rows, columns, figsize=(8,8))
-#    fig.suptitle(main_title)
-#    #calculated points for best possible line
-#    x1, y1, ymin, ymax = find_graph_statistics(x_list, best)
-#    for count in range(length):
-#        if count < rows:
-#            i, j = count, 0
-#        else:
-#            i, j = count - rows, 1
-#        axs[i,j].plot(x1, y1, linewidth=1.0, color = 'black', label='Lowest possible')
-#        axs[i,j].step(x_list, lowest_list[count], linewidth=1.0, color = 'red', label='Lowest found')
-#        axs[i,j].plot(x_list, av_list[count], linewidth=1.0, color = 'blue', label='Average')
-#        axs[i,j].plot(x_list, sliced_list[count], linewidth=1.0, color = 'orange', label='Sliced Average')
-#        axs[i,j].grid(axis='x', color='0.95')
-#        axs[i,j].axis(ymin=ymin, ymax=ymax)
-#        axs[i,j].set_xlabel('Gate rotation in Radians', fontsize=6)
-#        axs[i,j].set_ylabel('Energy (Distance)', fontsize=6)
-#        axs[i,j].xaxis.set_tick_params(labelsize=7)
-#        axs[i,j].yaxis.set_tick_params(labelsize=7)
-#        title = f'Parameter {count}'
-#        axs[i,j].set_title(title, fontsize=6)
-#        axs[i,j].legend(fontsize=6, loc='upper right')
-#    fig.tight_layout()
-#    fig.savefig(filename)
-#    fig.show()
