@@ -61,7 +61,7 @@ def cost_graph_multi(filename: str,
 
     for count in range(length):
         i, j = find_i_j(count, rows)
-        axs[i,j].step(x_list, av_list[count], linewidth=1.0, color = 'blue', label='Average')
+        axs[i,j].plot(x_list, av_list[count], linewidth=1.0, color = 'blue', label='Average')
         axs[i,j].plot(x_list, sliced_list[count], linewidth=1.0, color = 'orange', label='Sliced Average')
         axs[i,j].plot(x_list, lowest_list[count], linewidth=1.0, color = 'red', label='Lowest found')
         axs[i,j].plot(x1, y1, linewidth=1.0, color = 'black', label='Lowest known')
@@ -77,4 +77,4 @@ def cost_graph_multi(filename: str,
         axs[i,j].legend(fontsize=6, loc='upper right')
     fig.tight_layout()
     fig.savefig(filename)
-    fig.show()
+    #fig.show()
