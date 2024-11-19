@@ -479,18 +479,59 @@ def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bin) -> 
         result_list.append(int(total_binary_string[i]))
     return(result_list)
 
+def validate_gradient_type(gradient_type):
+    """check that the gradient type is valid"""
+    allowed_types = ['parameter_shift', 'SPSA']
+    if gradient_type not in allowed_types:
+        raise Exception (f'Gradient type {gradient_type} is not coded for')
+
 def update_parameters_using_gradient(locations: int, iterations: int, 
                                      print_frequency: int, params: list, 
-                                     rots: list, cost_fn, 
+                                     rots: np.array, cost_fn, 
                                      qc: QuantumCircuit, shots: int, 
                                      s: float, eta: float, 
                                      average_slice: float, 
-                                     gray: bool, verbose: bool
-                                     ):
+                                     gray: bool, 
+                                     verbose: bool, 
+                                     gradient_type: str='parameter_shift',
+                                     alpha: float = 0.602,
+                                     gamma:float = 0.101,
+                                     c:float=1e-2,     
+                                     ) -> list:
+    """updates parameters using SPSA or parameter shift gradients"""
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
-    parameter_list = []
-    average_list = []
-    for i in range(iterations):
+    parameter_list, average_list = [], []
+    #allowed_types = ['parameter_shift', 'SPSA']
+    #if gradient_type not in allowed_types:
+    #    raise Exception (f'Gradient type {gradient_type} is not coded for')
+    validate_gradient_type(gradient_type)
+
+    if gradient_type == 'SPSA':
+        define_parameters
+        # A is <= 10% of the number of iterations normally, but here the number of iterations is lower.
+        A = 50
+    # order of magnitude of first gradients
+        if verbose:
+            print(f'c= {c}')
+
+        abs_gradient = np.abs(my_gradient(cost_fn, qc, params, rots, s=s, 
+                                          shots=shots, average_slice=average_slice,
+                                          verbose=verbose,
+                                          gradient_type='SPSA', ck=c,
+                                          )
+                              )
+        
+        magnitude_g0 = abs_gradient.mean()
+        if verbose:
+            print(f'abs_gradient {abs_gradient}, magnitude_g0 {magnitude_g0}')
+            print(f'magnitude_g0, {magnitude_g0}')
+ 
+    # 2 is an estimative of the initial changes of the parameters,
+    # different changes might need other choices
+        #a = 2*((A+1)**alpha)/magnitude_g0
+        a = 0.01*((A+1)**alpha)/magnitude_g0
+
+    for i in range(0, iterations):
         bc = bind_weights(params, rots, qc)
         cost, lowest, lowest_energy_bit_string = cost_func_evaluate(cost_fn, bc, 
                                                                     shots, average_slice, 
@@ -519,12 +560,29 @@ def update_parameters_using_gradient(locations: int, iterations: int,
         lowest_list.append(lowest_to_date)
         average_list.append(average)
         parameter_list.append(rots)
-        gradient = np.array(my_gradient(cost_fn, qc, params, rots, s, shots,
-                                        average_slice=average_slice,
-                                        verbose=False
-                                        )
-                            )
-        gradient_list.append(gradient)
+        if gradient_type == 'parameter_shift':
+            gradient = my_gradient(cost_fn, qc, params, rots, s, shots,
+                                   average_slice=average_slice,
+                                   verbose=verbose, gradient_type='parameter_shift'
+                                   )
+            
+            rots = rots - eta * gradient
+        elif gradient_type == 'SPSA':
+            ak = a/((i+1+A)**(alpha))
+            ck = c/((i+1)**(gamma))
+            gradient = my_gradient(cost_fn, qc, params, rots, s, shots,
+                                   average_slice=average_slice,
+                                   verbose=verbose, gradient_type='SPSA',
+                                   ck=ck
+                                   )
+            if verbose:
+                print(f'For iteration {i} a = {a}, A = {A}, ak = {ak}, ck = {ck}')
+                print(f'rots = {rots}')
+                print(f'gradient = {gradient}')
+            rots = rots - ak * gradient
+        else:
+            raise Exception(f'Error found when calculating gradient. {gradient_type} is not an allowed gradient type')
+        gradient_list.append(gradient.tolist())
         if i % print_frequency == 0:  
             print(f'For iteration {i} using the bottom {average_slice*100} percent of the results')
             print(f'The average cost from the sample is {average:.3f} and the top-sliced average is {cost:.3f}')
@@ -534,7 +592,6 @@ def update_parameters_using_gradient(locations: int, iterations: int,
             if verbose:
                 print(f'The gradient is {gradient}')
                 print(f'The rotations are {rots}')
-        rots = rots - eta * gradient
     return index_list, cost_list, lowest_list, gradient_list, average_list, parameter_list
     
 def cost_func_evaluate(cost_fn, bc: QuantumCircuit, 
@@ -577,8 +634,11 @@ def cost_func_evaluate(cost_fn, bc: QuantumCircuit,
     return(cost, lowest, lowest_energy_bit_string)
 
 def my_gradient(cost_fn, qc: QuantumCircuit, 
-                params: list, rots: list, s: float = 0.5, 
-                shots:  int=1024, average_slice: float=1, verbose: bool=False) -> list:
+                params: list, rots: np.array, s: float=0.5, 
+                shots:  int=1024, average_slice: float=1, verbose: bool=False,
+                gradient_type: str='parameter_shift',
+                ck:float=1e-2,     
+                ) -> list:
     """calculate gradient for a quantum circuit with parameters and rotations
     
     Parameters
@@ -600,41 +660,84 @@ def my_gradient(cost_fn, qc: QuantumCircuit,
         For example, 0.2 means that the lowest 20% of distances found is included in the average.
     verbose: bool
         If True then more information is printed
+    gradient_type: str
+        controls the optimiser to be used.
+        if 'parameter shift'  uses analytical expression
+        if 'SPSA' uses a stochastical method
 
     Returns
     -------
-    gradient:list
+    gradient:array
         The gradient for each parameter
     """
-    gradient = []
-    
-    new_rots = copy.deepcopy(rots)
-    for i, theta in enumerate(rots):
-        if verbose:
-            print(f'processing {i}th weight')
-            print(f'rot = {theta} i={i}')
+    new_rots = copy.deepcopy(rots)  
+    if gradient_type == 'parameter_shift':
+        gradient_list = []
+        for i, theta in enumerate(rots):
+            if verbose:
+                print(f'processing {i}th weight')
+                print(f'rot = {theta} i={i}')
 
-        new_rots[i] = theta + np.pi/(4*s)
+            new_rots[i] = theta + np.pi/(4*s)
 
+            if verbose:
+                print(f'New rots+ = {new_rots}')
+            bc = bind_weights(params, new_rots, qc)
+            cost_plus, _, _ = cost_func_evaluate(cost_fn, bc, shots, 
+                                                average_slice, verbose)
+            
+            new_rots[i] = theta - np.pi/(4*s)
+            if verbose:
+                print(f'New rots- = {new_rots}')
+            bc = bind_weights(params, new_rots, qc)
+            cost_minus, _, _ = cost_func_evaluate(cost_fn, bc, shots, 
+                                                average_slice, verbose)
+
+            delta = s * (cost_plus - cost_minus)
+
+            if verbose:
+                print(f'cost+ = {cost_plus} cost- = {cost_minus}, delta = {delta}')
+            gradient_list.append(delta)
+        gradient_array = np.array(gradient_list)
+
+    elif gradient_type == 'SPSA':
+        # number of parameters
+        length = len(rots)
+        # bernoulli-like distribution
+        deltak = np.random.choice([-1, 1], size=length)
+        
+        # simultaneous perturbations
+        ck_deltak = ck * deltak
+        new_rots = rots + ck_deltak
         if verbose:
             print(f'New rots+ = {new_rots}')
+           
+        # gradient approximation]
+        if verbose:
+            print(f'params = {params}, new_rots = {new_rots}')
         bc = bind_weights(params, new_rots, qc)
         cost_plus, _, _ = cost_func_evaluate(cost_fn, bc, shots, 
                                              average_slice, verbose)
 
-        new_rots[i] = theta - np.pi/(4*s)
+        new_rots = rots - ck_deltak
         if verbose:
             print(f'New rots- = {new_rots}')
+
         bc = bind_weights(params, new_rots, qc)
         cost_minus, _, _ = cost_func_evaluate(cost_fn, bc, shots, 
-                                              average_slice, verbose)
+                                             average_slice, verbose)
 
-        delta = s * (cost_plus - cost_minus)
+        delta = cost_plus - cost_minus
+        gradient_array = delta / (2 * ck_deltak)
+        #need to return an array to match parameter shift
         if verbose:
-            print(f'cost+ = {cost_plus} cost- = {cost_minus}, delta = {delta}')
-        gradient.append(delta)
-
-    return gradient
+            print(f'cost+ = {cost_plus} cost- = {cost_minus}, delta = {delta}') 
+            print(f'gradient_array = {gradient_array}') 
+            print(f'deltak = {deltak}')
+            print(f'ck_deltak = {ck_deltak}')
+    else:
+        raise Exception(f'Gradient type {gradient_type} is not an allowed choice')
+    return gradient_array
 
 def define_parameters(qubits: int, mode: int=1) -> list:
     """set up parameters and initialise text
@@ -729,7 +832,7 @@ def create_initial_rotations(qubits: int, mode: int, bin_hot_start_list: list=[]
 
     Returns
     -------
-    init_rots: list
+    init_rots: array
         initial rotations
     
     """
@@ -743,12 +846,12 @@ def create_initial_rotations(qubits: int, mode: int, bin_hot_start_list: list=[]
         init_rots = [0 for i in range(param_num)]
         for i, item in enumerate(bin_hot_start_list):
             if item == 1:
-                #init_rots[i] = np.pi
                 init_rots[qubits-i-1] = np.pi 
                 #need to reverse order because of qiskit convention
     else:
         init_rots= [random.random() * 2 * math.pi for i in range(param_num)]
-    return(init_rots)
+    init_rots_array = np.array(init_rots)
+    return(init_rots_array)
 
 def bind_weights(params:list, rots:list, qc:QuantumCircuit) -> QuantumCircuit:
     """bind parameters to rotations and return a bound quantum circuit
@@ -772,4 +875,4 @@ def bind_weights(params:list, rots:list, qc:QuantumCircuit) -> QuantumCircuit:
     for i, rot in enumerate(rots):
         binding_dict[str(params[i])] = rot
     bc = qc.assign_parameters(binding_dict)
-    return(bc)    
+    return(bc)
