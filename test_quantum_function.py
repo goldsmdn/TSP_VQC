@@ -23,7 +23,8 @@ def test_gradient_1():
     init_rots = [0]
     params = [a]
     actual_results = my_gradient(my_cost_function1, qc, params, init_rots)
-    expected_results = [0]
+    print(actual_results)
+    expected_results = np.array([0])
 
     assert actual_results == py.approx(expected_results, abs=0.1)
 
@@ -37,7 +38,7 @@ def test_gradient_2():
     init_rots = [np.pi]
     params = [a]
     actual_results = my_gradient(my_cost_function1, qc, params, init_rots)
-    expected_results = [0]
+    expected_results = np.array([0])
 
     assert actual_results == py.approx(expected_results, abs=0.1)
 
@@ -51,7 +52,7 @@ def test_gradient_3():
     init_rots = [np.pi/2]
     params = [a]
     actual_results = my_gradient(my_cost_function1, qc, params, init_rots)
-    expected_results = [0.5]
+    expected_results = np.array([0.5])
 
     assert actual_results == py.approx(expected_results, abs=0.1)
 
@@ -59,7 +60,6 @@ def test_gradient_4():
     """Test a circuit with two parameters and compare to qiskit results"""
     a = Parameter('a')
     b = Parameter('b')
-
     q = QuantumRegister(1)
     qc = QuantumCircuit(q)
     qc.h(q)
@@ -69,7 +69,7 @@ def test_gradient_4():
     init_rots = [np.pi / 4, np.pi / 2]
     params = [a, b]
     actual_results = my_gradient(my_cost_function1, qc, params, init_rots)
-    expected_results = [-0.353, 0.0] #qiskit results
+    expected_results = np.array([-0.353, 0.0]) #qiskit results
     assert actual_results == py.approx(expected_results, abs=0.1)
 
 def test_simple_circuit():
