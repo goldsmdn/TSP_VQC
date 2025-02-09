@@ -7,8 +7,10 @@ import pytest as py
 def my_cost_function1(bit_string_list):
     """A simple cost function for testing"""
     if bit_string_list == [0]:
+    #if bit_string_list == ['0']:
         return 0 
     elif bit_string_list == [1]:
+    #elif bit_string_list == ['1']:
         return 1
     else:
         raise Exception('Invalid bit string list')

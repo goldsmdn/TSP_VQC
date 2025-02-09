@@ -9,6 +9,12 @@ from qiskit import QuantumCircuit
 from qiskit_aer.primitives import SamplerV2
 import random
 
+from collections import OrderedDict
+from functools import wraps
+from typing import Callable # Import Callable for type hinting
+
+from modules.config import VERBOSE
+
 def read_index(filename: str, encoding: str) -> dict:
     """Reads CSV file and returns and dictionary
      
@@ -139,9 +145,6 @@ def convert_binary_list_to_integer(binary_list: list, gray:bool=False)->int:
     result : int
         The integer represented by the concatenated binary string
     """
-
-    #if reverse:
-    #   binary_list.reverse()
     string = ''
     for item in binary_list:
         string += str(item)
@@ -234,7 +237,58 @@ def find_total_distance(int_list: list, locs: int, distance_array :np.array)-> f
         total_distance += distance
     return total_distance
 
-def cost_fn_fact(locs: int, distance_array: np.array, gray: bool=False, verbose: bool=False):
+def list_to_bit_string(bit_string_list):
+    if type(bit_string_list) != list:
+        raise Exception(f'{bit_string_list} is not a list')
+    bit_string = ''
+    for i in range(len(bit_string_list)):
+        bit_string += str(bit_string_list[i])
+    return(bit_string)
+
+def bit_string_to_list(bit_string):
+    if type(bit_string) != str:
+        raise Exception(f'{bit_string} is not a string')
+    bit_string_list = [int(bit) for bit in bit_string]
+    #for i in range(len(bit_string)):
+    #    bit_string_list += int(bit_string[i]) 
+    return(bit_string_list)
+
+def lru_cache_unhashable(orig_func, maxsize=10_000):
+    """
+    A decorator that caches results for functions with unhashable arguments.
+    Uses an OrderedDict to implement a simple LRU eviction policy.
+    """
+    from modules.config import VERBOSE
+    cache = OrderedDict()
+    @wraps(orig_func)
+    def wrapper(bit_string_list):
+        """if there is a key in the cache use it, 
+        otherwise, compute and add to the cache"""
+        key = list_to_bit_string(bit_string_list)
+        if key in cache:
+            if VERBOSE:
+                print(f'Reading cache with key = {key}')
+                print(f'Cache is now {cache}')
+            # Mark this key as recently used
+            cache.move_to_end(key)
+            result =  cache[key]
+        else:
+            result = orig_func(bit_string_list)
+            cache[key] = result # Store the result in the cache
+            if VERBOSE:
+                print(f'Updating cache with key = {key}')
+            # Evict the least recently used item if the cache is too big
+            if len(cache) > maxsize:
+                cache.popitem(last=False)
+                if VERBOSE:
+                    print('popping item from cache')
+        return result
+    return wrapper
+
+def cost_fn_fact(locs: int, 
+                 distance_array: np.array, 
+                 gray: bool=False, 
+                 verbose: bool=False)-> Callable[[list], int]:
     """ returns a function
 
     Parameters
@@ -254,6 +308,7 @@ def cost_fn_fact(locs: int, distance_array: np.array, gray: bool=False, verbose:
         A function of a bit string evaluating a distance for that bit string
     
     """
+    @lru_cache_unhashable
     def cost_fn(bit_string):
         """returns the value of the objective function for a bit_string"""
         full_list_of_locs = convert_bit_string_to_cycle(bit_string, locs, gray)
@@ -345,7 +400,8 @@ def find_stats(cost_fn, counts: dict, shots: int,
     if slicing:
         energy_dict = {}
     for key, count in counts.items():
-        bit_list = [int(bits) for bits in key]
+        bit_list = bit_string_to_list(key)
+        #bit_list = [int(bits) for bits in key]
         energy = cost_fn(bit_list)
         if slicing:
             #if already in dictionary increment
@@ -477,6 +533,7 @@ def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bin) -> 
             initial_list.pop(index)
     for i in range(len(total_binary_string)):
         result_list.append(int(total_binary_string[i]))
+        #result_list.append(str(total_binary_string[i]))
     return(result_list)
 
 def validate_gradient_type(gradient_type):
@@ -501,9 +558,6 @@ def update_parameters_using_gradient(locations: int, iterations: int,
     """updates parameters using SPSA or parameter shift gradients"""
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
     parameter_list, average_list = [], []
-    #allowed_types = ['parameter_shift', 'SPSA']
-    #if gradient_type not in allowed_types:
-    #    raise Exception (f'Gradient type {gradient_type} is not coded for')
     validate_gradient_type(gradient_type)
 
     if gradient_type == 'SPSA':
@@ -529,6 +583,9 @@ def update_parameters_using_gradient(locations: int, iterations: int,
     # 2 is an estimative of the initial changes of the parameters,
     # different changes might need other choices
         #a = 2*((A+1)**alpha)/magnitude_g0
+        #if magnitude_g0 == 0:
+        #    a = 999
+        #else:
         a = 0.01*((A+1)**alpha)/magnitude_g0
 
     for i in range(0, iterations):
@@ -584,8 +641,8 @@ def update_parameters_using_gradient(locations: int, iterations: int,
             raise Exception(f'Error found when calculating gradient. {gradient_type} is not an allowed gradient type')
         gradient_list.append(gradient.tolist())
         if i % print_frequency == 0:  
-            print(f'For iteration {i} using the bottom {average_slice*100} percent of the results')
-            print(f'The average cost from the sample is {average:.3f} and the top-sliced average is {cost:.3f}')
+            print(f'For iteration {i} using the best {average_slice*100} percent of the results')
+            print(f'The average cost from the sample is {average:.3f} and the top-sliced average of the best results is {cost:.3f}')
             print(f'The lowest cost from the sample is {lowest:.3f}')
             print(f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date} ')
             print(f'and route {route_list}')
@@ -597,7 +654,7 @@ def update_parameters_using_gradient(locations: int, iterations: int,
 def cost_func_evaluate(cost_fn, bc: QuantumCircuit, 
                        shots: int = 1024, average_slice=1, 
                        verbose:bool=False) -> tuple:
-    """evaluate cost function
+    """evaluate cost function on a quantum computer
     
     Parameters
     ----------
@@ -846,6 +903,7 @@ def create_initial_rotations(qubits: int, mode: int, bin_hot_start_list: list=[]
         init_rots = [0 for i in range(param_num)]
         for i, item in enumerate(bin_hot_start_list):
             if item == 1:
+            #if item == '1':
                 init_rots[qubits-i-1] = np.pi 
                 #need to reverse order because of qiskit convention
     else:

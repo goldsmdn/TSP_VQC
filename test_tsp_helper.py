@@ -6,6 +6,7 @@ from helper_functions_tsp import check_loc_list, augment_loc_list, find_total_di
 from helper_functions_tsp import find_problem_size, convert_bit_string_to_cycle
 from helper_functions_tsp import find_stats, cost_fn_fact, hot_start
 from helper_functions_tsp import hot_start_list_to_string
+from helper_functions_tsp import bit_string_to_list, list_to_bit_string
 
 def test_wrong_shape():
     """Checks that the correct error message is thrown for an array of the wrong shape """
@@ -89,6 +90,7 @@ def test_distance_4():
 
 def test_list_00():
     """Check conversion of list [0,0]"""
+    #binary_list = ['0','0']
     binary_list = [0,0]
     expected_result = 0
     result = convert_binary_list_to_integer(binary_list )
@@ -97,6 +99,7 @@ def test_list_00():
 def test_list_00_gray():
     """Check conversion of list [0,0] with gray codes"""
     gray = True
+    #binary_list = ['0','0']
     binary_list = [0,0]
     expected_result = 0
     result = convert_binary_list_to_integer(binary_list, gray)
@@ -104,6 +107,7 @@ def test_list_00_gray():
 
 def test_list_01():
     """Check conversion of list [0,1]"""
+    #binary_list = ['0','1']
     binary_list = [0,1]
     expected_result = 1
     result = convert_binary_list_to_integer(binary_list)
@@ -112,6 +116,7 @@ def test_list_01():
 def test_list_01_gray():
     """Check conversion of list [0,1] with gray codes"""
     gray = True
+    #binary_list = ['0','1']
     binary_list = [0,1]
     expected_result = 1
     result = convert_binary_list_to_integer(binary_list, gray)
@@ -119,6 +124,7 @@ def test_list_01_gray():
 
 def test_list_10():
     """Check conversion of list [1,0]"""
+    #binary_list = ['1','0']
     binary_list = [1,0]
     expected_result = 2
     result = convert_binary_list_to_integer(binary_list)
@@ -127,6 +133,7 @@ def test_list_10():
 def test_list_10_gray():
     """Check conversion of list [1,0] with gray codes"""
     gray = True
+    #binary_list = ['1','0']
     binary_list = [1,0]
     expected_result = 3
     result = convert_binary_list_to_integer(binary_list, gray)
@@ -134,6 +141,7 @@ def test_list_10_gray():
 
 def test_list_11():
     """Check conversion of list [1,1]"""
+    #binary_list = ['1','1']
     binary_list = [1,1]
     expected_result = 3
     result = convert_binary_list_to_integer(binary_list)
@@ -142,6 +150,7 @@ def test_list_11():
 def test_list_11_gray():
     """Check conversion of list [1,1]"""
     gray = True
+    #binary_list = ['1','1'
     binary_list = [1,1]
     expected_result = 2
     result = convert_binary_list_to_integer(binary_list, gray)
@@ -149,6 +158,7 @@ def test_list_11_gray():
 
 def test_list_1110():
     """Check conversion of list [1,1,1,0]"""
+    #binary_list = ['1','1','1','0']
     binary_list = [1,1,1,0]
     expected_result = 14
     result = convert_binary_list_to_integer(binary_list)
@@ -157,6 +167,7 @@ def test_list_1110():
 def test_list_1110_gray():
     """Check conversion of list [1,1,1,0] with gray codes"""
     gray = True
+    #binary_list = ['1','1','1','0']
     binary_list = [1,1,1,0]
     expected_result = 11
     result = convert_binary_list_to_integer(binary_list, gray)
@@ -165,6 +176,7 @@ def test_list_1110_gray():
 def test_list_1000_gray():
     """Check conversion of list [1,0,0,0] with gray codes"""
     gray = True
+    #binary_list = ['1','0','0','0']
     binary_list = [1,0,0,0]
     expected_result = 15
     result = convert_binary_list_to_integer(binary_list, gray)
@@ -268,7 +280,8 @@ def test_find_problem_size_26():
 def test_convert_bit_string_to_cycle_000():
     """example for 4 locations"""
     locs = 4
-    bit_string = [0, 0, 0] 
+    #bit_string = ['0', '0', '0'] 
+    bit_string = [0, 0, 0]
     expected_result = [0, 1, 2, 3]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
@@ -276,7 +289,8 @@ def test_convert_bit_string_to_cycle_000():
 def test_convert_bit_string_to_cycle_001():
     """example for 4 locations"""
     locs = 4
-    bit_string = [0, 0, 1] 
+    #bit_string = ['0', '0', '1'] 
+    bit_string = [0, 0, 1]
     expected_result = [0, 1, 3, 2]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
@@ -284,7 +298,8 @@ def test_convert_bit_string_to_cycle_001():
 def test_convert_bit_string_to_cycle_010():
     """example for 4 locations"""
     locs = 4
-    bit_string = [0, 1, 0] 
+    #bit_string = ['0', '1', '0'] 
+    bit_string = [0, 1, 0]
     expected_result = [0, 2, 1, 3]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
@@ -292,7 +307,8 @@ def test_convert_bit_string_to_cycle_010():
 def test_convert_bit_string_to_cycle_011():
     """example for 4 locations"""
     locs = 4
-    bit_string = [0, 1, 1] 
+    #bit_string = ['0', '1', '1'] 
+    bit_string = [0, 1, 1]
     expected_result = [0, 2, 3, 1]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
@@ -300,7 +316,8 @@ def test_convert_bit_string_to_cycle_011():
 def test_convert_bit_string_to_cycle_100():
     """example for 4 locations"""
     locs = 4
-    bit_string = [1, 0, 0] 
+    #bit_string = ['1', '0', '0'] 
+    bit_string = [1, 0, 0]
     expected_result = [0, 3, 1, 2]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
@@ -308,7 +325,8 @@ def test_convert_bit_string_to_cycle_100():
 def test_convert_bit_string_to_cycle_101():
     """example for 4 locations"""
     locs = 4
-    bit_string = [1, 0, 1] 
+    #bit_string = ['1', '0', '1'] 
+    bit_string = [1, 0, 1]
     expected_result = [0, 3, 2, 1]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
@@ -316,7 +334,8 @@ def test_convert_bit_string_to_cycle_101():
 def test_convert_bit_string_to_cycle_110():
     """example for 4 locations"""
     locs = 4
-    bit_string = [1, 1, 0] 
+    #bit_string = ['1', '1', '0'] 
+    bit_string = [1, 1, 0]
     expected_result = [0, 1, 2, 3]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
@@ -324,7 +343,8 @@ def test_convert_bit_string_to_cycle_110():
 def test_convert_bit_string_to_cycle_111():
     """example for 4 locations"""
     locs = 4
-    bit_string = [1, 1, 1] 
+    #bit_string = ['1', '1', '1'] 
+    bit_string = [1, 1, 1]
     expected_result = [0, 1, 3, 2]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
@@ -333,7 +353,8 @@ def test_convert_bit_string_to_cycle_111_gray():
     """example for 4 locations"""
     locs = 4
     gray = True
-    bit_string = [1, 1, 1] 
+    #bit_string = ['1', '1', '1'] 
+    bit_string = [1, 1, 1]
     expected_result = [0, 3, 2, 1]
     result = convert_bit_string_to_cycle(bit_string, locs, gray)
     assert expected_result == result
@@ -341,6 +362,7 @@ def test_convert_bit_string_to_cycle_111_gray():
 def test_convert_bit_string_to_cycle_3():
     """example for 5 locations"""
     locs = 5
+    #bit_string = ['1', '1', '1', '1', '1'] 
     bit_string = [1, 1, 1, 1, 1] 
     expected_result = [0, 4, 1, 3, 2]
     result = convert_bit_string_to_cycle(bit_string, locs)
@@ -349,6 +371,7 @@ def test_convert_bit_string_to_cycle_3():
 def test_convert_bit_string_to_cycle_4():
     """example for 5 locations"""
     locs = 5
+    #bit_string = ['1', '0', '1', '1', '1'] 
     bit_string = [1, 0, 1, 1, 1] 
     expected_result = [0, 3, 1, 4, 2]
     result = convert_bit_string_to_cycle(bit_string, locs)
@@ -359,6 +382,18 @@ def test_convert_bit_string_to_cycle_15_gray():
     locs = 15
     gray = True
     expected_result = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    # bit_string = ['1', '0', '1', '1', \
+    #              '1' ,'0' ,'1', '0', \
+    #             '1', '1', '1', '0', \
+    #              '1', '1', '1', '1', \
+    #              '1', '1', '0', '1', \
+    #              '1', '1', '0', '0', \
+    #              '1', '0', '0', \
+    #              '1', '0', '1', \
+    #              '1', '1', '1', \
+    #              '1', '1', '0', \
+    #              '1', '0', '1', '1', '1']
+    
     bit_string = [1, 0, 1, 1, \
                   1 ,0 ,1, 0, \
                   1, 1, 1, 0, \
@@ -379,6 +414,18 @@ def test_convert_bit_string_to_cycle_15():
     locs = 15
     gray = False
     expected_result = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    #bit_string = ['1', '1', '0', '1', \
+    #              '1' ,'1' ,'0', '0', \
+    #              '1', '0', '1', '1', \
+    #              '1', '0', '1', '0', \
+    #              '1', '0', '0', '1', \
+    #              '1', '0', '0', '0', \
+    #              '1', '1', '1', \
+    #              '1', '1', '0', \
+    #              '1', '0', '1', \
+    #              '1', '0', '0', \
+    #              '1', '1', '1', '0', '1']
+
     bit_string = [1, 1, 0, 1, \
                   1 ,1 ,0, 0, \
                   1, 0, 1, 1, \
@@ -568,6 +615,7 @@ def test_hot_start_list_to_string_101():
     hot_start_list = [0, 3, 2, 1]
     actual_result = hot_start_list_to_string(hot_start_list, LOCATIONS, GRAY)
     expected_result = [1, 0, 1]
+    #expected_result = ['1', '0', '1']
     assert expected_result == actual_result
 
 def test_hot_start_list_to_string_101_gray():
@@ -577,6 +625,7 @@ def test_hot_start_list_to_string_101_gray():
     hot_start_list = [0, 3, 2, 1]
     actual_result = hot_start_list_to_string(hot_start_list, LOCATIONS, GRAY)
     expected_result = [1, 1, 1]
+    #expected_result = ['1', '1', '1']
     assert expected_result == actual_result
 
 def test_hot_start_list_to_string_15_locs_no_gray():
@@ -585,6 +634,18 @@ def test_hot_start_list_to_string_15_locs_no_gray():
     GRAY = False
     hot_start_list = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
     actual_result = hot_start_list_to_string(hot_start_list, LOCATIONS, GRAY)
+    #expected_result = ['1', '1', '0', '1', \
+    #                   '1' ,'1' ,'0', '0', \
+    #                  '1', '0', '1', '1', \
+    #                   '1', '0', '1', '0', \
+    #                   '1', '0', '0', '1', \
+    #                  '1', '0', '0', '0', \
+    #                   '1', '1', '1', \
+    #                   '1', '1', '0', \
+    #                   '1', '0', '1', \
+    #                   '1', '0', '0', \
+    #                   '1', '1', '1', '0', '1']
+
     expected_result = [1, 1, 0, 1, \
                        1 ,1 ,0, 0, \
                        1, 0, 1, 1, \
@@ -605,6 +666,18 @@ def test_hot_start_list_to_string_15_locs_gray():
     GRAY = True
     hot_start_list = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
     actual_result = hot_start_list_to_string(hot_start_list, LOCATIONS, GRAY)
+    #expected_result = ['1', '0', '1', '1', \
+    #                   '1' ,'0' ,'1', '0', \
+    #                   '1', '1', '1', '0', \
+    #                   '1', '1', '1', '1', \
+    #                   '1', '1', '0', '1', \
+    #                   '1', '1', '0', '0', \
+    #                   '1', '0', '0', \
+    #                   '1', '0', '1', \
+    #                   '1', '1', '1', \
+    #                   '1', '1', '0', \
+    #                   '1', '0', '1', '1', '1']
+
     expected_result = [1, 0, 1, 1, \
                        1 ,0 ,1, 0, \
                        1, 1, 1, 0, \
@@ -617,4 +690,23 @@ def test_hot_start_list_to_string_15_locs_gray():
                        1, 1, 0, \
                        1, 0, 1, 1, 1]
 
+
+    assert expected_result == actual_result
+
+def test_bit_string_to_list():
+    bit_string = '010101'
+    expected_result = [0, 1, 0, 1, 0, 1]
+    actual_result = bit_string_to_list(bit_string)
+    assert expected_result == actual_result
+
+def test_bit_string_list_to_bit_string():
+    bit_string_list = [0, 1, 0, 1, 0, 1]
+    expected_result = '010101'
+    actual_result = list_to_bit_string(bit_string_list)
+    assert expected_result == actual_result
+
+def test_bit_string_list_to_bit_string2():
+    bit_string_list = [0, 1, 1, 1, 0, 1]
+    expected_result = bit_string_list
+    actual_result = bit_string_to_list(list_to_bit_string(bit_string_list))
     assert expected_result == actual_result
