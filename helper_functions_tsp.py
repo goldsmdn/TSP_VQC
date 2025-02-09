@@ -400,8 +400,8 @@ def find_stats(cost_fn, counts: dict, shots: int,
     if slicing:
         energy_dict = {}
     for key, count in counts.items():
-        bit_list = bit_string_to_list(key)
-        #bit_list = [int(bits) for bits in key]
+        #bit_list = bit_string_to_list(key)
+        bit_list = [int(bits) for bits in key]
         energy = cost_fn(bit_list)
         if slicing:
             #if already in dictionary increment

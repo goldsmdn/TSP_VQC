@@ -18,7 +18,7 @@ PRINT_FREQUENCY = 100               # how often results are printed out
 GRAY = True                         # Use Gray codes
 HOT_START = True                    # Make a hot start
 VERBOSE = False                     # controls how much is printed
-GRADIENT_TYPE = 'parameter_shift'   # controls the optimiser used
+GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
                                     # 'parameter_shift' - default
                                     # 'SPSA' is a stochastic gradient descent
 
