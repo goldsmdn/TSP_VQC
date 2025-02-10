@@ -17,7 +17,7 @@ ITERATIONS = 50                     # updates, or iterations
 PRINT_FREQUENCY = 5                 # how often results are printed out
 GRAY = True                         # Use Gray codes
 HOT_START = True                    # Make a hot start
-VERBOSE = False                     # controls how much is printed
+VERBOSE = True                      # controls how much is printed
 GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
                                     # 'parameter_shift' - default
                                     # 'SPSA' is a stochastic gradient descent
@@ -27,3 +27,5 @@ ETA = 0.02                          # eta - learning rate for parameter shift
 ALPHA = 0.602                       # constant that controls the learning rate for SPSA decays
 GAMMA = 0.101                       # constant that determines how quickly the SPSA perturbation decays
 C = np.pi/10                        # initial CK for SPSA
+
+CACHE_MAX_SIZE = 100_000             #maximum size of the cache.

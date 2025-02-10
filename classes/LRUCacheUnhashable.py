@@ -1,0 +1,74 @@
+#LRUCacheUnhashable
+#own implementation of LRU cache to handle unhashable lists
+
+from functools import wraps
+from collections import OrderedDict
+from typing import Callable
+from modules.config import VERBOSE
+
+class LRUCacheUnhashable:
+    """
+    A decorator class that caches results for functions with unhashable arguments.
+    Uses an OrderedDict to implement a simple LRU eviction policy.
+    """
+    def __init__(self, orig_func=None, maxsize=8):
+        """initialisation"""
+        self.orig_func = orig_func
+        self.maxsize = maxsize
+        self.cache = OrderedDict()
+        self.cache_hit = 0
+        self.cache_miss = 0
+
+    def __call__(self, bit_string_list):
+        """call wrapper"""
+        key = self.list_to_bit_string(bit_string_list)
+        print(f'cache = {self.cache}')
+        if key in self.cache:
+            self.cache_hit += 1
+            if VERBOSE:
+                print(f'Reading cache with key = {key}')
+                print(f'Cache is now {self.cache}')
+            self.cache.move_to_end(key)
+            result = self.cache[key]
+        else:
+            self.cache_miss += 1
+            result = self.orig_func(bit_string_list)
+            self.cache[key] = result # store the result in the cache
+            if VERBOSE:
+                print(f'Updating cache with key = {key}')
+            if len(self.cache) > self.maxsize:
+                item = self.cache.popitem(last=False)
+                if VERBOSE:
+                    print(f'Evicting item {item} from cache')
+            print(f'Cache is now {self.cache}')
+        return result
+
+    def list_to_bit_string(self, bit_string_list):
+        """convert list if format [0,1] to bit string eg '01'"""
+        if type(bit_string_list) != list:
+            raise Exception(f'{bit_string_list} is not a list')
+        #bit_string = ''
+        #for i in range(len(bit_string_list)):
+        #    bit_string += str(bit_string_list[i])
+        #return(bit_string)
+        return ''.join(map(str, bit_string_list))
+
+    def print_cache(self):
+        """print cache"""
+        print(f'cache = {self.cache}')
+
+    def print_cache_stats(self):
+        """print cache stats"""
+        print(f'Items in cache = {len(self.cache)}')
+        print(f'cache_hit = {self.cache_hit}')
+        print(f'cache_miss = {self.cache_miss}')
+        if self.cache_hit + self.cache_miss == 0:
+            print(f'The cache is empty - no stats available')
+        else:
+            self.cache_hit_rate = self.cache_hit/(self.cache_hit+self.cache_miss)
+            print(f'cache_hit_rate = {self.cache_hit_rate:.3f}')
+
+    def clear_cache(self):
+        """clear cache"""
+        self.cache = OrderedDict()
+        self.cache_hit, self.cache_miss = 0, 0

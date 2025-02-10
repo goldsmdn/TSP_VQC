@@ -7,7 +7,8 @@ from modules.helper_functions_tsp import check_loc_list, augment_loc_list, find_
 from modules.helper_functions_tsp import find_problem_size, convert_bit_string_to_cycle
 from modules.helper_functions_tsp import find_stats, cost_fn_fact, hot_start
 from modules.helper_functions_tsp import hot_start_list_to_string
-from modules.helper_functions_tsp import bit_string_to_list, list_to_bit_string
+#from modules.helper_functions_tsp import bit_string_to_list, list_to_bit_string
+from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
 def test_wrong_shape():
     """Checks that the correct error message is thrown for an array of the wrong shape """
@@ -624,20 +625,14 @@ def test_hot_start_list_to_string_15_locs_gray():
 
     assert expected_result == actual_result
 
-def test_bit_string_to_list():
-    bit_string = '010101'
-    expected_result = [0, 1, 0, 1, 0, 1]
-    actual_result = bit_string_to_list(bit_string)
-    assert expected_result == actual_result
-
 def test_bit_string_list_to_bit_string():
+    LOCATIONS = 5
+    filename = 'data/five_d.txt'
+    distance_array = np.genfromtxt(filename)
+    GRAY = True
     bit_string_list = [0, 1, 0, 1, 0, 1]
     expected_result = '010101'
-    actual_result = list_to_bit_string(bit_string_list)
-    assert expected_result == actual_result
-
-def test_bit_string_list_to_bit_string2():
-    bit_string_list = [0, 1, 1, 1, 0, 1]
-    expected_result = bit_string_list
-    actual_result = bit_string_to_list(list_to_bit_string(bit_string_list))
+    cost_fn = cost_fn_fact(LOCATIONS, distance_array, gray=GRAY, verbose=True)
+    obj = LRUCacheUnhashable(cost_fn)
+    actual_result = obj.list_to_bit_string(bit_string_list)
     assert expected_result == actual_result
