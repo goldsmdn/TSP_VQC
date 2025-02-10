@@ -2,7 +2,7 @@ import numpy as np
 CONTROL_FILE = 'control/control_parameters.csv'
 ENCODING = 'utf-8-sig'              # Encoding of csv file
 GRAPH_DIRECTORY = 'graphs/'         # location of graph directory
-LOCATIONS = 11                      # number of locations to be visited
+LOCATIONS = 5                       # number of locations to be visited
 ROTATIONS = 100                     # number of rotations sampled in parameter graphs
 SHOTS = 1024                        # shots used for each call of the quantum circuit
 AVERAGE_SLICE = 1                   # controls the amount of data to be included in the average.  
@@ -13,8 +13,8 @@ AVERAGE_SLICE = 1                   # controls the amount of data to be included
 MODE = 2                            # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 2 - rxgate, XX gates -can be used with Hot Start
 
-ITERATIONS = 500                    # updates, or iterations
-PRINT_FREQUENCY = 100               # how often results are printed out
+ITERATIONS = 50                     # updates, or iterations
+PRINT_FREQUENCY = 5                 # how often results are printed out
 GRAY = True                         # Use Gray codes
 HOT_START = True                    # Make a hot start
 VERBOSE = False                     # controls how much is printed

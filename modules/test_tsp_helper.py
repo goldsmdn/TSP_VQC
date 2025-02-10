@@ -1,12 +1,21 @@
 import numpy as np
 from pytest import raises
-from helper_functions_tsp import validate_distance_array, find_distance
-from helper_functions_tsp import convert_binary_list_to_integer
-from helper_functions_tsp import check_loc_list, augment_loc_list, find_total_distance
-from helper_functions_tsp import find_problem_size, convert_bit_string_to_cycle
-from helper_functions_tsp import find_stats, cost_fn_fact, hot_start
-from helper_functions_tsp import hot_start_list_to_string
-from helper_functions_tsp import bit_string_to_list, list_to_bit_string
+
+from modules.helper_functions_tsp import validate_distance_array, find_distance
+from modules.helper_functions_tsp import convert_binary_list_to_integer
+from modules.helper_functions_tsp import check_loc_list, augment_loc_list, find_total_distance
+from modules.helper_functions_tsp import find_problem_size, convert_bit_string_to_cycle
+from modules.helper_functions_tsp import find_stats, cost_fn_fact, hot_start
+from modules.helper_functions_tsp import hot_start_list_to_string
+from modules.helper_functions_tsp import bit_string_to_list, list_to_bit_string
+
+#from helper_functions_tsp import validate_distance_array, find_distance
+#from helper_functions_tsp import convert_binary_list_to_integer
+#from helper_functions_tsp import check_loc_list, augment_loc_list, find_total_distance
+#from helper_functions_tsp import find_problem_size, convert_bit_string_to_cycle
+#from helper_functions_tsp import find_stats, cost_fn_fact, hot_start
+#from helper_functions_tsp import hot_start_list_to_string
+#from helper_functions_tsp import bit_string_to_list, list_to_bit_string
 
 def test_wrong_shape():
     """Checks that the correct error message is thrown for an array of the wrong shape """

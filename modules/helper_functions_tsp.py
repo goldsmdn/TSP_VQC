@@ -258,7 +258,6 @@ def lru_cache_unhashable(orig_func, maxsize=10_000):
     A decorator that caches results for functions with unhashable arguments.
     Uses an OrderedDict to implement a simple LRU eviction policy.
     """
-    from modules.config import VERBOSE
     cache = OrderedDict()
     @wraps(orig_func)
     def wrapper(bit_string_list):
