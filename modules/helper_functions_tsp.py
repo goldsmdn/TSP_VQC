@@ -249,8 +249,6 @@ def bit_string_to_list(bit_string):
     if type(bit_string) != str:
         raise Exception(f'{bit_string} is not a string')
     bit_string_list = [int(bit) for bit in bit_string]
-    #for i in range(len(bit_string)):
-    #    bit_string_list += int(bit_string[i]) 
     return(bit_string_list)
 
 def lru_cache_unhashable(orig_func, maxsize=10_000):
@@ -902,7 +900,6 @@ def create_initial_rotations(qubits: int, mode: int, bin_hot_start_list: list=[]
         init_rots = [0 for i in range(param_num)]
         for i, item in enumerate(bin_hot_start_list):
             if item == 1:
-            #if item == '1':
                 init_rots[qubits-i-1] = np.pi 
                 #need to reverse order because of qiskit convention
     else:
