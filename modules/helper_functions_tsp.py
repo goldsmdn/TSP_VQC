@@ -14,6 +14,7 @@ from functools import wraps
 from typing import Callable # Import Callable for type hinting
 
 from modules.config import VERBOSE
+from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
 def read_index(filename: str, encoding: str) -> dict:
     """Reads CSV file and returns and dictionary
@@ -237,50 +238,50 @@ def find_total_distance(int_list: list, locs: int, distance_array :np.array)-> f
         total_distance += distance
     return total_distance
 
-def list_to_bit_string(bit_string_list):
-    if type(bit_string_list) != list:
-        raise Exception(f'{bit_string_list} is not a list')
-    bit_string = ''
-    for i in range(len(bit_string_list)):
-        bit_string += str(bit_string_list[i])
-    return(bit_string)
+#def list_to_bit_string(bit_string_list):
+#    if type(bit_string_list) != list:
+#        raise Exception(f'{bit_string_list} is not a list')
+#    bit_string = ''
+#    for i in range(len(bit_string_list)):
+#        bit_string += str(bit_string_list[i])
+#    return(bit_string)
 
-def bit_string_to_list(bit_string):
-    if type(bit_string) != str:
-        raise Exception(f'{bit_string} is not a string')
-    bit_string_list = [int(bit) for bit in bit_string]
-    return(bit_string_list)
+#def bit_string_to_list(bit_string):
+#    if type(bit_string) != str:
+#        raise Exception(f'{bit_string} is not a string')
+#    bit_string_list = [int(bit) for bit in bit_string]
+ #   return(bit_string_list)
 
-def lru_cache_unhashable(orig_func, maxsize=10_000):
-    """
-    A decorator that caches results for functions with unhashable arguments.
-    Uses an OrderedDict to implement a simple LRU eviction policy.
-    """
-    cache = OrderedDict()
-    @wraps(orig_func)
-    def wrapper(bit_string_list):
-        """if there is a key in the cache use it, 
-        otherwise, compute and add to the cache"""
-        key = list_to_bit_string(bit_string_list)
-        if key in cache:
-            if VERBOSE:
-                print(f'Reading cache with key = {key}')
-                print(f'Cache is now {cache}')
-            # Mark this key as recently used
-            cache.move_to_end(key)
-            result =  cache[key]
-        else:
-            result = orig_func(bit_string_list)
-            cache[key] = result # Store the result in the cache
-            if VERBOSE:
-                print(f'Updating cache with key = {key}')
-            # Evict the least recently used item if the cache is too big
-            if len(cache) > maxsize:
-                cache.popitem(last=False)
-                if VERBOSE:
-                    print('popping item from cache')
-        return result
-    return wrapper
+#def lru_cache_unhashable(orig_func, maxsize=10_000):
+#    """
+#    A decorator that caches results for functions with unhashable arguments.
+#    Uses an OrderedDict to implement a simple LRU eviction policy.
+#    """
+#    cache = OrderedDict()
+#    @wraps(orig_func)
+#    def wrapper(bit_string_list):
+#        """if there is a key in the cache use it, 
+#        otherwise, compute and add to the cache"""
+#        key = list_to_bit_string(bit_string_list)
+#        if key in cache:
+#            if VERBOSE:
+#                print(f'Reading cache with key = {key}')
+#                print(f'Cache is now {cache}')
+#            # Mark this key as recently used
+#            cache.move_to_end(key)
+#            result =  cache[key]
+#        else:
+#            result = orig_func(bit_string_list)
+#            cache[key] = result # Store the result in the cache
+#            if VERBOSE:
+#                print(f'Updating cache with key = {key}')
+#            # Evict the least recently used item if the cache is too big
+#            if len(cache) > maxsize:
+#                cache.popitem(last=False)
+#                if VERBOSE:
+#                    print('popping item from cache')
+#        return result
+#    return wrapper
 
 def cost_fn_fact(locs: int, 
                  distance_array: np.array, 
@@ -305,7 +306,7 @@ def cost_fn_fact(locs: int,
         A function of a bit string evaluating a distance for that bit string
     
     """
-    @lru_cache_unhashable
+    @LRUCacheUnhashable
     def cost_fn(bit_string):
         """returns the value of the objective function for a bit_string"""
         full_list_of_locs = convert_bit_string_to_cycle(bit_string, locs, gray)
@@ -580,10 +581,10 @@ def update_parameters_using_gradient(locations: int, iterations: int,
     # 2 is an estimative of the initial changes of the parameters,
     # different changes might need other choices
         #a = 2*((A+1)**alpha)/magnitude_g0
-        #if magnitude_g0 == 0:
-        #    a = 999
-        #else:
-        a = 0.01*((A+1)**alpha)/magnitude_g0
+        if magnitude_g0 == 0:
+            a = 999
+        else:
+            a = 0.01*((A+1)**alpha)/magnitude_g0
 
     for i in range(0, iterations):
         bc = bind_weights(params, rots, qc)
