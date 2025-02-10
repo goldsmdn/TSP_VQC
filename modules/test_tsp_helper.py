@@ -601,7 +601,6 @@ def test_hot_start_list_to_string_15_locs_no_gray():
                        1, 0, 1, \
                        1, 0, 0, \
                        1, 1, 1, 0, 1]
-
     assert expected_result == actual_result
 
 def test_hot_start_list_to_string_15_locs_gray():
@@ -621,18 +620,11 @@ def test_hot_start_list_to_string_15_locs_gray():
                        1, 1, 1, \
                        1, 1, 0, \
                        1, 0, 1, 1, 1]
-
-
     assert expected_result == actual_result
 
 def test_bit_string_list_to_bit_string():
-    LOCATIONS = 5
-    filename = 'data/five_d.txt'
-    distance_array = np.genfromtxt(filename)
-    GRAY = True
     bit_string_list = [0, 1, 0, 1, 0, 1]
     expected_result = '010101'
-    cost_fn = cost_fn_fact(LOCATIONS, distance_array, gray=GRAY, verbose=True)
-    obj = LRUCacheUnhashable(cost_fn)
+    obj = LRUCacheUnhashable()
     actual_result = obj.list_to_bit_string(bit_string_list)
     assert expected_result == actual_result

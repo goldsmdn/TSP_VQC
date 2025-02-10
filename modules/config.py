@@ -17,7 +17,7 @@ ITERATIONS = 50                     # updates, or iterations
 PRINT_FREQUENCY = 5                 # how often results are printed out
 GRAY = True                         # Use Gray codes
 HOT_START = True                    # Make a hot start
-VERBOSE = True                      # controls how much is printed
+VERBOSE = False                     # controls how much is printed
 GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
                                     # 'parameter_shift' - default
                                     # 'SPSA' is a stochastic gradient descent

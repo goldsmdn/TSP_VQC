@@ -1,17 +1,15 @@
 #LRUCacheUnhashable
 #own implementation of LRU cache to handle unhashable lists
 
-from functools import wraps
 from collections import OrderedDict
-from typing import Callable
-from modules.config import VERBOSE
+from modules.config import VERBOSE, CACHE_MAX_SIZE
 
 class LRUCacheUnhashable:
     """
     A decorator class that caches results for functions with unhashable arguments.
     Uses an OrderedDict to implement a simple LRU eviction policy.
     """
-    def __init__(self, orig_func=None, maxsize=8):
+    def __init__(self, orig_func=None, maxsize=CACHE_MAX_SIZE):
         """initialisation"""
         self.orig_func = orig_func
         self.maxsize = maxsize
@@ -43,14 +41,11 @@ class LRUCacheUnhashable:
             print(f'Cache is now {self.cache}')
         return result
 
-    def list_to_bit_string(self, bit_string_list):
+    @staticmethod
+    def list_to_bit_string(bit_string_list):
         """convert list if format [0,1] to bit string eg '01'"""
         if type(bit_string_list) != list:
             raise Exception(f'{bit_string_list} is not a list')
-        #bit_string = ''
-        #for i in range(len(bit_string_list)):
-        #    bit_string += str(bit_string_list[i])
-        #return(bit_string)
         return ''.join(map(str, bit_string_list))
 
     def print_cache(self):
