@@ -20,7 +20,6 @@ class LRUCacheUnhashable:
     def __call__(self, bit_string_list):
         """call wrapper"""
         key = self.list_to_bit_string(bit_string_list)
-        print(f'cache = {self.cache}')
         if key in self.cache:
             self.cache_hit += 1
             if VERBOSE:
@@ -38,7 +37,7 @@ class LRUCacheUnhashable:
                 item = self.cache.popitem(last=False)
                 if VERBOSE:
                     print(f'Evicting item {item} from cache')
-            print(f'Cache is now {self.cache}')
+                    print(f'Cache is now {self.cache}')
         return result
 
     @staticmethod
