@@ -2,7 +2,7 @@ import numpy as np
 CONTROL_FILE = 'control/control_parameters.csv'
 ENCODING = 'utf-8-sig'              # Encoding of csv file
 GRAPH_DIRECTORY = 'graphs/'         # location of graph directory
-LOCATIONS = 5                       # number of locations to be visited
+LOCATIONS = 11                      # number of locations to be visited
 ROTATIONS = 100                     # number of rotations sampled in parameter graphs
 SHOTS = 1024                        # shots used for each call of the quantum circuit
 AVERAGE_SLICE = 1                   # controls the amount of data to be included in the average.  
@@ -29,3 +29,19 @@ GAMMA = 0.101                       # constant that determines how quickly the S
 C = np.pi/10                        # initial CK for SPSA
 
 CACHE_MAX_SIZE = 100_000             #maximum size of the cache.
+
+DATA_SOURCES = {  4 : {'file' : 'data/four_d.txt', 'best' : 21},
+                  5 : {'file' : 'data/five_d.txt', 'best' : 19},
+                 11 : {'file' : 'data/dg11_d.txt', 'best' : 253},
+                 15 : {'file' : 'data/p01_d.txt',  'best' : 291},
+                 17 : {'file' : 'data/gr17_d.txt', 'best' : 2085},
+                 26 : {'file' : 'data/fri26_d.txt', 'best' : 699},
+                 42 : {'file' : 'data/dantzig42_d.txt', 'best' : 33_523},
+                }
+
+CHANGE_EACH_PARAMETER = False        # Iterate through each parameter in the circuit
+PLOT_PARAMETER_EVALUATION = False    # Plot the evaluation of each parameter
+CHANGE_TOP_SLICE = True              # Change the %age of results to use when calculating the gradient 
+
+SLICES = [1]                         # Slices to use when calculating the gradient
+                                     #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
