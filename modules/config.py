@@ -16,7 +16,7 @@ MODE = 2                            # MODE = 1 - rxgate, rygate, cnot gates
 ITERATIONS = 50                     # updates, or iterations
 PRINT_FREQUENCY = 5                 # how often results are printed out
 GRAY = True                         # Use Gray codes
-HOT_START = True                    # Make a hot start
+HOT_START = False                   # Make a hot start
 VERBOSE = False                     # controls how much is printed
 GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
                                     # 'parameter_shift' - default
@@ -28,7 +28,7 @@ ALPHA = 0.602                       # constant that controls the learning rate f
 GAMMA = 0.101                       # constant that determines how quickly the SPSA perturbation decays
 C = np.pi/10                        # initial CK for SPSA
 
-CACHE_MAX_SIZE = 100_000             #maximum size of the cache.
+CACHE_MAX_SIZE = 500_000             #maximum size of the cache.
 
 DATA_SOURCES = {  4 : {'file' : 'data/four_d.txt', 'best' : 21},
                   5 : {'file' : 'data/five_d.txt', 'best' : 19},
@@ -45,3 +45,5 @@ CHANGE_TOP_SLICE = True              # Change the %age of results to use when ca
 
 SLICES = [1]                         # Slices to use when calculating the gradient
                                      #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
+                                 
+DECODING_FORMULATION = 'original'         # 'original' or 'new' - new is forumlation from paper

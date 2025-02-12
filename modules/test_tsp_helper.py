@@ -249,21 +249,28 @@ def test_find_total_distance():
 def test_find_problem_size_4():
     """check problem size for 4 locations"""
     locations = 4
-    expected_result = (2,3)
+    expected_result = 3
     result = find_problem_size(locations)
     assert expected_result == result
 
-def test_find_problem_size_5():
+def test_find_problem_size_4_new():
+    """check problem size for 4 locations"""
+    locations = 4
+    expected_result = 5
+    result = find_problem_size(locations, 'new')
+    assert expected_result == result
+
+def test_find_problem_size_5_new():
     """check problem size for 5 locations"""
     locations = 5
-    expected_result = (2,5)
-    result = find_problem_size(locations)
+    expected_result = 7
+    result = find_problem_size(locations, 'new')
     assert expected_result == result
 
 def test_find_problem_size_26():
     """check problem size for 26 locations"""
     locations = 26
-    expected_result = (5,94)
+    expected_result = 94
     result = find_problem_size(locations)
     assert expected_result == result
 
@@ -398,6 +405,15 @@ def test_convert_bit_string_to_cycle_15():
     result = convert_bit_string_to_cycle(bit_string, locs, gray)
     assert expected_result == result 
   
+def test_convert_bit_string_to_cycle_00010__not_gray():
+    """example for 4 locations"""
+    locs = 4
+    gray = False
+    bit_string = [0, 0, 0, 1, 0]
+    expected_result = [0, 2, 1, 3]
+    result = convert_bit_string_to_cycle(bit_string, locs, gray, method='new')
+    assert expected_result == result
+
 def test_find_average():
     """test find_stats in average mode"""
     counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
