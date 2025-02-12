@@ -1,6 +1,8 @@
 from qiskit.circuit import QuantumCircuit, QuantumRegister, Parameter
-from modules.helper_functions_tsp import vqc_circuit, cost_func_evaluate
-from modules.helper_functions_tsp import my_gradient, cost_fn_fact
+
+from modules.helper_functions_tsp import (
+    vqc_circuit, cost_func_evaluate, my_gradient, cost_fn_fact)
+
 import numpy as np
 import pytest as py
 

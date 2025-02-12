@@ -1,13 +1,12 @@
 import numpy as np
 from pytest import raises
 
-from modules.helper_functions_tsp import validate_distance_array, find_distance
-from modules.helper_functions_tsp import convert_binary_list_to_integer
-from modules.helper_functions_tsp import check_loc_list, augment_loc_list, find_total_distance
-from modules.helper_functions_tsp import find_problem_size, convert_bit_string_to_cycle
-from modules.helper_functions_tsp import find_stats, cost_fn_fact, hot_start
-from modules.helper_functions_tsp import hot_start_list_to_string
-#from modules.helper_functions_tsp import bit_string_to_list, list_to_bit_string
+from modules.helper_functions_tsp import(
+    validate_distance_array, find_distance, convert_binary_list_to_integer, 
+    check_loc_list, augment_loc_list, find_total_distance, find_problem_size,
+    convert_bit_string_to_cycle, find_stats, cost_fn_fact, hot_start,
+    hot_start_list_to_string)
+
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
 def test_wrong_shape():
