@@ -2,19 +2,15 @@ import numpy as np
 CONTROL_FILE = 'control/control_parameters.csv'
 ENCODING = 'utf-8-sig'              # Encoding of csv file
 GRAPH_DIRECTORY = 'graphs/'         # location of graph directory
-LOCATIONS = 11                      # number of locations to be visited
+LOCATIONS = 5                       # number of locations to be visited
 ROTATIONS = 100                     # number of rotations sampled in parameter graphs
 SHOTS = 1024                        # shots used for each call of the quantum circuit
-AVERAGE_SLICE = 1                   # controls the amount of data to be included in the average.  
-                                    # Default  = 1 - all data
-                                    # For example, 0.2 means that the lowest 20% 
-                                    # of distances found is included in the average.
 
 MODE = 2                            # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 2 - rxgate, XX gates -can be used with Hot Start
 
-ITERATIONS = 250                    # updates, or iterations
-PRINT_FREQUENCY = 5                 # how often results are printed out
+ITERATIONS = 50                     # updates, or iterations
+PRINT_FREQUENCY = 10                # how often results are printed out
 GRAY = True                         # Use Gray codes
 HOT_START = True                    # Make a hot start
 VERBOSE = False                     # controls how much is printed
@@ -27,6 +23,7 @@ ETA = 0.02                          # eta - learning rate for parameter shift
 ALPHA = 0.602                       # constant that controls the learning rate for SPSA decays
 GAMMA = 0.101                       # constant that determines how quickly the SPSA perturbation decays
 C = np.pi/10                        # initial CK for SPSA
+BIG_A = 50                          # A for SPSA
 
 CACHE_MAX_SIZE = 500_000             #maximum size of the cache.
 
@@ -39,11 +36,13 @@ DATA_SOURCES = {  4 : {'file' : 'data/four_d.txt', 'best' : 21},
                  42 : {'file' : 'data/dantzig42_d.txt', 'best' : 33_523},
                 }
 
-CHANGE_EACH_PARAMETER = False        # Iterate through each parameter in the circuit
-PLOT_PARAMETER_EVALUATION = False    # Plot the evaluation of each parameter
-CHANGE_TOP_SLICE = True              # Change the %age of results to use when calculating the gradient 
+CHANGE_EACH_PARAMETER = True        # Iterate through each parameter in the circuit
+PLOT_PARAMETER_EVALUATION = True    # Plot the evaluation of each parameter
 
-SLICES = [1]                         # Slices to use when calculating the gradient
-                                     #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
+SLICES = [1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05]                      
+                                    # Slices to use when calculating the gradient
+                                    #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
+                                    # For example, 0.2 means that the best 20% 
+                                    # of distances found is included in the average.
                                  
-DECODING_FORMULATION = 'new'         # 'original' or 'new' - new is forumlation from paper
+DECODING_FORMULATION = 'new'        # 'original' or 'new' - new is forumlation from paper

@@ -7,7 +7,7 @@ from modules.helper_functions_tsp import(
     check_loc_list, augment_loc_list, find_total_distance, find_problem_size,
     convert_bit_string_to_cycle, find_stats, cost_fn_fact, hot_start,
     hot_start_list_to_string, convert_integer_to_binary_list,
-    convert_binary_list_to_integer)
+    convert_binary_list_to_integer, find_run_stats)
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
@@ -702,4 +702,17 @@ def test_bit_string_cycle_conversion_orig():
         cycle = convert_bit_string_to_cycle(binary_list, locs, gray=gray, method=method)
         new_binary_list = hot_start_list_to_string(cycle, locs, gray=gray, method=method)
         actual_result.append(new_binary_list)
+    assert expected_result == actual_result
+
+
+def test_lowest_list1():
+    test_list = [100, 90, 80, 80]
+    expected_result = (80, 2)
+    actual_result = find_run_stats(test_list)
+    assert expected_result == actual_result
+
+def test_lowest_list2():
+    test_list = [100, 100, 100, 100]
+    expected_result = (100, 0)
+    actual_result = find_run_stats(test_list)
     assert expected_result == actual_result

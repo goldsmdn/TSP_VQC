@@ -608,7 +608,8 @@ def update_parameters_using_gradient(locations: int, iterations: int,
                                      gradient_type: str='parameter_shift',
                                      alpha: float = 0.602,
                                      gamma:float = 0.101,
-                                     c:float=1e-2,   
+                                     c:float = 1e-2,   
+                                     big_a:int = 50,
                                      method: str='original'  
                                      ) -> list:
     """updates parameters using SPSA or parameter shift gradients"""
@@ -617,9 +618,9 @@ def update_parameters_using_gradient(locations: int, iterations: int,
     validate_gradient_type(gradient_type)
 
     if gradient_type == 'SPSA':
-        define_parameters
+        #define_parameters
         # A is <= 10% of the number of iterations normally, but here the number of iterations is lower.
-        A = 50
+        #A = 50
     # order of magnitude of first gradients
         if verbose:
             print(f'c= {c}')
@@ -627,7 +628,7 @@ def update_parameters_using_gradient(locations: int, iterations: int,
         abs_gradient = np.abs(my_gradient(cost_fn, qc, params, rots, s=s, 
                                           shots=shots, average_slice=average_slice,
                                           verbose=verbose,
-                                          gradient_type='SPSA', ck=c,
+                                          gradient_type='SPSA', ck=c
                                           )
                               )
         
@@ -639,10 +640,11 @@ def update_parameters_using_gradient(locations: int, iterations: int,
     # 2 is an estimative of the initial changes of the parameters,
     # different changes might need other choices
         #a = 2*((A+1)**alpha)/magnitude_g0
+        #big_a is <= 10% of the number of iterations normally, but here the number of iterations is lower.
         if magnitude_g0 == 0:
             a = 999
         else:
-            a = 0.01*((A+1)**alpha)/magnitude_g0
+            a = 0.01*((big_a+1)**alpha)/magnitude_g0
 
     for i in range(0, iterations):
         bc = bind_weights(params, rots, qc)
@@ -681,7 +683,7 @@ def update_parameters_using_gradient(locations: int, iterations: int,
             
             rots = rots - eta * gradient
         elif gradient_type == 'SPSA':
-            ak = a/((i+1+A)**(alpha))
+            ak = a/((i+1+big_a)**(alpha))
             ck = c/((i+1)**(gamma))
             gradient = my_gradient(cost_fn, qc, params, rots, s, shots,
                                    average_slice=average_slice,
@@ -689,7 +691,7 @@ def update_parameters_using_gradient(locations: int, iterations: int,
                                    ck=ck
                                    )
             if verbose:
-                print(f'For iteration {i} a = {a}, A = {A}, ak = {ak}, ck = {ck}')
+                print(f'For iteration {i} a = {a}, A = {big_a}, ak = {ak}, ck = {ck}')
                 print(f'rots = {rots}')
                 print(f'gradient = {gradient}')
             rots = rots - ak * gradient
@@ -705,7 +707,7 @@ def update_parameters_using_gradient(locations: int, iterations: int,
             if verbose:
                 print(f'The gradient is {gradient}')
                 print(f'The rotations are {rots}')
-    return index_list, cost_list, lowest_list, gradient_list, average_list, parameter_list
+    return index_list, cost_list, lowest_list, gradient_list, average_list, parameter_list, 
     
 def cost_func_evaluate(cost_fn, bc: QuantumCircuit, 
                        shots: int = 1024, average_slice=1, 
@@ -989,3 +991,30 @@ def bind_weights(params:list, rots:list, qc:QuantumCircuit) -> QuantumCircuit:
         binding_dict[str(params[i])] = rot
     bc = qc.assign_parameters(binding_dict)
     return(bc)
+
+def find_run_stats(lowest_list:list)-> tuple:
+    """finds the lowest energy and the iteration at which it was found
+    
+    Parameters
+    ----------
+    index_list: list
+        A list of integers showing the iteration number
+    lowest_list: list
+        A list of floats showing the lowest energy found at that iteration
+
+    Returns
+    -------
+    lowest_energy: float
+        The lowest energy found
+    iteration: int
+        The iteration at which the lowest energy was found
+    """
+    previous_lowest = max(lowest_list)
+    lowest_energy = previous_lowest
+    iteration = 0
+    for i, value in enumerate(lowest_list):
+        if value <  previous_lowest:
+            lowest_energy = value
+            previous_lowest = value
+            iteration = i
+    return(lowest_energy, iteration)
