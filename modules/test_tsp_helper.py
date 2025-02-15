@@ -1,11 +1,13 @@
 import numpy as np
 from pytest import raises
+import math
 
 from modules.helper_functions_tsp import(
     validate_distance_array, find_distance, convert_binary_list_to_integer, 
     check_loc_list, augment_loc_list, find_total_distance, find_problem_size,
     convert_bit_string_to_cycle, find_stats, cost_fn_fact, hot_start,
-    hot_start_list_to_string)
+    hot_start_list_to_string, convert_integer_to_binary_list,
+    convert_binary_list_to_integer)
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
@@ -642,4 +644,62 @@ def test_bit_string_list_to_bit_string():
     expected_result = '010101'
     obj = LRUCacheUnhashable()
     actual_result = obj.list_to_bit_string(bit_string_list)
+    assert expected_result == actual_result
+
+def test_binary_string_conversion():
+    length = 5
+    gray = False
+    expected_result = [i for i in range(2**length)]
+    actual_result = []
+    for i in expected_result:
+        binary_list = convert_integer_to_binary_list(i, length, gray)
+        integer = convert_binary_list_to_integer(binary_list, gray)
+        actual_result.append(integer)
+    assert expected_result == actual_result
+
+def test_binary_string_conversion_gray():
+    length = 5
+    gray = True
+    expected_result = [i for i in range(2**length)]
+    actual_result = []
+    for i in expected_result:
+        binary_list = convert_integer_to_binary_list(i, length, gray)
+        integer = convert_binary_list_to_integer(binary_list, gray)
+        actual_result.append(integer)
+    assert expected_result == actual_result
+
+def test_bit_string_cycle_conversion_orig():
+    locs = 4
+    f = math.factorial(locs)
+    method = 'new'
+    gray = False
+    dim = find_problem_size(locs, method=method)
+    expected_result = []
+    actual_result = []
+    for i in range(f):
+        binary_list = convert_integer_to_binary_list(i, dim, gray=gray)
+        expected_result.append(binary_list)
+
+    for binary_list in expected_result:
+        cycle = convert_bit_string_to_cycle(binary_list, locs, gray=gray, method=method)
+        new_binary_list = hot_start_list_to_string(cycle, locs, gray=gray, method=method)
+        actual_result.append(new_binary_list)
+    assert expected_result == actual_result
+
+def test_bit_string_cycle_conversion_orig():
+    locs = 4
+    f = math.factorial(locs)
+    method = 'new'
+    gray = True
+    dim = find_problem_size(locs, method=method)
+    expected_result = []
+    actual_result = []
+    for i in range(f):
+        binary_list = convert_integer_to_binary_list(i, dim, gray=gray)
+        expected_result.append(binary_list)
+
+    for binary_list in expected_result:
+        cycle = convert_bit_string_to_cycle(binary_list, locs, gray=gray, method=method)
+        new_binary_list = hot_start_list_to_string(cycle, locs, gray=gray, method=method)
+        actual_result.append(new_binary_list)
     assert expected_result == actual_result

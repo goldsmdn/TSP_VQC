@@ -13,10 +13,10 @@ AVERAGE_SLICE = 1                   # controls the amount of data to be included
 MODE = 2                            # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 2 - rxgate, XX gates -can be used with Hot Start
 
-ITERATIONS = 50                     # updates, or iterations
+ITERATIONS = 250                    # updates, or iterations
 PRINT_FREQUENCY = 5                 # how often results are printed out
 GRAY = True                         # Use Gray codes
-HOT_START = False                   # Make a hot start
+HOT_START = True                    # Make a hot start
 VERBOSE = False                     # controls how much is printed
 GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
                                     # 'parameter_shift' - default
@@ -46,4 +46,4 @@ CHANGE_TOP_SLICE = True              # Change the %age of results to use when ca
 SLICES = [1]                         # Slices to use when calculating the gradient
                                      #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
                                  
-DECODING_FORMULATION = 'original'         # 'original' or 'new' - new is forumlation from paper
+DECODING_FORMULATION = 'new'         # 'original' or 'new' - new is forumlation from paper
