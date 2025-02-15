@@ -77,4 +77,3 @@ def cost_graph_multi(filename: str,
         axs[i,j].legend(fontsize=6, loc='upper right')
     fig.tight_layout()
     fig.savefig(filename)
-    #fig.show()

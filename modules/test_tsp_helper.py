@@ -1,11 +1,15 @@
 import numpy as np
 from pytest import raises
-from helper_functions_tsp import validate_distance_array, find_distance
-from helper_functions_tsp import convert_binary_list_to_integer
-from helper_functions_tsp import check_loc_list, augment_loc_list, find_total_distance
-from helper_functions_tsp import find_problem_size, convert_bit_string_to_cycle
-from helper_functions_tsp import find_stats, cost_fn_fact, hot_start
-from helper_functions_tsp import hot_start_list_to_string
+import math
+
+from modules.helper_functions_tsp import(
+    validate_distance_array, find_distance, convert_binary_list_to_integer, 
+    check_loc_list, augment_loc_list, find_total_distance, find_problem_size,
+    convert_bit_string_to_cycle, find_stats, cost_fn_fact, hot_start,
+    hot_start_list_to_string, convert_integer_to_binary_list,
+    convert_binary_list_to_integer)
+
+from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
 def test_wrong_shape():
     """Checks that the correct error message is thrown for an array of the wrong shape """
@@ -247,28 +251,35 @@ def test_find_total_distance():
 def test_find_problem_size_4():
     """check problem size for 4 locations"""
     locations = 4
-    expected_result = (2,3)
+    expected_result = 3
     result = find_problem_size(locations)
     assert expected_result == result
 
-def test_find_problem_size_5():
+def test_find_problem_size_4_new():
+    """check problem size for 4 locations"""
+    locations = 4
+    expected_result = 5
+    result = find_problem_size(locations, 'new')
+    assert expected_result == result
+
+def test_find_problem_size_5_new():
     """check problem size for 5 locations"""
     locations = 5
-    expected_result = (2,5)
-    result = find_problem_size(locations)
+    expected_result = 7
+    result = find_problem_size(locations, 'new')
     assert expected_result == result
 
 def test_find_problem_size_26():
     """check problem size for 26 locations"""
     locations = 26
-    expected_result = (5,94)
+    expected_result = 94
     result = find_problem_size(locations)
     assert expected_result == result
 
 def test_convert_bit_string_to_cycle_000():
     """example for 4 locations"""
     locs = 4
-    bit_string = [0, 0, 0] 
+    bit_string = [0, 0, 0]
     expected_result = [0, 1, 2, 3]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
@@ -276,7 +287,7 @@ def test_convert_bit_string_to_cycle_000():
 def test_convert_bit_string_to_cycle_001():
     """example for 4 locations"""
     locs = 4
-    bit_string = [0, 0, 1] 
+    bit_string = [0, 0, 1]
     expected_result = [0, 1, 3, 2]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
@@ -284,7 +295,7 @@ def test_convert_bit_string_to_cycle_001():
 def test_convert_bit_string_to_cycle_010():
     """example for 4 locations"""
     locs = 4
-    bit_string = [0, 1, 0] 
+    bit_string = [0, 1, 0]
     expected_result = [0, 2, 1, 3]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
@@ -292,7 +303,7 @@ def test_convert_bit_string_to_cycle_010():
 def test_convert_bit_string_to_cycle_011():
     """example for 4 locations"""
     locs = 4
-    bit_string = [0, 1, 1] 
+    bit_string = [0, 1, 1]
     expected_result = [0, 2, 3, 1]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
@@ -300,7 +311,7 @@ def test_convert_bit_string_to_cycle_011():
 def test_convert_bit_string_to_cycle_100():
     """example for 4 locations"""
     locs = 4
-    bit_string = [1, 0, 0] 
+    bit_string = [1, 0, 0]
     expected_result = [0, 3, 1, 2]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
@@ -308,7 +319,7 @@ def test_convert_bit_string_to_cycle_100():
 def test_convert_bit_string_to_cycle_101():
     """example for 4 locations"""
     locs = 4
-    bit_string = [1, 0, 1] 
+    bit_string = [1, 0, 1]
     expected_result = [0, 3, 2, 1]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
@@ -316,7 +327,7 @@ def test_convert_bit_string_to_cycle_101():
 def test_convert_bit_string_to_cycle_110():
     """example for 4 locations"""
     locs = 4
-    bit_string = [1, 1, 0] 
+    bit_string = [1, 1, 0]
     expected_result = [0, 1, 2, 3]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
@@ -324,7 +335,7 @@ def test_convert_bit_string_to_cycle_110():
 def test_convert_bit_string_to_cycle_111():
     """example for 4 locations"""
     locs = 4
-    bit_string = [1, 1, 1] 
+    bit_string = [1, 1, 1]
     expected_result = [0, 1, 3, 2]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
@@ -333,7 +344,7 @@ def test_convert_bit_string_to_cycle_111_gray():
     """example for 4 locations"""
     locs = 4
     gray = True
-    bit_string = [1, 1, 1] 
+    bit_string = [1, 1, 1]
     expected_result = [0, 3, 2, 1]
     result = convert_bit_string_to_cycle(bit_string, locs, gray)
     assert expected_result == result
@@ -359,6 +370,7 @@ def test_convert_bit_string_to_cycle_15_gray():
     locs = 15
     gray = True
     expected_result = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    
     bit_string = [1, 0, 1, 1, \
                   1 ,0 ,1, 0, \
                   1, 1, 1, 0, \
@@ -379,6 +391,7 @@ def test_convert_bit_string_to_cycle_15():
     locs = 15
     gray = False
     expected_result = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+
     bit_string = [1, 1, 0, 1, \
                   1 ,1 ,0, 0, \
                   1, 0, 1, 1, \
@@ -394,6 +407,15 @@ def test_convert_bit_string_to_cycle_15():
     result = convert_bit_string_to_cycle(bit_string, locs, gray)
     assert expected_result == result 
   
+def test_convert_bit_string_to_cycle_00010__not_gray():
+    """example for 4 locations"""
+    locs = 4
+    gray = False
+    bit_string = [0, 0, 0, 1, 0]
+    expected_result = [0, 2, 1, 3]
+    result = convert_bit_string_to_cycle(bit_string, locs, gray, method='new')
+    assert expected_result == result
+
 def test_find_average():
     """test find_stats in average mode"""
     counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
@@ -596,7 +618,6 @@ def test_hot_start_list_to_string_15_locs_no_gray():
                        1, 0, 1, \
                        1, 0, 0, \
                        1, 1, 1, 0, 1]
-
     assert expected_result == actual_result
 
 def test_hot_start_list_to_string_15_locs_gray():
@@ -616,5 +637,69 @@ def test_hot_start_list_to_string_15_locs_gray():
                        1, 1, 1, \
                        1, 1, 0, \
                        1, 0, 1, 1, 1]
+    assert expected_result == actual_result
 
+def test_bit_string_list_to_bit_string():
+    bit_string_list = [0, 1, 0, 1, 0, 1]
+    expected_result = '010101'
+    obj = LRUCacheUnhashable()
+    actual_result = obj.list_to_bit_string(bit_string_list)
+    assert expected_result == actual_result
+
+def test_binary_string_conversion():
+    length = 5
+    gray = False
+    expected_result = [i for i in range(2**length)]
+    actual_result = []
+    for i in expected_result:
+        binary_list = convert_integer_to_binary_list(i, length, gray)
+        integer = convert_binary_list_to_integer(binary_list, gray)
+        actual_result.append(integer)
+    assert expected_result == actual_result
+
+def test_binary_string_conversion_gray():
+    length = 5
+    gray = True
+    expected_result = [i for i in range(2**length)]
+    actual_result = []
+    for i in expected_result:
+        binary_list = convert_integer_to_binary_list(i, length, gray)
+        integer = convert_binary_list_to_integer(binary_list, gray)
+        actual_result.append(integer)
+    assert expected_result == actual_result
+
+def test_bit_string_cycle_conversion_orig():
+    locs = 4
+    f = math.factorial(locs)
+    method = 'new'
+    gray = False
+    dim = find_problem_size(locs, method=method)
+    expected_result = []
+    actual_result = []
+    for i in range(f):
+        binary_list = convert_integer_to_binary_list(i, dim, gray=gray)
+        expected_result.append(binary_list)
+
+    for binary_list in expected_result:
+        cycle = convert_bit_string_to_cycle(binary_list, locs, gray=gray, method=method)
+        new_binary_list = hot_start_list_to_string(cycle, locs, gray=gray, method=method)
+        actual_result.append(new_binary_list)
+    assert expected_result == actual_result
+
+def test_bit_string_cycle_conversion_orig():
+    locs = 4
+    f = math.factorial(locs)
+    method = 'new'
+    gray = True
+    dim = find_problem_size(locs, method=method)
+    expected_result = []
+    actual_result = []
+    for i in range(f):
+        binary_list = convert_integer_to_binary_list(i, dim, gray=gray)
+        expected_result.append(binary_list)
+
+    for binary_list in expected_result:
+        cycle = convert_bit_string_to_cycle(binary_list, locs, gray=gray, method=method)
+        new_binary_list = hot_start_list_to_string(cycle, locs, gray=gray, method=method)
+        actual_result.append(new_binary_list)
     assert expected_result == actual_result

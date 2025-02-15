@@ -9,6 +9,11 @@ from qiskit import QuantumCircuit
 from qiskit_aer.primitives import SamplerV2
 import random
 
+from typing import Callable # Import Callable for type hinting
+
+from modules.config import VERBOSE
+from classes.LRUCacheUnhashable import LRUCacheUnhashable
+
 def read_index(filename: str, encoding: str) -> dict:
     """Reads CSV file and returns and dictionary
      
@@ -103,7 +108,7 @@ def find_bin_length(i: int) -> int:
     bin_len = math.ceil((np.log2(i)))
     return(bin_len) 
 
-def find_problem_size(locations:int) -> tuple:
+def find_problem_size(locations:int, method='original') -> tuple:
     """Finds the number of binary variables needed
     
     Parameters
@@ -113,18 +118,27 @@ def find_problem_size(locations:int) -> tuple:
 
     Returns
     ----------
-    bin_len : int
-        Length of the longest bit string needed to hold the next integer in the cycle
+    #bin_len : int
+    #    Length of the longest bit string needed to hold the next integer in the cycle
     pb_dim : int
         Length of the bit string needed to store the problem
+    method : str
+        'original' => method from Goldsmith D, Day-Evans J.
+        'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
     """
-    pb_dim = 0
-    bin_len = find_bin_length(locations)  
-    #ignore first and last item as these are moved by default
-    for i in range(1, locations):
-        bin_len = find_bin_length(i)
-        pb_dim += bin_len
-    return(bin_len, pb_dim)
+    if method == 'original':
+        pb_dim = 0
+        bin_len = find_bin_length(locations)  
+        #ignore first and last item as these are moved by default
+        for i in range(1, locations):
+            bin_len = find_bin_length(i)
+            pb_dim += bin_len
+    elif method == 'new':
+        f = math.factorial(locations)
+        pb_dim = find_bin_length(f)
+    else:
+        raise Exception(f'Unknown method {method}')
+    return(pb_dim)
 
 def convert_binary_list_to_integer(binary_list: list, gray:bool=False)->int:
     """Converts list of binary numbers to an integer
@@ -139,15 +153,36 @@ def convert_binary_list_to_integer(binary_list: list, gray:bool=False)->int:
     result : int
         The integer represented by the concatenated binary string
     """
-
-    #if reverse:
-    #   binary_list.reverse()
     string = ''
     for item in binary_list:
         string += str(item)
     result= int(string, base=2)
     if gray:
         result = graycode.gray_code_to_tc(result)
+    return(result)
+
+def convert_integer_to_binary_list(integer: int, length: int, gray:bool=False)->list:
+    """Converts an integer to a list of binary numbers
+    
+    Parameters
+    ----------
+    integer : int
+        The integer to be converted
+    length : int
+        The length of the binary string
+    gray : bool
+        If True Gray codes are used
+
+    Returns
+    ----------
+    result : list
+        A list of binary numbers
+    """
+    if gray:
+        integer = graycode.tc_to_gray_code(integer)
+    binary_string = bin(integer)
+    binary_string = binary_string_format(binary_string, length)
+    result = [int(i) for i in binary_string]
     return(result)
 
 def check_loc_list(loc_list:list, locs:int) -> bool:
@@ -234,7 +269,11 @@ def find_total_distance(int_list: list, locs: int, distance_array :np.array)-> f
         total_distance += distance
     return total_distance
 
-def cost_fn_fact(locs: int, distance_array: np.array, gray: bool=False, verbose: bool=False):
+def cost_fn_fact(locs: int, 
+                 distance_array: np.array, 
+                 gray: bool=False, 
+                 verbose: bool=False,
+                 method = 'original')-> Callable[[list], int]:
     """ returns a function
 
     Parameters
@@ -254,9 +293,10 @@ def cost_fn_fact(locs: int, distance_array: np.array, gray: bool=False, verbose:
         A function of a bit string evaluating a distance for that bit string
     
     """
+    @LRUCacheUnhashable
     def cost_fn(bit_string):
         """returns the value of the objective function for a bit_string"""
-        full_list_of_locs = convert_bit_string_to_cycle(bit_string, locs, gray)
+        full_list_of_locs = convert_bit_string_to_cycle(bit_string, locs, gray, method)
         total_distance = find_total_distance(full_list_of_locs, locs, distance_array)
         valid = check_loc_list(full_list_of_locs,locs)
         if not valid:
@@ -267,7 +307,10 @@ def cost_fn_fact(locs: int, distance_array: np.array, gray: bool=False, verbose:
             return total_distance
     return(cost_fn)
 
-def convert_bit_string_to_cycle(bit_string: list, locs: int, gray: bool=False) -> list:
+def convert_bit_string_to_cycle(bit_string: list, 
+                                locs: int, 
+                                gray: bool=False, 
+                                method: str='original') -> list:
     """converts a bit string to a cycle.
     
     Parameters
@@ -278,31 +321,59 @@ def convert_bit_string_to_cycle(bit_string: list, locs: int, gray: bool=False) -
         The number of locations
     gray: bool
         If True Gray codes are used
+    method: str
+        'original' => method from Goldsmith D, Day-Evans J. 
+        'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
 
     Returns
     ----------
     end_cycle_list : list
         A list of integers showing a cycle.  The bit string is processed from left to right
     """
-    
-    bit_string_copy = copy.deepcopy(bit_string)
-    end_cycle_list = []
-    start_cycle_list = [i for i in range(locs)]
-    end_cycle_list.append(start_cycle_list.pop(0)) #end point of cycle is always 0
-    for i in range(locs-1, 1, -1):
-        bin_len = find_bin_length(i)
-        bin_string = []
-        for count in range(bin_len):
-            bin_string.append(bit_string_copy.pop(0)) #pop the most left hand item
-        position = convert_binary_list_to_integer(bin_string, gray=gray)
-        index = position % i    
-        end_cycle_list.append(start_cycle_list.pop(index))
-    end_cycle_list.append(start_cycle_list.pop(0))
-    if start_cycle_list != []:
-        raise Exception('Cycle returned may not be complete')
-    if bit_string_copy != []:
-        raise Exception(f'bit_string not consumed {bit_string_copy} left')
-    return(end_cycle_list)
+    if method == 'original':
+        #need to avoid changing the original bit_string
+        bit_string_copy = copy.deepcopy(bit_string)
+        end_cycle_list = []
+        start_cycle_list = [i for i in range(locs)]
+        end_cycle_list.append(start_cycle_list.pop(0)) #end point of cycle is always 0
+        for i in range(locs-1, 1, -1):
+            bin_len = find_bin_length(i)
+            bin_string = []
+            for count in range(bin_len):
+                bin_string.append(bit_string_copy.pop(0)) #pop the most left hand item
+            position = convert_binary_list_to_integer(bin_string, gray=gray)
+            index = position % i    
+            end_cycle_list.append(start_cycle_list.pop(index))
+        end_cycle_list.append(start_cycle_list.pop(0))
+        if start_cycle_list != []:
+            raise Exception('Cycle returned may not be complete')
+        if bit_string_copy != []:
+            raise Exception(f'bit_string not consumed {bit_string_copy} left')
+        return(end_cycle_list)
+    elif method == 'new':
+        f = math.factorial(locs)
+        bit_string_length = math.ceil(math.log2(f))
+        if len(bit_string) != bit_string_length:
+            raise Exception(f'bit_string length {len(bit_string)} does not match {bit_string_length}')
+        x = convert_binary_list_to_integer(bit_string, gray=gray)
+        y = x % f
+        end_cycle_list = []
+        start_cycle_list = [i for i in range(locs)]
+        i = 0
+        while i < locs:
+            f = int(f / (locs - i))
+            #correcting possible mistype in paper
+            #k = math.floor(x / f)
+            k = math.floor(y / f)
+            end_cycle_list.append(start_cycle_list[k])
+            start_cycle_list.remove(start_cycle_list[k])
+            #correcting possible mistype in paper
+            #x -= k * f
+            y -= k * f
+            i += 1
+        return end_cycle_list
+    else:
+        raise Exception(f'Unknown method {method}')
 
 def find_stats(cost_fn, counts: dict, shots: int, 
                average_slice: float=1, verbose: bool=False)-> tuple:
@@ -432,16 +503,40 @@ def hot_start(distance_array: np.array, locs: int) -> list:
         end_cycle_list.append(next_row)
     return(end_cycle_list)
 
-def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bin) -> list:
+def binary_string_format(binary_string: str, bin_len: str) -> str:
+    """format a binary string to remove the 0b prefix
+    
+    Parameters
+    ----------
+    binary_string : str
+        A binary string
+    bin_len : str
+        Length of the binary string
+
+    Returns
+    -------
+    formatted_string: str
+        The binary string with the 0b prefix removed
+    """
+    formatted_string = binary_string[2:]
+    formatted_string = formatted_string.zfill(bin_len)
+
+    return(formatted_string)    
+    
+
+def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bool, method='original') -> list:
     """invert the hot start integer list into a string
     
     Parameters:
     hot_start_list: list
-        A list of integers showing the an estimate of the lowest cycle
+        A list of integers showing an estimate of the lowest cycle
     locations: int 
         The number of location in the problem
-    gray:bin
+    gray: bool
         If True Gray codes are used
+    method: str
+        'original' => method from Goldsmith D, Day-Evans J.
+        'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
 
     Returns
     -------
@@ -449,35 +544,52 @@ def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bin) -> 
         A list of bits that represents the bit string for the lowest cycle
     
     """
+    if method == 'original':
+        if len(hot_start_list) != locations:
+            raise Exception(f'The hot start list should be length {locations}')
+        
+        first_item = hot_start_list.pop(0)
+        #remove the first item for the list which should be zero
+        if first_item != 0:
+            raise Exception(f'The first item of the list must be zero')
+        
+        initial_list = [i for i in range(1, locations)]    
+        total_binary_string = ''
+        result_list = []
+        
+        for i, integer in enumerate(hot_start_list):
+            bin_len = find_bin_length(len(initial_list))
+            if bin_len > 0:
+            #find the index of integer in hot start list
+                index = initial_list.index(integer)
+                if gray:
+                    binary_string = bin(graycode.tc_to_gray_code(index))
+                else:
+                    binary_string = bin(index)
+                binary_string = binary_string_format(binary_string, bin_len)
+                total_binary_string += binary_string
+                initial_list.pop(index)
+        for i in range(len(total_binary_string)):
+            result_list.append(int(total_binary_string[i]))
+        return(result_list)
+    elif method == 'new':
+        dim = find_problem_size(locations, method='new')
+        f = math.factorial(locations)
+        y = 0
+        i = 0
+        start_cycle_list = [i for i in range(locations)]
+        while i < locations:
+            f = int(f / (locations - i))
+            m = hot_start_list[i]
+            j = start_cycle_list.index(m)
+            start_cycle_list.remove(m)  
+            y += j * f
+            i += 1
 
-    if len(hot_start_list) != locations:
-        raise Exception(f'The hot start list should be length {locations}')
-    
-    first_item = hot_start_list.pop(0)
-    #remove the first item for the list which should be zero
-    if first_item != 0:
-        raise Exception(f'The first item of the list must be zero')
-    
-    initial_list = [i for i in range(1, locations)]    
-    total_binary_string = ''
-    result_list = []
-    
-    for i, integer in enumerate(hot_start_list):
-        bin_len = find_bin_length(len(initial_list))
-        if bin_len > 0:
-        #find the index of integer in hot start list
-            index = initial_list.index(integer)
-            if gray:
-               binary_string = bin(graycode.tc_to_gray_code(index))
-            else:
-                binary_string = bin(index)
-            binary_string = binary_string[2:] #remove the 0b charactor
-            binary_string = binary_string.zfill(bin_len)
-            total_binary_string += binary_string
-            initial_list.pop(index)
-    for i in range(len(total_binary_string)):
-        result_list.append(int(total_binary_string[i]))
-    return(result_list)
+        result_list = convert_integer_to_binary_list(y, dim, gray=gray)
+        return result_list
+    else:
+        raise Exception(f'Unknown method {method}')
 
 def validate_gradient_type(gradient_type):
     """check that the gradient type is valid"""
@@ -496,14 +608,12 @@ def update_parameters_using_gradient(locations: int, iterations: int,
                                      gradient_type: str='parameter_shift',
                                      alpha: float = 0.602,
                                      gamma:float = 0.101,
-                                     c:float=1e-2,     
+                                     c:float=1e-2,   
+                                     method: str='original'  
                                      ) -> list:
     """updates parameters using SPSA or parameter shift gradients"""
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
     parameter_list, average_list = [], []
-    #allowed_types = ['parameter_shift', 'SPSA']
-    #if gradient_type not in allowed_types:
-    #    raise Exception (f'Gradient type {gradient_type} is not coded for')
     validate_gradient_type(gradient_type)
 
     if gradient_type == 'SPSA':
@@ -529,7 +639,10 @@ def update_parameters_using_gradient(locations: int, iterations: int,
     # 2 is an estimative of the initial changes of the parameters,
     # different changes might need other choices
         #a = 2*((A+1)**alpha)/magnitude_g0
-        a = 0.01*((A+1)**alpha)/magnitude_g0
+        if magnitude_g0 == 0:
+            a = 999
+        else:
+            a = 0.01*((A+1)**alpha)/magnitude_g0
 
     for i in range(0, iterations):
         bc = bind_weights(params, rots, qc)
@@ -554,7 +667,7 @@ def update_parameters_using_gradient(locations: int, iterations: int,
                 lowest_string_to_date = lowest_energy_bit_string
                 if verbose:
                     print(f'lowest,  lowest_to_date {lowest}, {lowest_to_date}')
-        route_list = convert_bit_string_to_cycle(lowest_string_to_date, locations, gray)
+        route_list = convert_bit_string_to_cycle(lowest_string_to_date, locations, gray, method)
         index_list.append(i)
         cost_list.append(cost)
         lowest_list.append(lowest_to_date)
@@ -584,8 +697,8 @@ def update_parameters_using_gradient(locations: int, iterations: int,
             raise Exception(f'Error found when calculating gradient. {gradient_type} is not an allowed gradient type')
         gradient_list.append(gradient.tolist())
         if i % print_frequency == 0:  
-            print(f'For iteration {i} using the bottom {average_slice*100} percent of the results')
-            print(f'The average cost from the sample is {average:.3f} and the top-sliced average is {cost:.3f}')
+            print(f'For iteration {i} using the best {average_slice*100} percent of the results')
+            print(f'The average cost from the sample is {average:.3f} and the top-sliced average of the best results is {cost:.3f}')
             print(f'The lowest cost from the sample is {lowest:.3f}')
             print(f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date} ')
             print(f'and route {route_list}')
@@ -597,7 +710,7 @@ def update_parameters_using_gradient(locations: int, iterations: int,
 def cost_func_evaluate(cost_fn, bc: QuantumCircuit, 
                        shots: int = 1024, average_slice=1, 
                        verbose:bool=False) -> tuple:
-    """evaluate cost function
+    """evaluate cost function on a quantum computer
     
     Parameters
     ----------
