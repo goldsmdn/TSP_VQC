@@ -1,11 +1,15 @@
 import matplotlib.pyplot as plt
 
-def parameter_graph(filename: str, index_list: list, gradient_list:list, legend:list):
+def parameter_graph(filename: str, 
+                    title: str,
+                    index_list: list, 
+                    gradient_list:list, 
+                    legend:list):
     """plots a graph of the parameter evolution"""
     p = plt.plot(index_list, gradient_list)
     plt.grid(axis='x')
     plt.legend(p, legend)
-    plt.title('Evolution of parameters with iterations')
+    plt.title(title)
     plt.tight_layout()
     plt.xlabel('Iteration')
     plt.ylabel('Parameter value in radians')

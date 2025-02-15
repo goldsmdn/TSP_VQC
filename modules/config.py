@@ -1,8 +1,7 @@
 import numpy as np
 CONTROL_FILE = 'control/control_parameters.csv'
 ENCODING = 'utf-8-sig'              # Encoding of csv file
-GRAPH_DIRECTORY = 'graphs/'         # location of graph directory
-LOCATIONS = 5                       # number of locations to be visited
+LOCATIONS = 4                       # number of locations to be visited
 ROTATIONS = 100                     # number of rotations sampled in parameter graphs
 SHOTS = 1024                        # shots used for each call of the quantum circuit
 
