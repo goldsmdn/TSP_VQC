@@ -133,7 +133,6 @@ def find_problem_size(locations:int, method='original') -> tuple:
         for i in range(1, locations):
             bin_len = find_bin_length(i)
             pb_dim += bin_len
-        #return(bin_len, pb_dim)
     elif method == 'new':
         f = math.factorial(locations)
         pb_dim = find_bin_length(f)
@@ -160,6 +159,30 @@ def convert_binary_list_to_integer(binary_list: list, gray:bool=False)->int:
     result= int(string, base=2)
     if gray:
         result = graycode.gray_code_to_tc(result)
+    return(result)
+
+def convert_integer_to_binary_list(integer: int, length: int, gray:bool=False)->list:
+    """Converts an integer to a list of binary numbers
+    
+    Parameters
+    ----------
+    integer : int
+        The integer to be converted
+    length : int
+        The length of the binary string
+    gray : bool
+        If True Gray codes are used
+
+    Returns
+    ----------
+    result : list
+        A list of binary numbers
+    """
+    if gray:
+        integer = graycode.tc_to_gray_code(integer)
+    binary_string = bin(integer)
+    binary_string = binary_string_format(binary_string, length)
+    result = [int(i) for i in binary_string]
     return(result)
 
 def check_loc_list(loc_list:list, locs:int) -> bool:
@@ -300,13 +323,7 @@ def convert_bit_string_to_cycle(bit_string: list,
         If True Gray codes are used
     method: str
         'original' => method from Goldsmith D, Day-Evans J. 
-        Beyond QUBO and HOBO formulations, solving the Travelling Salesman Problem 
-        on a quantum boson sampler arXiv 2024 
-        Available from: http://arxiv.org/abs/2406.14252
         'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
-        Efficient Encodings of the Travelling Salesperson Problem for Variational Quantum Algorithms. 
-        In: 2024 IEEE International Conference on Quantum Software (QSW) [Internet]. 
-        p. 81-7. Available from: https://ieeexplore.ieee.org/document/10646502
 
     Returns
     ----------
@@ -314,6 +331,7 @@ def convert_bit_string_to_cycle(bit_string: list,
         A list of integers showing a cycle.  The bit string is processed from left to right
     """
     if method == 'original':
+        #need to avoid changing the original bit_string
         bit_string_copy = copy.deepcopy(bit_string)
         end_cycle_list = []
         start_cycle_list = [i for i in range(locs)]
@@ -343,13 +361,13 @@ def convert_bit_string_to_cycle(bit_string: list,
         start_cycle_list = [i for i in range(locs)]
         i = 0
         while i < locs:
-            f = f / (locs - i)
-            #correcting mistype in paper
+            f = int(f / (locs - i))
+            #correcting possible mistype in paper
             #k = math.floor(x / f)
             k = math.floor(y / f)
             end_cycle_list.append(start_cycle_list[k])
             start_cycle_list.remove(start_cycle_list[k])
-            #correcting mistype in paper
+            #correcting possible mistype in paper
             #x -= k * f
             y -= k * f
             i += 1
@@ -485,16 +503,40 @@ def hot_start(distance_array: np.array, locs: int) -> list:
         end_cycle_list.append(next_row)
     return(end_cycle_list)
 
-def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bin) -> list:
+def binary_string_format(binary_string: str, bin_len: str) -> str:
+    """format a binary string to remove the 0b prefix
+    
+    Parameters
+    ----------
+    binary_string : str
+        A binary string
+    bin_len : str
+        Length of the binary string
+
+    Returns
+    -------
+    formatted_string: str
+        The binary string with the 0b prefix removed
+    """
+    formatted_string = binary_string[2:]
+    formatted_string = formatted_string.zfill(bin_len)
+
+    return(formatted_string)    
+    
+
+def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bool, method='original') -> list:
     """invert the hot start integer list into a string
     
     Parameters:
     hot_start_list: list
-        A list of integers showing the an estimate of the lowest cycle
+        A list of integers showing an estimate of the lowest cycle
     locations: int 
         The number of location in the problem
-    gray:bin
+    gray: bool
         If True Gray codes are used
+    method: str
+        'original' => method from Goldsmith D, Day-Evans J.
+        'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
 
     Returns
     -------
@@ -502,36 +544,52 @@ def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bin) -> 
         A list of bits that represents the bit string for the lowest cycle
     
     """
+    if method == 'original':
+        if len(hot_start_list) != locations:
+            raise Exception(f'The hot start list should be length {locations}')
+        
+        first_item = hot_start_list.pop(0)
+        #remove the first item for the list which should be zero
+        if first_item != 0:
+            raise Exception(f'The first item of the list must be zero')
+        
+        initial_list = [i for i in range(1, locations)]    
+        total_binary_string = ''
+        result_list = []
+        
+        for i, integer in enumerate(hot_start_list):
+            bin_len = find_bin_length(len(initial_list))
+            if bin_len > 0:
+            #find the index of integer in hot start list
+                index = initial_list.index(integer)
+                if gray:
+                    binary_string = bin(graycode.tc_to_gray_code(index))
+                else:
+                    binary_string = bin(index)
+                binary_string = binary_string_format(binary_string, bin_len)
+                total_binary_string += binary_string
+                initial_list.pop(index)
+        for i in range(len(total_binary_string)):
+            result_list.append(int(total_binary_string[i]))
+        return(result_list)
+    elif method == 'new':
+        dim = find_problem_size(locations, method='new')
+        f = math.factorial(locations)
+        y = 0
+        i = 0
+        start_cycle_list = [i for i in range(locations)]
+        while i < locations:
+            f = int(f / (locations - i))
+            m = hot_start_list[i]
+            j = start_cycle_list.index(m)
+            start_cycle_list.remove(m)  
+            y += j * f
+            i += 1
 
-    if len(hot_start_list) != locations:
-        raise Exception(f'The hot start list should be length {locations}')
-    
-    first_item = hot_start_list.pop(0)
-    #remove the first item for the list which should be zero
-    if first_item != 0:
-        raise Exception(f'The first item of the list must be zero')
-    
-    initial_list = [i for i in range(1, locations)]    
-    total_binary_string = ''
-    result_list = []
-    
-    for i, integer in enumerate(hot_start_list):
-        bin_len = find_bin_length(len(initial_list))
-        if bin_len > 0:
-        #find the index of integer in hot start list
-            index = initial_list.index(integer)
-            if gray:
-               binary_string = bin(graycode.tc_to_gray_code(index))
-            else:
-                binary_string = bin(index)
-            binary_string = binary_string[2:] #remove the 0b charactor
-            binary_string = binary_string.zfill(bin_len)
-            total_binary_string += binary_string
-            initial_list.pop(index)
-    for i in range(len(total_binary_string)):
-        result_list.append(int(total_binary_string[i]))
-        #result_list.append(str(total_binary_string[i]))
-    return(result_list)
+        result_list = convert_integer_to_binary_list(y, dim, gray=gray)
+        return result_list
+    else:
+        raise Exception(f'Unknown method {method}')
 
 def validate_gradient_type(gradient_type):
     """check that the gradient type is valid"""
