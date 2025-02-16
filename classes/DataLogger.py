@@ -24,14 +24,10 @@ class DataLogger:
         self.graph_sub_path.mkdir(parents=True, exist_ok=True)
         print(f'Folder graph_sub_path = {self.graph_sub_path} is created for graphs')
 
-    #def update_row_written(self):
-    #    self.header_written = True
-
 class SubDataLogger(DataLogger):
     def __init__(self, parent: DataLogger):
         super().__init__()
         self.runid = parent.runid
-        #self.header_written = parent.header_written
         self.parent = parent
 
         data_path = Path('data')
@@ -49,15 +45,13 @@ class SubDataLogger(DataLogger):
     def save_dict_to_csv(self, data: dict):
         with open(self.filename, mode="a", newline="") as file:
             writer = csv.DictWriter(file, fieldnames=self.fieldnames)
-            print(f'self.header_written = {self.header_written}')
-            #if not(self.header_written):
+            #print(f'self.header_written = {self.header_written}')
             if not(self.parent.header_written):
-                print(f'Writing header. self.header_written = {self.header_written}')
+                #print(f'Writing header. self.header_written = {self.header_written}')
                 writer.writeheader()
-                #super().update_row_written()
                 self.parent.header_written = True
-                print(f'Writen header. self.header_written = {self.header_written}')
+                #print(f'Writen header. self.header_written = {self.header_written}')
             writer.writerow(data)
-            print(f'Writing row. self.header_written = {self.header_written}')
-            print(f'Data_dict = {data}')
+            #print(f'Writing row. self.header_written = {self.header_written}')
+            #print(f'Data_dict = {data}')
             print(f'Data for Run ID: {self.full_id} successfully added to {self.filename}')

@@ -610,7 +610,8 @@ def update_parameters_using_gradient(locations: int, iterations: int,
                                      gamma:float = 0.101,
                                      c:float = 1e-2,   
                                      big_a:int = 50,
-                                     method: str='original'  
+                                     method: str='original',
+                                     print_results: str=True
                                      ) -> list:
     """updates parameters using SPSA or parameter shift gradients"""
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
@@ -698,15 +699,16 @@ def update_parameters_using_gradient(locations: int, iterations: int,
         else:
             raise Exception(f'Error found when calculating gradient. {gradient_type} is not an allowed gradient type')
         gradient_list.append(gradient.tolist())
-        if i % print_frequency == 0:  
-            print(f'For iteration {i} using the best {average_slice*100} percent of the results')
-            print(f'The average cost from the sample is {average:.3f} and the top-sliced average of the best results is {cost:.3f}')
-            print(f'The lowest cost from the sample is {lowest:.3f}')
-            print(f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date} ')
-            print(f'and route {route_list}')
-            if verbose:
-                print(f'The gradient is {gradient}')
-                print(f'The rotations are {rots}')
+        if print_results:
+            if i % print_frequency == 0:  
+                print(f'For iteration {i} using the best {average_slice*100} percent of the results')
+                print(f'The average cost from the sample is {average:.3f} and the top-sliced average of the best results is {cost:.3f}')
+                print(f'The lowest cost from the sample is {lowest:.3f}')
+                print(f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date} ')
+                print(f'and route {route_list}')
+                if verbose:
+                    print(f'The gradient is {gradient}')
+                    print(f'The rotations are {rots}')
     return index_list, cost_list, lowest_list, gradient_list, average_list, parameter_list, 
     
 def cost_func_evaluate(cost_fn, bc: QuantumCircuit, 
