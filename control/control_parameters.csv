@@ -1,3 +1,9 @@
-﻿id,locations,mode,eta,updates,print_frequency,gray,verbose,optimiser
-0,5,1,0.005,50,5,1,1,tbc
-1,5,2,0.005,50,5,1,1,tbc
+﻿locations,slice,shots,mode,iterations,gray,hot_start,gradient_type,formulation,alpha,big_a,c,eta,gamma,s,print_frequency
+5,1,1024,2,50,True,True,SPSA,new,0.602,50,0.314,0.02,0.101,0.5,50
+5,1,1024,2,50,False,True,SPSA,new,0.602,50,0.314,0.02,0.101,0.5,50
+5,1,1024,2,50,True,False,SPSA,new,0.602,50,0.314,0.02,0.101,0.5,50
+5,1,1024,2,50,False,False,SPSA,new,0.602,50,0.314,0.02,0.101,0.5,50
+5,1,1024,2,50,True,True,SPSA,old,0.602,50,0.314,0.02,0.101,0.5,50
+5,1,1024,2,50,False,True,SPSA,old,0.602,50,0.314,0.02,0.101,0.5,50
+5,1,1024,2,50,True,False,SPSA,old,0.602,50,0.314,0.02,0.101,0.5,50
+5,1,1024,2,50,False,False,SPSA,old,0.602,50,0.314,0.02,0.101,0.5,50

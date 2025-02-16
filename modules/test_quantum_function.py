@@ -80,7 +80,7 @@ def test_simple_circuit():
     params = []
     mode = 3
     locations = 5
-    filename = 'data/five_d.txt'
+    filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     gray = True
     shots = 1024
