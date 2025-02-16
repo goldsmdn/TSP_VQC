@@ -31,13 +31,15 @@ GAMMA = 0.101                       # constant that determines how quickly the S
 S = 0.5                             # parameter for parameter shift.  Default is 0.5
 
 # data sources
-DATA_SOURCES = {  4 : {'file' : 'networks/four_d.txt', 'best' : 21},
-                  5 : {'file' : 'networks/five_d.txt', 'best' : 19},
-                 11 : {'file' : 'networks/dg11_d.txt', 'best' : 253},
-                 15 : {'file' : 'networks/p01_d.txt',  'best' : 291},
-                 17 : {'file' : 'datnetworksa/gr17_d.txt', 'best' : 2085},
-                 26 : {'file' : 'networks/fri26_d.txt', 'best' : 699},
-                 42 : {'file' : 'networks/dantzig42_d.txt', 'best' : 33_523},
+DATA_SOURCES = {  4 : {'file' : 'networks/four_d.txt', 'best' : 21, 'source': 'QTAP'},
+                  5 : {'file' : 'networks/five_d.txt', 'best' : 19, 'source': 'TSPLIB'},
+                  8 : {'file' : 'networks/sim_dist_8_locs.txt', 'best' : 277.2, 'source': 'sim',
+                     'points' : 'networks/sim_points_8_locs.txt'},
+                 11 : {'file' : 'networks/dg11_d.txt', 'best' : 253, 'source': 'TSPLIB'},
+                 15 : {'file' : 'networks/p01_d.txt',  'best' : 291, 'source': 'TSPLIB'},
+                 17 : {'file' : 'datnetworksa/gr17_d.txt', 'best' : 2085, 'source': 'TSPLIB'},
+                 26 : {'file' : 'networks/fri26_d.txt', 'best' : 699, 'source': 'TSPLIB'},
+                 42 : {'file' : 'networks/dantzig42_d.txt', 'best' : 33_523, 'source': 'TSPLIB'},
                 }
 
 # configuration to control execution

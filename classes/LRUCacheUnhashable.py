@@ -47,12 +47,10 @@ class LRUCacheUnhashable:
             raise Exception(f'{bit_string_list} is not a list')
         return ''.join(map(str, bit_string_list))
 
-    @property
     def print_cache(self):
         """print cache"""
         print(f'cache = {self.cache}')
 
-    @property
     def print_cache_stats(self):
         """print cache stats"""
         print(f'Items in cache = {len(self.cache)}')
@@ -64,7 +62,6 @@ class LRUCacheUnhashable:
             self.cache_hit_rate = self.cache_hits/(self.cache_hits+self.cache_misses)
             print(f'cache_hit_rate = {self.cache_hit_rate:.3f}')
 
-    @property
     def report_cache_stats(self):
         """reports cache stats"""
         items = len(self.cache)

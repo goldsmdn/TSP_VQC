@@ -38,7 +38,7 @@ def read_index(filename: str, encoding: str) -> dict:
             dict[next(index)] = row
     return(dict)
 
-def read_file_name(locations: int, data_sources: dict) -> str:
+def read_file_name(locations: int, data_sources: dict, file_type:str='file') -> str:
     """Find the filename for a certain number of locations
     
     Parameters
@@ -46,14 +46,24 @@ def read_file_name(locations: int, data_sources: dict) -> str:
     locations : int
         Number of locations, or vertices
     data_sources : dict
-        Dictionary listing the filename for each problem siz
+        Dictionary listing the filename for each problem size
+    source : str
+        Source of data - only sim has 
 
     Returns
     ----------
     filename : string
         The filename for that problem size
     """
-    filename = data_sources[locations]['file']
+
+    if file_type == 'file':
+        filename = data_sources[locations]['file']
+        print(f'Reading distance data')
+    elif file_type == 'points':
+        filename = data_sources[locations]['points']
+        print(f'Reading co-ordinate data')
+    else:
+        raise Exception(f'File type {file_type} is not coded for')
     return(filename)       
 
 def validate_distance_array(array :np.array, locs: int):

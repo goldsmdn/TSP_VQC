@@ -13,7 +13,7 @@ class DataLogger:
                     'iterations', 'gray', 'hot_start', 'gradient_type', 'formulation','alpha',
                     'big_a', 'c', 'eta', 'gamma', 's', 'print_frequency',
                     'cache_max_size', 'elapsed', 
-                    'hot_start_dist', 'hot_start_cost', 'best_dist_found', 
+                    'hot_start_dist', 'best_dist_found', 
                     'best_dist','iteration_found',
                     'cache_items', 'cache_hits', 'cache_misses', 
                     ]
@@ -40,18 +40,13 @@ class SubDataLogger(DataLogger):
 
         print(f'SubDataLogger instantiated.  Run ID = {self.runid} - {self.subid}')
         print(f'Folder data_sub_path = {self.data_sub_path} is used for data writing')
-        print(f'Data will be added to file = {self.filename}')
+        #print(f'Data will be added to file = {self.filename}')
 
     def save_dict_to_csv(self, data: dict):
         with open(self.filename, mode="a", newline="") as file:
             writer = csv.DictWriter(file, fieldnames=self.fieldnames)
-            #print(f'self.header_written = {self.header_written}')
             if not(self.parent.header_written):
-                #print(f'Writing header. self.header_written = {self.header_written}')
                 writer.writeheader()
                 self.parent.header_written = True
-                #print(f'Writen header. self.header_written = {self.header_written}')
             writer.writerow(data)
-            #print(f'Writing row. self.header_written = {self.header_written}')
-            #print(f'Data_dict = {data}')
             print(f'Data for Run ID: {self.full_id} successfully added to {self.filename}')

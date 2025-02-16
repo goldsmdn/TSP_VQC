@@ -1,0 +1,5 @@
+runid,subid,locations,slice,shots,mode,iterations,gray,hot_start,gradient_type,formulation,alpha,big_a,c,eta,gamma,s,print_frequency,cache_max_size,elapsed,hot_start_dist,hot_start_cost,best_dist_found,best_dist,iteration_found,cache_items,cache_hits,cache_misses
+20250216-14-19-21,14-19-21,5,1,1024,2,50,True,True,SPSA,new,0.602,50,0.314,0.02,0.101,0.5,50,500000,2.47613787651062,21.0,21.0,19.0,19,1,117,4000,117
+20250216-14-19-21,14-19-24,5,1,1024,2,50,False,True,SPSA,new,0.602,50,0.314,0.02,0.101,0.5,50,500000,2.656447649002075,21.0,21.0,19.0,19,3,128,18451,128
+20250216-14-19-21,14-19-27,5,1,1024,2,50,True,False,SPSA,new,0.602,50,0.314,0.02,0.101,0.5,50,500000,2.4164340496063232,21.0,21.0,19.0,19,9,109,2748,109
+20250216-14-19-21,14-19-29,5,1,1024,2,50,False,False,SPSA,new,0.602,50,0.314,0.02,0.101,0.5,50,500000,2.5160019397735596,21.0,21.0,19.0,19,6,103,2842,103

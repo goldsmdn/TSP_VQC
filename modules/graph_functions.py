@@ -81,3 +81,46 @@ def cost_graph_multi(filename: str,
         axs[i,j].legend(fontsize=6, loc='upper right')
     fig.tight_layout()
     fig.savefig(filename)
+
+def plot_shortest_routes(points, route1, route2=None):
+    locations = len(points)
+    for i in range(locations):
+        plt.scatter(points[i, 0], points[i, 1], marker='o', label=i)
+    # Adding title and labels for clarity
+    plt.legend()
+    plt.title('Route through locations selected at random')
+    plt.xlabel('X-axis')
+    plt.ylabel('Y-axis')
+    plt.grid(True)
+   
+    locations = len(points)
+
+    for i in range(locations):
+        if i < locations-1:
+            point1 = route1[i]
+            point2 = route1[i+1]
+        else:
+            point1 = route1[i]
+            point2 = route1[0]
+        x = [points[point1, 0], points[point2, 0]]
+        y = [points[point1, 1], points[point2, 1]]
+
+        plt.plot(x, y, color = 'blue')
+
+    if route2:
+        for i in range(locations):
+            if i < locations-1:
+                point1 = route2[i]
+                point2 = route2[i+1]
+            else:
+                point1 = route2[i]
+                point2 = route2[0]
+            x = [points[point1, 0], points[point2, 0]]
+            y = [points[point1, 1], points[point2, 1]]
+
+            plt.plot(x, y, color = 'red')
+
+    plt.show()
+    
+
+        
