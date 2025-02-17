@@ -1,5 +1,8 @@
 import numpy as np
-CONTROL_FILE = 'control/control_parameters.csv'
+#CONTROL_FILE = 'control/control_parameters.csv'
+CONTROL_DIR = 'control'
+CONTROL_FILE = 'control_parameters.csv'
+
 ENCODING = 'utf-8-sig'              # Encoding of csv file
 
 # configuration files loaded from control.csv in production runs
@@ -37,7 +40,7 @@ DATA_SOURCES = {  4 : {'file' : 'networks/four_d.txt', 'best' : 21, 'source': 'Q
                      'points' : 'networks/sim_points_8_locs.txt'},
                  11 : {'file' : 'networks/dg11_d.txt', 'best' : 253, 'source': 'TSPLIB'},
                  15 : {'file' : 'networks/p01_d.txt',  'best' : 291, 'source': 'TSPLIB'},
-                 17 : {'file' : 'datnetworksa/gr17_d.txt', 'best' : 2085, 'source': 'TSPLIB'},
+                 17 : {'file' : 'networksa/gr17_d.txt', 'best' : 2085, 'source': 'TSPLIB'},
                  26 : {'file' : 'networks/fri26_d.txt', 'best' : 699, 'source': 'TSPLIB'},
                  42 : {'file' : 'networks/dantzig42_d.txt', 'best' : 33_523, 'source': 'TSPLIB'},
                 }

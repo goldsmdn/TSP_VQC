@@ -1,0 +1,9 @@
+﻿locations,slice,shots,mode,iterations,gray,hot_start,gradient_type,formulation,alpha,big_a,c,eta,gamma,s,print_frequency
+11,1,1024,2,50,True,True,SPSA,new,0.602,50,0.314,0.02,0.101,0.5,50
+11,1,1024,2,50,False,True,SPSA,new,0.602,50,0.314,0.02,0.101,0.5,50
+11,1,1024,2,50,True,False,SPSA,new,0.602,50,0.314,0.02,0.101,0.5,50
+11,1,1024,2,50,False,False,SPSA,new,0.602,50,0.314,0.02,0.101,0.5,50
+11,1,1024,2,50,True,True,SPSA,original,0.602,50,0.314,0.02,0.101,0.5,50
+11,1,1024,2,50,False,True,SPSA,original,0.602,50,0.314,0.02,0.101,0.5,50
+11,1,1024,2,50,True,False,SPSA,original,0.602,50,0.314,0.02,0.101,0.5,50
+11,1,1024,2,50,False,False,SPSA,original,0.602,50,0.314,0.02,0.101,0.5,50
