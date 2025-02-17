@@ -8,11 +8,16 @@ from qiskit.circuit import Parameter
 from qiskit import QuantumCircuit
 from qiskit_aer.primitives import SamplerV2
 import random
+import json
 
 from typing import Callable # Import Callable for type hinting
 
 from modules.config import VERBOSE
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
+
+def load_dict_from_json(filename):
+  with open(filename, 'r') as f:
+    return json.load(f)
 
 def read_index(filename: str, encoding: str) -> dict:
     """Reads CSV file and returns a dictionary
@@ -55,7 +60,8 @@ def read_file_name(locations: int, data_sources: dict, file_type:str='file') -> 
     filename : string
         The filename for that problem size
     """
-
+    
+    #locations = str(locations)
     if file_type == 'file':
         filename = data_sources[locations]['file']
         print(f'Reading distance data')
