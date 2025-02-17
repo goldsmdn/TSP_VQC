@@ -83,43 +83,36 @@ def cost_graph_multi(filename: str,
     fig.savefig(filename)
 
 def plot_shortest_routes(points, route1, route2=None):
-    locations = len(points)
-    for i in range(locations):
-        plt.scatter(points[i, 0], points[i, 1], marker='o', label=i)
-    # Adding title and labels for clarity
-    plt.legend()
+    x = points[:, 0]
+    y = points[:, 1]
+    plt.scatter(x, y, marker='o')
+    for i, point_index in enumerate(route1):
+        plt.annotate(str(point_index), (x[point_index], y[point_index]))
     plt.title('Route through locations selected at random')
     plt.xlabel('X-axis')
     plt.ylabel('Y-axis')
     plt.grid(True)
    
-    locations = len(points)
-
-    for i in range(locations):
-        if i < locations-1:
-            point1 = route1[i]
-            point2 = route1[i+1]
-        else:
-            point1 = route1[i]
-            point2 = route1[0]
-        x = [points[point1, 0], points[point2, 0]]
-        y = [points[point1, 1], points[point2, 1]]
-
-        plt.plot(x, y, color = 'blue')
-
     if route2:
-        for i in range(locations):
-            if i < locations-1:
-                point1 = route2[i]
-                point2 = route2[i+1]
-            else:
-                point1 = route2[i]
-                point2 = route2[0]
-            x = [points[point1, 0], points[point2, 0]]
-            y = [points[point1, 1], points[point2, 1]]
+        for i in range(len(route2) - 1):
+            start_index = route2[i]
+            end_index = route2[i+1]
+            plt.plot([x[start_index], x[end_index]], [y[start_index], y[end_index]], color='red')
 
-            plt.plot(x, y, color = 'red')
+        # Connect the last point back to the first to complete the cycle
+        start_index = route2[-1]
+        end_index = route2[0]
+        plt.plot([x[start_index], x[end_index]], [y[start_index], y[end_index]], color='red')
 
+    for i in range(len(route1) - 1):
+        start_index = route1[i]
+        end_index = route1[i+1]
+        plt.plot([x[start_index], x[end_index]], [y[start_index], y[end_index]], color='blue')
+
+        # Connect the last point back to the first to complete the cycle
+        start_index = route1[-1]
+        end_index = route1[0]
+        plt.plot([x[start_index], x[end_index]], [y[start_index], y[end_index]], color='blue')
     plt.show()
     
 
