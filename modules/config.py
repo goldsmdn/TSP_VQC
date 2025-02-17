@@ -3,11 +3,13 @@ import numpy as np
 CONTROL_DIR = 'control'
 CONTROL_FILE = 'control_parameters.csv'
 
+NETWORK_DIR = 'networks'
+
 ENCODING = 'utf-8-sig'              # Encoding of csv file
 
 # configuration files loaded from control.csv in production runs
 LOCATIONS = 4                       # number of locations to be visited
-SLICES = [1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05]                      
+SLICES = [1, 0.75]                      
                                     # Slices to use when calculating the gradient
                                     #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
                                     # For example, 0.2 means that the best 20% 
@@ -34,15 +36,15 @@ GAMMA = 0.101                       # constant that determines how quickly the S
 S = 0.5                             # parameter for parameter shift.  Default is 0.5
 
 # data sources
-DATA_SOURCES = {  4 : {'file' : 'networks/four_d.txt', 'best' : 21, 'source': 'QTAP'},
-                  5 : {'file' : 'networks/five_d.txt', 'best' : 19, 'source': 'TSPLIB'},
-                  8 : {'file' : 'networks/sim_dist_8_locs.txt', 'best' : 277.2, 'source': 'sim',
-                     'points' : 'networks/sim_points_8_locs.txt'},
-                 11 : {'file' : 'networks/dg11_d.txt', 'best' : 253, 'source': 'TSPLIB'},
-                 15 : {'file' : 'networks/p01_d.txt',  'best' : 291, 'source': 'TSPLIB'},
-                 17 : {'file' : 'networksa/gr17_d.txt', 'best' : 2085, 'source': 'TSPLIB'},
-                 26 : {'file' : 'networks/fri26_d.txt', 'best' : 699, 'source': 'TSPLIB'},
-                 42 : {'file' : 'networks/dantzig42_d.txt', 'best' : 33_523, 'source': 'TSPLIB'},
+DATA_SOURCES = {  4 : {'file' : 'four_d.txt', 'best' : 21, 'source': 'QTAP'},
+                  5 : {'file' : 'five_d.txt', 'best' : 19, 'source': 'TSPLIB'},
+                  8 : {'file' : 'sim_dist_8_locs.txt', 'best' : 277.2, 'source': 'sim',
+                     'points' : 'sim_points_8_locs.txt'},
+                 11 : {'file' : 'dg11_d.txt', 'best' : 253, 'source': 'TSPLIB'},
+                 15 : {'file' : 'p01_d.txt',  'best' : 291, 'source': 'TSPLIB'},
+                 17 : {'file' : 'gr17_d.txt', 'best' : 2085, 'source': 'TSPLIB'},
+                 26 : {'file' : 'fri26_d.txt', 'best' : 699, 'source': 'TSPLIB'},
+                 42 : {'file' : 'dantzig42_d.txt', 'best' : 33_523, 'source': 'TSPLIB'},
                 }
 
 # configuration to control execution

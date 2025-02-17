@@ -1,6 +1,7 @@
 import numpy as np
 from pytest import raises
 import math
+from pathlib import Path
 
 from modules.helper_functions_tsp import(
     validate_distance_array, find_distance, convert_binary_list_to_integer, 
@@ -11,9 +12,13 @@ from modules.helper_functions_tsp import(
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
+from modules.config import NETWORK_DIR
+
 def test_wrong_shape():
     """Checks that the correct error message is thrown for an array of the wrong shape """
-    filename = 'networks/wrong_shape.txt'
+    #filename = 'networks/wrong_shape.txt'
+    file = 'wrong_shape.txt'
+    filename = Path(NETWORK_DIR).joinpath(file)
     locs = 5
     array = np.genfromtxt(filename)
     with raises(Exception, match = 'The distance array is not two dimensional'):
@@ -21,7 +26,9 @@ def test_wrong_shape():
     
 def test_four_rows():
     """Checks that the correct error message is thrown for an array with 4 rows and 5 columns"""
-    filename = 'networks/four_rows.txt'
+    #filename = 'networks/four_rows.txt'
+    file = 'four_rows.txt'
+    filename = Path(NETWORK_DIR).joinpath(file)
     locs = 5
     array = np.genfromtxt(filename)
     with raises(Exception, match = 'The shape of the array does not match 5 locations'):
@@ -29,7 +36,9 @@ def test_four_rows():
 
 def test_six_locs():
     """Checks that the correct error message is thrown for an 5 * 5 array when there are 6 locations"""
-    filename = 'networks/five_d.txt'
+    #filename = 'networks/five_d.txt'
+    file = 'five_d.txt'
+    filename = Path(NETWORK_DIR).joinpath(file)
     locs = 6
     array = np.genfromtxt(filename)
     with raises(Exception, match = 'The shape of the array does not match 6 locations'):
@@ -37,7 +46,9 @@ def test_six_locs():
 
 def test_four_cols():
     """Checks that the correct error message is thrown for an array with 5 rows and 4 columns"""
-    filename = 'networks/four_cols.txt'
+    #filename = 'networks/four_cols.txt'
+    file = 'four_cols.txt'
+    filename = Path(NETWORK_DIR).joinpath(file)
     locs = 5
     array = np.genfromtxt(filename)
     with raises(Exception, match = 'The shape of the array does not match 5 locations'):
@@ -45,7 +56,9 @@ def test_four_cols():
 
 def test_unsymmetric():
     """Checks that the correct error message is thrown for an unsymmetric array"""
-    filename = 'networks/fri26_bad.txt'
+    #filename = 'networks/fri26_bad.txt'
+    file = 'fri26_bad.txt'
+    filename = Path(NETWORK_DIR).joinpath(file)
     locs = 26
     array = np.genfromtxt(filename)
     with raises(Exception, match = 'The array is not symmetrical'):
@@ -53,7 +66,9 @@ def test_unsymmetric():
 
 def test_distance_1():
     """Check distance read for an array element"""
-    filename = 'networks/four_d.txt'
+    #filename = 'networks/four_d.txt'
+    file = 'four_d.txt'
+    filename = Path(NETWORK_DIR).joinpath(file)
     loc1 = 1
     loc2 = 2
     expected_distance = 3.5
@@ -63,7 +78,9 @@ def test_distance_1():
 
 def test_distance_2():
     """Check distance read for a diagonal element"""
-    filename = 'networks/fri26_bad.txt'
+    #filename = 'networks/fri26_bad.txt'
+    file = 'fri26_bad.txt'
+    filename = Path(NETWORK_DIR).joinpath(file)
     loc1 = 25
     loc2 = 25
     expected_distance = 0
@@ -73,7 +90,9 @@ def test_distance_2():
 
 def test_distance_3():
     """Check distance read for end of row"""
-    filename = 'networks/four_d.txt'
+    #filename = 'networks/four_d.txt'
+    file = 'four_d.txt'
+    filename = Path(NETWORK_DIR).joinpath(file)
     loc1 = 0
     loc2 = 3
     expected_distance = 9
@@ -83,7 +102,9 @@ def test_distance_3():
 
 def test_distance_4():
     """Check distance read for end of column"""
-    filename = 'networks/four_d.txt'
+    #filename = 'networks/four_d.txt'
+    file = 'four_d.txt'
+    filename = Path(NETWORK_DIR).joinpath(file)
     loc1 = 3
     loc2 = 0
     expected_distance = 9

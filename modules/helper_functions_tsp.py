@@ -15,7 +15,7 @@ from modules.config import VERBOSE
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
 def read_index(filename: str, encoding: str) -> dict:
-    """Reads CSV file and returns and dictionary
+    """Reads CSV file and returns a dictionary
      
     Parameters
     ----------
