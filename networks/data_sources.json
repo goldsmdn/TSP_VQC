@@ -45,5 +45,11 @@
         "best": 241.0,
         "source": "sim",
         "points": "sim_points_6_locs.txt"
+    },
+    "9": {
+        "file": "sim_dist_9_locs.txt",
+        "best": 286.7,
+        "source": "sim",
+        "points": "sim_points_9_locs.txt"
     }
 }
