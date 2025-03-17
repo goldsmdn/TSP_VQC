@@ -25,7 +25,11 @@ def evaluate_model(model, shots):
             counts[string] = 1
     return(counts)
 
-def get_ready_to_train(model, optimizer, lr, weight_decay, **kwargs):
+def get_ready_to_train(model:nn.Module,
+                       optimizer:str, 
+                       lr:float, 
+                       weight_decay:float,
+                         **kwargs)-> tuple:
     """Prepare for training by setting up the target, criterion, and optimizer"""
     target = torch.tensor(0.0, requires_grad=True)
     criterion = nn.L1Loss()
@@ -39,8 +43,13 @@ def get_ready_to_train(model, optimizer, lr, weight_decay, **kwargs):
         raise ValueError(f'Optimizer {optimizer} not recognized')
     return(target, criterion, optimizer)
 
-def train_model(num_epochs, model, my_input, target, criterion,
-                optimizer, print_results=False):
+def train_model(num_epochs: int,
+                model:nn.Module, 
+                my_input:torch.Tensor, 
+                target:torch.Tensor, 
+                criterion:nn.Module,
+                optimizer:torch.optim.Optimizer, 
+                print_results:bool=False) -> tuple:
     """Train the model for a number of epochs"""
     output = model(my_input)
     lowest_cost = float(output)
