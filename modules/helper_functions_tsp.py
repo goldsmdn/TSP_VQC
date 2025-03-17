@@ -11,8 +11,11 @@ import random
 import json
 import torch
 from typing import Callable # Import Callable for type hinting
+from pathlib import Path
 
-from modules.config import VERBOSE
+from modules.config import (NETWORK_DIR, 
+                            DATA_SOURCES)
+
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
 def load_dict_from_json(filename):
@@ -1075,3 +1078,17 @@ def find_run_stats(lowest_list:list)-> tuple:
             previous_lowest = value
             iteration = i
     return(lowest_energy, iteration)
+
+def find_distances_array(locations, print_comments=False):
+    """finds the array of distances between locations and the best distance"""
+    sources_filename = Path(NETWORK_DIR).joinpath(DATA_SOURCES)
+    data_source_dict = load_dict_from_json(sources_filename)
+    filename = read_file_name(str(locations), data_source_dict)
+    filepath = Path(NETWORK_DIR).joinpath(filename)
+    best_dist = data_source_dict[str(locations)]['best']
+    if print_comments:
+        print(f'Data will be read from filename {filepath}.') 
+        print(f'It is known that the shortest distance is {best_dist}')
+    distance_array = np.genfromtxt(filepath)
+    validate_distance_array(distance_array, locations)
+    return distance_array, best_dist
