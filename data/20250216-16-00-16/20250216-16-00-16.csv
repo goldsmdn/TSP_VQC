@@ -1,3 +1,0 @@
-runid,subid,locations,slice,shots,mode,iterations,gray,hot_start,gradient_type,formulation,alpha,big_a,c,eta,gamma,s,print_frequency,cache_max_size,elapsed,hot_start_dist,best_dist_found,best_dist,iteration_found,cache_items,cache_hits,cache_misses
-20250216-16-00-16,16-00-16,4,1,1024,2,50,True,True,SPSA,new,0.602,50,0.314,0.02,0.101,0.5,50,500000,2.2889766693115234,21.0,21.0,21,0,32,2134,32
-20250216-16-00-16,16-00-18,4,1,1024,2,50,False,False,SPSA,new,0.602,50,0.314,0.02,0.101,0.5,50,500000,2.327944755554199,n/a,21.0,21,0,32,5667,32

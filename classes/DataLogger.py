@@ -2,13 +2,14 @@
 from time import strftime
 from pathlib import Path
 import csv
+from modules.config import RESULTS_DIR, RESULTS_FILE
 
 class DataLogger:
     """Parent - also responsible for creating graph folders if needed"""
     def __init__(self):
         self.runid = strftime('%Y%m%d-%H-%M-%S')
         print(f'Data logger instantiated.  Run ID: {self.runid}')
-        self.header_written = False
+        self.header_written = True
         self.fieldnames = ['runid', 'subid', 'locations', 'slice', 'shots', 'mode', 
                     'iterations', 'gray', 'hot_start', 'gradient_type', 'formulation','alpha',
                     'big_a', 'c', 'eta', 'gamma', 's', 'print_frequency',
@@ -31,16 +32,17 @@ class SubDataLogger(DataLogger):
         self.parent = parent
 
         data_path = Path('data')
-        self.data_sub_path = Path.joinpath(data_path, self.runid)
-        self.data_sub_path.mkdir(parents=True, exist_ok=True)
+        #self.data_sub_path = Path.joinpath(data_path, self.runid)
+        #self.data_sub_path.mkdir(parents=True, exist_ok=True)
+        self.data_sub_path = Path(RESULTS_DIR)
 
         self.subid = strftime('%H-%M-%S')
-        self.filename = Path.joinpath(self.data_sub_path, f'{self.runid}.csv')
+        #self.filename = Path.joinpath(self.data_sub_path, f'{self.runid}.csv')
+        self.filename = Path.joinpath(self.data_sub_path, RESULTS_FILE)
         self.full_id = f'{self.runid} - {self.subid}'
 
         print(f'SubDataLogger instantiated.  Run ID = {self.runid} - {self.subid}')
         print(f'Folder data_sub_path = {self.data_sub_path} is used for data writing')
-        #print(f'Data will be added to file = {self.filename}')
 
     def save_dict_to_csv(self, data: dict):
         with open(self.filename, mode="a", newline="") as file:

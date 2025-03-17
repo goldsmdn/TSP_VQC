@@ -4,8 +4,9 @@ CONTROL_FILE = 'control_parameters.csv'
 
 NETWORK_DIR = 'networks'
 DATA_SOURCES = 'data_sources.json'
-
 GRAPH_DIR = 'graphs'
+RESULTS_DIR = 'results'
+RESULTS_FILE = 'results.csv'
 
 ENCODING = 'utf-8-sig'              # Encoding of csv file
 
