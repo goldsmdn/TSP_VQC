@@ -9,7 +9,7 @@ from qiskit import QuantumCircuit
 from qiskit_aer.primitives import SamplerV2
 import random
 import json
-
+import torch
 from typing import Callable # Import Callable for type hinting
 
 from modules.config import VERBOSE
@@ -61,7 +61,6 @@ def read_file_name(locations: int, data_sources: dict, file_type:str='file') -> 
         The filename for that problem size
     """
     
-    #locations = str(locations)
     if file_type == 'file':
         filename = data_sources[locations]['file']
         print(f'Reading distance data')
@@ -121,7 +120,9 @@ def find_distance(loc1: int, loc2: int, distance_array: np.array, verbose: bool=
 
 def find_bin_length(i: int) -> int:
     """find the length of a binary string to represent integer i"""
-    bin_len = math.ceil((np.log2(i)))
+    if i <= 0:
+        raise ValueError("n must be a positive integer")
+    bin_len = math.ceil((math.log2(i)))
     return(bin_len) 
 
 def find_problem_size(locations:int, method='original') -> tuple:
@@ -144,8 +145,6 @@ def find_problem_size(locations:int, method='original') -> tuple:
     """
     if method == 'original':
         pb_dim = 0
-        bin_len = find_bin_length(locations)  
-        #ignore first and last item as these are moved by default
         for i in range(1, locations):
             bin_len = find_bin_length(i)
             pb_dim += bin_len
@@ -289,7 +288,7 @@ def cost_fn_fact(locs: int,
                  distance_array: np.array, 
                  gray: bool=False, 
                  verbose: bool=False,
-                 method = 'original')-> Callable[[list], int]:
+                 method:str = 'original') -> Callable[[list], int]:
     """ returns a function
 
     Parameters
@@ -310,19 +309,55 @@ def cost_fn_fact(locs: int,
     
     """
     @LRUCacheUnhashable
-    def cost_fn(bit_string):
+    def cost_fn(bit_string_input):
         """returns the value of the objective function for a bit_string"""
-        full_list_of_locs = convert_bit_string_to_cycle(bit_string, locs, gray, method)
-        total_distance = find_total_distance(full_list_of_locs, locs, distance_array)
-        valid = check_loc_list(full_list_of_locs,locs)
-        if not valid:
-            raise Exception('Algorithm returned incorrect cycle')
-        else:
-            if verbose:
-                print(f'bitstring = {bit_string}, full_list_of_locs = {full_list_of_locs}, total_distance = {total_distance}')
+        if isinstance(bit_string_input, list):
+            bit_string = bit_string_input
+            full_list_of_locs = convert_bit_string_to_cycle(bit_string, locs, gray, method)
+            total_distance = find_total_distance(full_list_of_locs, locs, distance_array)
+            valid = check_loc_list(full_list_of_locs,locs)
+            if not valid:
+                raise Exception('Algorithm returned incorrect cycle')  
             return total_distance
-    return(cost_fn)
+        else:
+            raise Exception(f'bit_string {bit_string_input} is not a list or a tensor')
+    return cost_fn
 
+def cost_fn_tensor(input: torch.tensor,
+                   cost_fn)-> torch.Tensor:
+
+    """ find the distance for each bit string input using cost_fn
+
+    Parameters
+    ----------
+    input : torch.tensor
+        Torch array with n bit strings for analysis
+    cost_fn : function
+        maps a bit_list to a distance
+    
+    Returns
+    -------
+    distance_tensor : torch.tensor
+        a Torch array with on distance entry for each input
+
+    """
+
+    if isinstance(input, torch.Tensor):
+        if input.dim() != 2:
+            raise Exception(f'input= {input} is a Torch tensor but does not have dimension 2')
+        #print(f'input = {input}')  
+        rows = input.size(0)
+        distance_tensor = torch.zeros(rows)
+        for i in range(rows):
+            row = input[i]
+            #print(f'bit_string = {row}')
+            bit_string = row.int().tolist()
+            distance = cost_fn(bit_string)
+            distance_tensor[i] = distance
+        return distance_tensor
+    else:
+        raise Exception(f'bit_string {input} is not a tensor')
+    
 def convert_bit_string_to_cycle(bit_string: list, 
                                 locs: int, 
                                 gray: bool=False, 
@@ -378,13 +413,11 @@ def convert_bit_string_to_cycle(bit_string: list,
         i = 0
         while i < locs:
             f = int(f / (locs - i))
-            #correcting possible mistype in paper
-            #k = math.floor(x / f)
+            #correcting mistype in paper
             k = math.floor(y / f)
             end_cycle_list.append(start_cycle_list[k])
             start_cycle_list.remove(start_cycle_list[k])
-            #correcting possible mistype in paper
-            #x -= k * f
+            #correcting mistype in paper
             y -= k * f
             i += 1
         return end_cycle_list
@@ -727,17 +760,21 @@ def update_parameters_using_gradient(locations: int, iterations: int,
                     print(f'The rotations are {rots}')
     return index_list, cost_list, lowest_list, gradient_list, average_list, parameter_list, 
     
-def cost_func_evaluate(cost_fn, bc: QuantumCircuit, 
+def cost_func_evaluate(cost_fn, model, 
                        shots: int = 1024, average_slice=1, 
-                       verbose:bool=False) -> tuple:
+                       verbose:bool=False,
+                       quantum:bool = True) -> tuple:
     """evaluate cost function on a quantum computer
     
     Parameters
     ----------
     cost_fn: function
         A function of a bit string evaluating a distance for that bit string
-    bc: QuantumCircuit
-        A quantum circuit with bound weights for which the energy is to be found
+    model : a model to evalulate an output bit string given weights eg
+        QuantumCircuit
+            A quantum circuit with bound weights for which the energy is to be found
+        Classical Model
+            A classical model with bound weights for which the energy is to be found
     shots: int
         The number of shots for which the quantum circuit is to be run
     average_slice: float
@@ -756,11 +793,13 @@ def cost_func_evaluate(cost_fn, bc: QuantumCircuit,
     lowest_energy_bit_string: string
         A list of the bits for the lowest energy bit string
     """
-
-    sampler = SamplerV2()
-    job = sampler.run([bc])
-    results = job.result()
-    counts = results[0].data.meas.get_counts()
+    if quantum:
+        sampler = SamplerV2()
+        job = sampler.run([model])
+        results = job.result()
+        counts = results[0].data.meas.get_counts()
+    else:
+        raise Exception('Classical model not yet coded for')
     if verbose:
         print(f'The counts directory is {counts}')
     cost, lowest, lowest_energy_bit_string = find_stats(cost_fn, counts, shots, average_slice, verbose)

@@ -2,6 +2,7 @@ import numpy as np
 from pytest import raises
 import math
 from pathlib import Path
+import torch
 
 from modules.helper_functions_tsp import(
     validate_distance_array, find_distance, convert_binary_list_to_integer, 

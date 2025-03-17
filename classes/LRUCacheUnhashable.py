@@ -3,6 +3,7 @@
 
 from collections import OrderedDict
 from modules.config import VERBOSE, CACHE_MAX_SIZE
+import torch
 
 class LRUCacheUnhashable:
     """
@@ -41,9 +42,11 @@ class LRUCacheUnhashable:
         return result
 
     @staticmethod
-    def list_to_bit_string(bit_string_list):
-        """convert list if format [0,1] to bit string eg '01'"""
-        if type(bit_string_list) != list:
+    def list_to_bit_string(bit_string_input):
+        """convert list in format [0,1] to bit string eg '01'"""
+        if isinstance(bit_string_input, list):
+            bit_string_list = bit_string_input
+        else:
             raise Exception(f'{bit_string_list} is not a list')
         return ''.join(map(str, bit_string_list))
 

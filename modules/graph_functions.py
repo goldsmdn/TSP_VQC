@@ -1,4 +1,9 @@
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+from classes.MyModel import MySine
+from pathlib import Path
+from modules.config import GRAPH_DIR
+import torch
 
 def parameter_graph(filename: str, 
                     title: str,
@@ -92,28 +97,65 @@ def plot_shortest_routes(points, route1, route2=None):
     plt.xlabel('X-axis')
     plt.ylabel('Y-axis')
     plt.grid(True)
-   
+
     if route2:
         for i in range(len(route2) - 1):
             start_index = route2[i]
             end_index = route2[i+1]
-            plt.plot([x[start_index], x[end_index]], [y[start_index], y[end_index]], color='red')
+            plt.plot([x[start_index], x[end_index]], 
+                     [y[start_index], y[end_index]], 
+                     color='red')
+                     #label='Hot start route')
 
         # Connect the last point back to the first to complete the cycle
         start_index = route2[-1]
         end_index = route2[0]
         plt.plot([x[start_index], x[end_index]], [y[start_index], y[end_index]], color='red')
 
+
     for i in range(len(route1) - 1):
         start_index = route1[i]
         end_index = route1[i+1]
-        plt.plot([x[start_index], x[end_index]], [y[start_index], y[end_index]], color='blue')
+        plt.plot([x[start_index], x[end_index]], 
+                 [y[start_index], y[end_index]], 
+                 color='blue')
+                 #label='Shortest route')
+    
 
         # Connect the last point back to the first to complete the cycle
         start_index = route1[-1]
         end_index = route1[0]
         plt.plot([x[start_index], x[end_index]], [y[start_index], y[end_index]], color='blue')
-    plt.show()
-    
 
-        
+    red_patch = mpatches.Patch(color='red', label='The hot start route')
+    blue_patch = mpatches.Patch(color='blue', label='The shortest route')
+    plt.legend(handles=[red_patch, blue_patch])
+    plt.show()
+
+def plot_sine_activation():    
+    title = 'Sine_Activation_Function'
+    filepath = Path(GRAPH_DIR).joinpath(title + '.png')
+
+    # create custom dataset
+    x = torch.linspace(0, 1, 100)
+    k = MySine()
+    y = k(x)
+
+    # Plot the Sine Activation Function
+    plt.plot(x, y)
+    plt.grid(True)
+    plt.title(title)
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.savefig(filepath)
+    plt.show()
+
+def plot_model_training(epoch_history, loss_history):
+    title = 'Loss_by_epoch'
+    filepath = Path(GRAPH_DIR).joinpath(title + '.png')
+    plt.plot(epoch_history, loss_history)
+    plt.title(title)
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.savefig(filepath)
+    plt.show
