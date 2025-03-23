@@ -38,7 +38,7 @@ def find_graph_statistics(x_list, best):
     """helper function for graph plotting"""
     x1 =  [0, x_list[-1]]
     y1 =  [best, best]
-    ymin, ymax = int(best-1), int(best*1.5) 
+    ymin, ymax = int(best-1), int(best*2) 
     return(x1, y1, ymin, ymax)
 
 def find_i_j(count, rows):
@@ -54,12 +54,13 @@ def cost_graph_multi(filename: str,
                      x_list : list,
                      av_list :list, 
                      lowest_list: list,
-                     sliced_list: list, 
-                     best: float,
+                     sliced_list: list=None, 
+                     best: float=9999,
                      main_title: str='',
                      sub_title: str='',
                      x_label: str='',
-                     figsize: tuple=(8,8)
+                     figsize: tuple=(8,8),
+                     #plot_slices=True
                      ):
     """plots a graph of the cost function for multiple lists"""
     plt.style.use('seaborn-v0_8-colorblind')
@@ -71,7 +72,8 @@ def cost_graph_multi(filename: str,
     for count in range(length):
         i, j = find_i_j(count, rows)
         axs[i,j].plot(x_list, av_list[count], linewidth=1.0, color = 'blue', label='Average')
-        axs[i,j].plot(x_list, sliced_list[count], linewidth=1.0, color = 'orange', label='Sliced Average')
+        if sliced_list:
+            axs[i,j].plot(x_list, sliced_list[count], linewidth=1.0, color = 'orange', label='Sliced Average')
         axs[i,j].plot(x_list, lowest_list[count], linewidth=1.0, color = 'red', label='Lowest found')
         axs[i,j].plot(x1, y1, linewidth=1.0, color = 'black', label='Lowest known')
         axs[i,j].grid(axis='x', color='0.95')
@@ -105,13 +107,11 @@ def plot_shortest_routes(points, route1, route2=None):
             plt.plot([x[start_index], x[end_index]], 
                      [y[start_index], y[end_index]], 
                      color='red')
-                     #label='Hot start route')
 
         # Connect the last point back to the first to complete the cycle
         start_index = route2[-1]
         end_index = route2[0]
         plt.plot([x[start_index], x[end_index]], [y[start_index], y[end_index]], color='red')
-
 
     for i in range(len(route1) - 1):
         start_index = route1[i]
@@ -119,8 +119,6 @@ def plot_shortest_routes(points, route1, route2=None):
         plt.plot([x[start_index], x[end_index]], 
                  [y[start_index], y[end_index]], 
                  color='blue')
-                 #label='Shortest route')
-    
 
         # Connect the last point back to the first to complete the cycle
         start_index = route1[-1]
