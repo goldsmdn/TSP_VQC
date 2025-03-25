@@ -6,6 +6,8 @@ from modules.config import (RESULTS_DIR,
                             RESULTS_FILE,
                             GRAPH_DIR
                             )
+
+from modules.graph_functions import cost_graph_multi
                            
 class DataLogger:
     """Parent - also responsible for creating graph folders if needed"""
@@ -37,7 +39,7 @@ class DataLogger:
                            'eta', 
                            'gamma', 
                            's', 
-                           'print_frequency',
+                           #'print_frequency',
                            'qubits',
                            'elapsed', 
                            'hot_start_dist', 
@@ -57,7 +59,6 @@ class DataLogger:
 
     def create_graph_path(self):
         """Create a folder for graphs"""
-        #graph_path = Path('graphs')
         graph_path = Path(GRAPH_DIR)
         self.graph_sub_path = Path.joinpath(graph_path, self.runid)
         self.graph_sub_path.mkdir(parents=True, exist_ok=True)
@@ -78,13 +79,15 @@ class SubDataLogger(DataLogger):
         self.parent = parent
         self.data_sub_path = Path(RESULTS_DIR)
         self.create_results_path()
+        self.create_graph_path()
         self.subid = strftime('%H-%M-%S')
         self.summary_results_filename = Path.joinpath(self.data_sub_path, RESULTS_FILE)
         self.detailed_results_filename = Path.joinpath(self.detailed_results_sub_path,f'{self.subid}.csv')
+        self.graph_filename = Path.joinpath(self.graph_sub_path,f'{self.subid}.png')
         self.full_id = f'{self.runid} - {self.subid}'
 
         print(f'SubDataLogger instantiated.  Run ID = {self.runid} - {self.subid}')
-        print(f'Results to be written to the {self.data_sub_path} folder')
+        #print(f'Results to be written to the {self.data_sub_path} folder')
 
     def save_dict_to_csv(self, data: dict):
         """Save data to csv"""
@@ -94,32 +97,50 @@ class SubDataLogger(DataLogger):
                 writer.writeheader()
                 self.parent.header_written = True
             writer.writerow(data)
-            print(f'Data for Run ID: {self.full_id} successfully added to {self.summary_results_filename}')
+            print(f'Summary data for Run ID: {self.full_id} successfully added to {self.summary_results_filename}')
 
     def save_detailed_results(self, 
-                              epoch:list,
-                              av_cost:list,
-                              lowest_cost:list,
-                              sliced_cost:list=None
+                              index_list:list,
+                              average_list:list,
+                              lowest_list:list,
+                              sliced_list:list=None
                               ):
         """Save detailed data"""
-        
-        #rows = zip(epoch, av_cost, lowest_cost, sliced_cost)
-        #rows = zip(epoch, map(float, av_cost), map(float, lowest_cost), map(float, sliced_cost))
-        #rows = list(zip(epoch, map(float, av_cost), map(float, lowest_cost), map(float, sliced_cost)))
-        av_cost = list(map(float, av_cost))
-        lowest_cost = list(map(float, lowest_cost))
-        sliced_cost = list(map(float, sliced_cost))
+
+        average_list = list(map(float, average_list))
+        lowest_list = list(map(float, lowest_list))
+        if sliced_list:
+            sliced_list = list(map(float, sliced_list))
 
         with open(self.detailed_results_filename, mode="a", newline="") as file:    
             writer = csv.writer(file)
             # write header
             writer.writerow(self.results_field_names)
             #write rows
-            for row in zip(epoch, av_cost, lowest_cost, sliced_cost):
-                writer.writerow(row)
-            #writer.writerow(rows)
-            print(f'Data for Run ID: {self.runid} - {self.subid} successfully added to {self.detailed_results_filename}')
+            if sliced_list:
+                for row in zip(index_list, average_list, lowest_list, sliced_list):
+                    writer.writerow(row)
+            else:
+                for row in zip(index_list, average_list, lowest_list):
+                    writer.writerow(row)
+            print(f'Detailed data for Run ID: {self.runid} - {self.subid} successfully added to {self.detailed_results_filename}')
 
-
-    
+    def save_plot(self, 
+                  index_list:list,
+                  av_cost_list_all:list,
+                  lowest_list_all:list,
+                  sliced_cost_list_all:list=None,
+                  best_dist:float=None,
+                  ):
+        """plot results"""
+        title = f'Evolution of loss for Run ID {self.runid} - {self.subid}' 
+        
+        cost_graph_multi(self.graph_filename,
+                         x_list=index_list,
+                         av_list=av_cost_list_all,
+                         lowest_list=lowest_list_all,
+                         sliced_list=sliced_cost_list_all,
+                         main_title=title,
+                         best=best_dist
+                         )
+        print(f'Graph for Run ID: {self.runid}-{self.subid} saved to {self.graph_filename}')
