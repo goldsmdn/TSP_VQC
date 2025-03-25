@@ -649,11 +649,15 @@ def validate_gradient_type(gradient_type):
     if gradient_type not in allowed_types:
         raise Exception (f'Gradient type {gradient_type} is not coded for')
 
-def update_parameters_using_gradient(locations: int, iterations: int, 
-                                     print_frequency: int, params: list, 
-                                     rots: np.array, cost_fn, 
-                                     qc: QuantumCircuit, shots: int, 
-                                     s: float, eta: float, 
+def update_parameters_using_gradient(locations: int, 
+                                     iterations: int, 
+                                     params: list, 
+                                     rots: np.array, 
+                                     cost_fn, 
+                                     qc: QuantumCircuit, 
+                                     shots: int, 
+                                     s: float, 
+                                     eta: float, 
                                      average_slice: float, 
                                      gray: bool, 
                                      verbose: bool, 
@@ -663,7 +667,8 @@ def update_parameters_using_gradient(locations: int, iterations: int,
                                      c:float = 1e-2,   
                                      big_a:int = 50,
                                      method: str='original',
-                                     print_results: str=True
+                                     print_results: str=True,
+                                     print_frequency: int=50
                                      ) -> list:
     """updates parameters using SPSA or parameter shift gradients"""
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
@@ -701,11 +706,18 @@ def update_parameters_using_gradient(locations: int, iterations: int,
 
     for i in range(0, iterations):
         bc = bind_weights(params, rots, qc)
-        cost, lowest, lowest_energy_bit_string = cost_func_evaluate(cost_fn, bc, 
-                                                                    shots, average_slice, 
+        #print(f'average_slice={average_slice}')
+        cost, lowest, lowest_energy_bit_string = cost_func_evaluate(cost_fn, 
+                                                                    bc, 
+                                                                    shots, 
+                                                                    average_slice, 
                                                                     verbose)
         #cost is the top-sliced energy
-        average, _ , _ = cost_func_evaluate(cost_fn, bc, shots, average_slice=1, verbose=verbose)
+        average, _ , _ = cost_func_evaluate(cost_fn, 
+                                            bc, 
+                                            shots, 
+                                            average_slice=1, 
+                                            verbose=verbose)
         #average is the average energy with no top slicing
         if verbose:
             print(f'cost, lowest, lowest_energy_bit_string = {cost}, {lowest}, {lowest_energy_bit_string}')
@@ -763,8 +775,10 @@ def update_parameters_using_gradient(locations: int, iterations: int,
                     print(f'The rotations are {rots}')
     return index_list, cost_list, lowest_list, gradient_list, average_list, parameter_list, 
     
-def cost_func_evaluate(cost_fn, model, 
-                       shots: int = 1024, average_slice=1, 
+def cost_func_evaluate(cost_fn, 
+                       model, 
+                       shots: int=1024, 
+                       average_slice: float=1, 
                        verbose:bool=False,
                        quantum:bool = True) -> tuple:
     """evaluate cost function on a quantum computer
@@ -808,10 +822,14 @@ def cost_func_evaluate(cost_fn, model,
     cost, lowest, lowest_energy_bit_string = find_stats(cost_fn, counts, shots, average_slice, verbose)
     return(cost, lowest, lowest_energy_bit_string)
 
-def my_gradient(cost_fn, qc: QuantumCircuit, 
-                params: list, rots: np.array, s: float=0.5, 
-                shots:  int=1024, average_slice: float=1, verbose: bool=False,
-                gradient_type: str='parameter_shift',
+def my_gradient(cost_fn, qc:QuantumCircuit, 
+                params:list, 
+                rots:np.array, 
+                s:float=0.5, 
+                shots:int=1024, 
+                average_slice:float=1, 
+                verbose:bool=False,
+                gradient_type:str='parameter_shift',
                 ck:float=1e-2,     
                 ) -> list:
     """calculate gradient for a quantum circuit with parameters and rotations
@@ -1092,3 +1110,26 @@ def find_distances_array(locations, print_comments=False):
     distance_array = np.genfromtxt(filepath)
     validate_distance_array(distance_array, locations)
     return distance_array, best_dist
+
+def format_boolean(string_input: str):
+    if string_input == 'TRUE':
+        output = True
+    elif string_input == 'FALSE':
+        output = False
+    else:
+        raise Exception(f'Unexpected boolean value {string_input}')
+    return output 
+
+"""def prepare_detailed_results_dict(epoch:list
+                                  av_cost:list,
+                                  lowest_cost:list,
+                                  sliced_cost:list,
+                                  ):
+    length = len(epoch)
+    if len(av_cost) != length:
+        raise Exception(f'The length of the average cost list is not the same as the epoch list')
+    if len(lowest_cost) != length:
+        raise Exception(f'The length of the average cost list is not the same as the epoch list')
+    if len(sliced_cost) != length:
+        raise Exception(f'The length of the sliced cost list is not the same as the epoch list')"""
+    

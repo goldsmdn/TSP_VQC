@@ -55,6 +55,7 @@ def train_model(num_epochs: int,
     lowest_cost = float(output)
     epoch_history = []
     loss_history = []
+    lowest_history = []
     epoch_lowest_cost_found = 0
 
     for epoch in range(num_epochs):
@@ -67,6 +68,7 @@ def train_model(num_epochs: int,
         if float(model_output ) < lowest_cost:
             lowest_cost = float(loss)
             epoch_lowest_cost_found = epoch
+        lowest_history.append(lowest_cost)
         if print_results:
             if epoch % 50 == 0:
                 print(f"Epoch {epoch}, Cost: {loss:.3f}, Lowest Cost to date =  {lowest_cost:.3f}")
@@ -78,5 +80,5 @@ def train_model(num_epochs: int,
                         print(f'Epoch {epoch}, {name} grad is None')
         optimizer.zero_grad()
     
-    return lowest_cost, epoch_lowest_cost_found, epoch_history, loss_history
+    return lowest_cost, epoch_lowest_cost_found, epoch_history, loss_history, lowest_history
 

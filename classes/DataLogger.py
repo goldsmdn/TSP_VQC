@@ -15,7 +15,6 @@ class DataLogger:
         self.runid = strftime('%Y%m%d-%H-%M-%S')
         print(f'Data logger instantiated.  Run ID: {self.runid}')
         self.header_written = True
-        #self.data_header_written = False
         self.fieldnames = ['runid', 
                            'subid', 
                            'quantum', 
@@ -87,7 +86,6 @@ class SubDataLogger(DataLogger):
         self.full_id = f'{self.runid} - {self.subid}'
 
         print(f'SubDataLogger instantiated.  Run ID = {self.runid} - {self.subid}')
-        #print(f'Results to be written to the {self.data_sub_path} folder')
 
     def save_dict_to_csv(self, data: dict):
         """Save data to csv"""

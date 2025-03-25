@@ -23,7 +23,10 @@ def parameter_graph(filename: str,
 
 def find_size(cost_list):
     """find the number of subplots"""
-    length = len(cost_list)
+    if cost_list:
+        length = len(cost_list)
+    else:
+        length = 1
     if length == 1:
         rows = 1    
         columns = 1
@@ -50,17 +53,16 @@ def find_i_j(count, rows):
     return(i,j)
 
 def cost_graph_multi(filename: str, 
-                     parameter_list: list, 
-                     x_list : list,
-                     av_list :list, 
-                     lowest_list: list,
+                     parameter_list: list=None, 
+                     x_list : list=None,
+                     av_list :list=None, 
+                     lowest_list: list=None,
                      sliced_list: list=None, 
-                     best: float=9999,
+                     best: float=None,
                      main_title: str='',
                      sub_title: str='',
                      x_label: str='',
                      figsize: tuple=(8,8),
-                     #plot_slices=True
                      ):
     """plots a graph of the cost function for multiple lists"""
     plt.style.use('seaborn-v0_8-colorblind')
