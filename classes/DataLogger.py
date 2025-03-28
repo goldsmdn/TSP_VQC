@@ -38,7 +38,6 @@ class DataLogger:
                            'eta', 
                            'gamma', 
                            's', 
-                           #'print_frequency',
                            'qubits',
                            'elapsed', 
                            'hot_start_dist', 
@@ -61,14 +60,14 @@ class DataLogger:
         graph_path = Path(GRAPH_DIR)
         self.graph_sub_path = Path.joinpath(graph_path, self.runid)
         self.graph_sub_path.mkdir(parents=True, exist_ok=True)
-        print(f'Folder {self.graph_sub_path} is created for graphs')
+        print(f'Graphs are saved in folder {self.graph_sub_path}')
 
     def create_results_path(self):
         """Create a folder for results"""
         results_path = Path(RESULTS_DIR)
         self.detailed_results_sub_path = Path.joinpath(results_path, self.runid)
         self.detailed_results_sub_path.mkdir(parents=True, exist_ok=True)
-        print(f'Folder {self.detailed_results_sub_path} is created for detailed results')
+        print(f'Detailed results are saved in folder {self.detailed_results_sub_path}')
 
 class SubDataLogger(DataLogger):
     """Child - responsible for writing data to csv for each run"""
