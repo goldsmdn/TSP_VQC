@@ -1,19 +1,25 @@
 import numpy as np
 from pytest import raises
 import math
+from pathlib import Path
+import torch
 
 from modules.helper_functions_tsp import(
     validate_distance_array, find_distance, convert_binary_list_to_integer, 
     check_loc_list, augment_loc_list, find_total_distance, find_problem_size,
     convert_bit_string_to_cycle, find_stats, cost_fn_fact, hot_start,
     hot_start_list_to_string, convert_integer_to_binary_list,
-    convert_binary_list_to_integer)
+    convert_binary_list_to_integer, find_run_stats)
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
+from modules.config import NETWORK_DIR
+
 def test_wrong_shape():
     """Checks that the correct error message is thrown for an array of the wrong shape """
-    filename = 'data/wrong_shape.txt'
+    #filename = 'networks/wrong_shape.txt'
+    file = 'wrong_shape.txt'
+    filename = Path(NETWORK_DIR).joinpath(file)
     locs = 5
     array = np.genfromtxt(filename)
     with raises(Exception, match = 'The distance array is not two dimensional'):
@@ -21,7 +27,9 @@ def test_wrong_shape():
     
 def test_four_rows():
     """Checks that the correct error message is thrown for an array with 4 rows and 5 columns"""
-    filename = 'data/four_rows.txt'
+    #filename = 'networks/four_rows.txt'
+    file = 'four_rows.txt'
+    filename = Path(NETWORK_DIR).joinpath(file)
     locs = 5
     array = np.genfromtxt(filename)
     with raises(Exception, match = 'The shape of the array does not match 5 locations'):
@@ -29,7 +37,9 @@ def test_four_rows():
 
 def test_six_locs():
     """Checks that the correct error message is thrown for an 5 * 5 array when there are 6 locations"""
-    filename = 'data/five_d.txt'
+    #filename = 'networks/five_d.txt'
+    file = 'five_d.txt'
+    filename = Path(NETWORK_DIR).joinpath(file)
     locs = 6
     array = np.genfromtxt(filename)
     with raises(Exception, match = 'The shape of the array does not match 6 locations'):
@@ -37,7 +47,9 @@ def test_six_locs():
 
 def test_four_cols():
     """Checks that the correct error message is thrown for an array with 5 rows and 4 columns"""
-    filename = 'data/four_cols.txt'
+    #filename = 'networks/four_cols.txt'
+    file = 'four_cols.txt'
+    filename = Path(NETWORK_DIR).joinpath(file)
     locs = 5
     array = np.genfromtxt(filename)
     with raises(Exception, match = 'The shape of the array does not match 5 locations'):
@@ -45,7 +57,9 @@ def test_four_cols():
 
 def test_unsymmetric():
     """Checks that the correct error message is thrown for an unsymmetric array"""
-    filename = 'data/fri26_bad.txt'
+    #filename = 'networks/fri26_bad.txt'
+    file = 'fri26_bad.txt'
+    filename = Path(NETWORK_DIR).joinpath(file)
     locs = 26
     array = np.genfromtxt(filename)
     with raises(Exception, match = 'The array is not symmetrical'):
@@ -53,7 +67,9 @@ def test_unsymmetric():
 
 def test_distance_1():
     """Check distance read for an array element"""
-    filename = 'data/four_d.txt'
+    #filename = 'networks/four_d.txt'
+    file = 'four_d.txt'
+    filename = Path(NETWORK_DIR).joinpath(file)
     loc1 = 1
     loc2 = 2
     expected_distance = 3.5
@@ -63,7 +79,9 @@ def test_distance_1():
 
 def test_distance_2():
     """Check distance read for a diagonal element"""
-    filename = 'data/fri26_bad.txt'
+    #filename = 'networks/fri26_bad.txt'
+    file = 'fri26_bad.txt'
+    filename = Path(NETWORK_DIR).joinpath(file)
     loc1 = 25
     loc2 = 25
     expected_distance = 0
@@ -73,7 +91,9 @@ def test_distance_2():
 
 def test_distance_3():
     """Check distance read for end of row"""
-    filename = 'data/four_d.txt'
+    #filename = 'networks/four_d.txt'
+    file = 'four_d.txt'
+    filename = Path(NETWORK_DIR).joinpath(file)
     loc1 = 0
     loc2 = 3
     expected_distance = 9
@@ -83,7 +103,9 @@ def test_distance_3():
 
 def test_distance_4():
     """Check distance read for end of column"""
-    filename = 'data/four_d.txt'
+    #filename = 'networks/four_d.txt'
+    file = 'four_d.txt'
+    filename = Path(NETWORK_DIR).joinpath(file)
     loc1 = 3
     loc2 = 0
     expected_distance = 9
@@ -240,7 +262,7 @@ def test_augment_loc_list2():
 
 def test_find_total_distance():
     """Check total distance calculation for a simple circuit"""
-    filename = 'data/four_d.txt'
+    filename = 'networks/four_d.txt'
     distance_array = np.genfromtxt(filename)
     int_list = [0, 1, 2, 3]
     locs = 4
@@ -420,7 +442,7 @@ def test_find_average():
     """test find_stats in average mode"""
     counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
     LOCATIONS = 4
-    filename = 'data/four_d.txt'
+    filename = 'networks/four_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     cost_fn = cost_fn_fact(LOCATIONS, distance_array, verbose=False)
@@ -432,7 +454,7 @@ def test_find_lowest():
     """test find_stats in lowest mode"""
     counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
     LOCATIONS = 4
-    filename = 'data/four_d.txt'
+    filename = 'networks/four_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     cost_fn = cost_fn_fact(LOCATIONS, distance_array, verbose=False)
@@ -444,7 +466,7 @@ def test_find_average_slice1():
     """test average slice functionality"""
     counts = {'11010': 1000}
     LOCATIONS = 5
-    filename = 'data/five_d.txt'
+    filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     GRAY = True
@@ -458,7 +480,7 @@ def test_find_average_slice2():
     """test average slice functionality - ensure no change"""
     counts = {'11010': 1000}
     LOCATIONS = 5
-    filename = 'data/five_d.txt'
+    filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     GRAY = True
@@ -471,7 +493,7 @@ def test_find_average_slice2b():
     """test average slice functionality - ensure no change"""
     counts = {'00000': 1000}
     LOCATIONS = 5
-    filename = 'data/five_d.txt'
+    filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     GRAY = True
@@ -485,7 +507,7 @@ def test_find_average_slice3():
     counts = {'11010': 500,
               '00000': 500}
     LOCATIONS = 5
-    filename = 'data/five_d.txt'
+    filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     GRAY = True
@@ -500,7 +522,7 @@ def test_find_average_slice4():
     counts = {'11010': 500,
               '00000': 500}
     LOCATIONS = 5
-    filename = 'data/five_d.txt'
+    filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     GRAY = True
@@ -515,7 +537,7 @@ def test_find_average_slice5():
           '00000': 300, #Energy = 25
           '01101': 500} #Energy = 19
     LOCATIONS = 5
-    filename = 'data/five_d.txt'
+    filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     GRAY = True
@@ -530,7 +552,7 @@ def test_find_average_slice6():
           '00000': 300, #Energy = 25
           '01101': 500} #Energy = 19
     LOCATIONS = 5
-    filename = 'data/five_d.txt'
+    filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     GRAY = True
@@ -543,9 +565,10 @@ def test_find_average_slice6():
 def test_find_average_slice7():
     counts = {'11010': 200, #Energy = 21
           '00000': 300, #Energy = 25
+
           '01101': 500} #Energy = 19
     LOCATIONS = 5
-    filename = 'data/five_d.txt'
+    filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     GRAY = True
@@ -558,7 +581,7 @@ def test_find_average_slice7():
 def test_hot_start_4():
     """hot start list with four locations"""
     LOCATIONS = 4
-    filename = 'data/four_d.txt'
+    filename = 'networks/four_d.txt'
     distance_array = np.genfromtxt(filename)
     actual_result = hot_start(distance_array, LOCATIONS)
     expected_result = [0, 1, 2, 3]
@@ -567,7 +590,7 @@ def test_hot_start_4():
 def test_hot_start_5_list():
     """hot start list with five locations"""
     LOCATIONS = 5
-    filename = 'data/five_d.txt'
+    filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     actual_result = hot_start(distance_array, LOCATIONS)
     expected_result = [0, 3, 2, 1, 4]
@@ -576,7 +599,7 @@ def test_hot_start_5_list():
 def test_hot_start_5_distance():
     """hot start distance with five locations"""
     LOCATIONS = 5
-    filename = 'data/five_d.txt'
+    filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     list = hot_start(distance_array, LOCATIONS)
     actual_result = find_total_distance(list, LOCATIONS, distance_array)
@@ -702,4 +725,17 @@ def test_bit_string_cycle_conversion_orig():
         cycle = convert_bit_string_to_cycle(binary_list, locs, gray=gray, method=method)
         new_binary_list = hot_start_list_to_string(cycle, locs, gray=gray, method=method)
         actual_result.append(new_binary_list)
+    assert expected_result == actual_result
+
+
+def test_lowest_list1():
+    test_list = [100, 90, 80, 80]
+    expected_result = (80, 2)
+    actual_result = find_run_stats(test_list)
+    assert expected_result == actual_result
+
+def test_lowest_list2():
+    test_list = [100, 100, 100, 100]
+    expected_result = (100, 0)
+    actual_result = find_run_stats(test_list)
     assert expected_result == actual_result

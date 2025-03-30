@@ -8,14 +8,22 @@ from qiskit.circuit import Parameter
 from qiskit import QuantumCircuit
 from qiskit_aer.primitives import SamplerV2
 import random
-
+import json
+import torch
 from typing import Callable # Import Callable for type hinting
+from pathlib import Path
 
-from modules.config import VERBOSE
+from modules.config import (NETWORK_DIR, 
+                            DATA_SOURCES)
+
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
+def load_dict_from_json(filename):
+  with open(filename, 'r') as f:
+    return json.load(f)
+
 def read_index(filename: str, encoding: str) -> dict:
-    """Reads CSV file and returns and dictionary
+    """Reads CSV file and returns a dictionary
      
     Parameters
     ----------
@@ -38,7 +46,7 @@ def read_index(filename: str, encoding: str) -> dict:
             dict[next(index)] = row
     return(dict)
 
-def read_file_name(locations: int, data_sources: dict) -> str:
+def read_file_name(locations: int, data_sources: dict, file_type:str='file') -> str:
     """Find the filename for a certain number of locations
     
     Parameters
@@ -46,14 +54,24 @@ def read_file_name(locations: int, data_sources: dict) -> str:
     locations : int
         Number of locations, or vertices
     data_sources : dict
-        Dictionary listing the filename for each problem siz
+        Dictionary listing the filename for each problem size
+    source : str
+        Source of data - only sim has 
 
     Returns
     ----------
     filename : string
         The filename for that problem size
     """
-    filename = data_sources[locations]['file']
+    
+    if file_type == 'file':
+        filename = data_sources[locations]['file']
+        print(f'Reading distance data')
+    elif file_type == 'points':
+        filename = data_sources[locations]['points']
+        print(f'Reading co-ordinate data')
+    else:
+        raise Exception(f'File type {file_type} is not coded for')
     return(filename)       
 
 def validate_distance_array(array :np.array, locs: int):
@@ -105,7 +123,9 @@ def find_distance(loc1: int, loc2: int, distance_array: np.array, verbose: bool=
 
 def find_bin_length(i: int) -> int:
     """find the length of a binary string to represent integer i"""
-    bin_len = math.ceil((np.log2(i)))
+    if i <= 0:
+        raise ValueError("n must be a positive integer")
+    bin_len = math.ceil((math.log2(i)))
     return(bin_len) 
 
 def find_problem_size(locations:int, method='original') -> tuple:
@@ -128,8 +148,6 @@ def find_problem_size(locations:int, method='original') -> tuple:
     """
     if method == 'original':
         pb_dim = 0
-        bin_len = find_bin_length(locations)  
-        #ignore first and last item as these are moved by default
         for i in range(1, locations):
             bin_len = find_bin_length(i)
             pb_dim += bin_len
@@ -273,7 +291,7 @@ def cost_fn_fact(locs: int,
                  distance_array: np.array, 
                  gray: bool=False, 
                  verbose: bool=False,
-                 method = 'original')-> Callable[[list], int]:
+                 method:str = 'original') -> Callable[[list], int]:
     """ returns a function
 
     Parameters
@@ -294,19 +312,55 @@ def cost_fn_fact(locs: int,
     
     """
     @LRUCacheUnhashable
-    def cost_fn(bit_string):
+    def cost_fn(bit_string_input):
         """returns the value of the objective function for a bit_string"""
-        full_list_of_locs = convert_bit_string_to_cycle(bit_string, locs, gray, method)
-        total_distance = find_total_distance(full_list_of_locs, locs, distance_array)
-        valid = check_loc_list(full_list_of_locs,locs)
-        if not valid:
-            raise Exception('Algorithm returned incorrect cycle')
-        else:
-            if verbose:
-                print(f'bitstring = {bit_string}, full_list_of_locs = {full_list_of_locs}, total_distance = {total_distance}')
+        if isinstance(bit_string_input, list):
+            bit_string = bit_string_input
+            full_list_of_locs = convert_bit_string_to_cycle(bit_string, locs, gray, method)
+            total_distance = find_total_distance(full_list_of_locs, locs, distance_array)
+            valid = check_loc_list(full_list_of_locs,locs)
+            if not valid:
+                raise Exception('Algorithm returned incorrect cycle')  
             return total_distance
-    return(cost_fn)
+        else:
+            raise Exception(f'bit_string {bit_string_input} is not a list or a tensor')
+    return cost_fn
 
+def cost_fn_tensor(input: torch.tensor,
+                   cost_fn)-> torch.Tensor:
+
+    """ find the distance for each bit string input using cost_fn
+
+    Parameters
+    ----------
+    input : torch.tensor
+        Torch array with n bit strings for analysis
+    cost_fn : function
+        maps a bit_list to a distance
+    
+    Returns
+    -------
+    distance_tensor : torch.tensor
+        a Torch array with on distance entry for each input
+
+    """
+
+    if isinstance(input, torch.Tensor):
+        if input.dim() != 2:
+            raise Exception(f'input= {input} is a Torch tensor but does not have dimension 2')
+        #print(f'input = {input}')  
+        rows = input.size(0)
+        distance_tensor = torch.zeros(rows)
+        for i in range(rows):
+            row = input[i]
+            #print(f'bit_string = {row}')
+            bit_string = row.int().tolist()
+            distance = cost_fn(bit_string)
+            distance_tensor[i] = distance
+        return distance_tensor
+    else:
+        raise Exception(f'bit_string {input} is not a tensor')
+    
 def convert_bit_string_to_cycle(bit_string: list, 
                                 locs: int, 
                                 gray: bool=False, 
@@ -362,13 +416,11 @@ def convert_bit_string_to_cycle(bit_string: list,
         i = 0
         while i < locs:
             f = int(f / (locs - i))
-            #correcting possible mistype in paper
-            #k = math.floor(x / f)
+            #correcting mistype in paper
             k = math.floor(y / f)
             end_cycle_list.append(start_cycle_list[k])
             start_cycle_list.remove(start_cycle_list[k])
-            #correcting possible mistype in paper
-            #x -= k * f
+            #correcting mistype in paper
             y -= k * f
             i += 1
         return end_cycle_list
@@ -597,19 +649,26 @@ def validate_gradient_type(gradient_type):
     if gradient_type not in allowed_types:
         raise Exception (f'Gradient type {gradient_type} is not coded for')
 
-def update_parameters_using_gradient(locations: int, iterations: int, 
-                                     print_frequency: int, params: list, 
-                                     rots: np.array, cost_fn, 
-                                     qc: QuantumCircuit, shots: int, 
-                                     s: float, eta: float, 
+def update_parameters_using_gradient(locations: int, 
+                                     iterations: int, 
+                                     params: list, 
+                                     rots: np.array, 
+                                     cost_fn, 
+                                     qc: QuantumCircuit, 
+                                     shots: int, 
+                                     s: float, 
+                                     eta: float, 
                                      average_slice: float, 
                                      gray: bool, 
                                      verbose: bool, 
                                      gradient_type: str='parameter_shift',
                                      alpha: float = 0.602,
                                      gamma:float = 0.101,
-                                     c:float=1e-2,   
-                                     method: str='original'  
+                                     c:float = 1e-2,   
+                                     big_a:int = 50,
+                                     method: str='original',
+                                     print_results: str=True,
+                                     print_frequency: int=50
                                      ) -> list:
     """updates parameters using SPSA or parameter shift gradients"""
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
@@ -617,9 +676,9 @@ def update_parameters_using_gradient(locations: int, iterations: int,
     validate_gradient_type(gradient_type)
 
     if gradient_type == 'SPSA':
-        define_parameters
+        #define_parameters
         # A is <= 10% of the number of iterations normally, but here the number of iterations is lower.
-        A = 50
+        #A = 50
     # order of magnitude of first gradients
         if verbose:
             print(f'c= {c}')
@@ -627,7 +686,7 @@ def update_parameters_using_gradient(locations: int, iterations: int,
         abs_gradient = np.abs(my_gradient(cost_fn, qc, params, rots, s=s, 
                                           shots=shots, average_slice=average_slice,
                                           verbose=verbose,
-                                          gradient_type='SPSA', ck=c,
+                                          gradient_type='SPSA', ck=c
                                           )
                               )
         
@@ -639,18 +698,26 @@ def update_parameters_using_gradient(locations: int, iterations: int,
     # 2 is an estimative of the initial changes of the parameters,
     # different changes might need other choices
         #a = 2*((A+1)**alpha)/magnitude_g0
+        #big_a is <= 10% of the number of iterations normally, but here the number of iterations is lower.
         if magnitude_g0 == 0:
             a = 999
         else:
-            a = 0.01*((A+1)**alpha)/magnitude_g0
+            a = 0.01*((big_a+1)**alpha)/magnitude_g0
 
     for i in range(0, iterations):
         bc = bind_weights(params, rots, qc)
-        cost, lowest, lowest_energy_bit_string = cost_func_evaluate(cost_fn, bc, 
-                                                                    shots, average_slice, 
+        #print(f'average_slice={average_slice}')
+        cost, lowest, lowest_energy_bit_string = cost_func_evaluate(cost_fn, 
+                                                                    bc, 
+                                                                    shots, 
+                                                                    average_slice, 
                                                                     verbose)
         #cost is the top-sliced energy
-        average, _ , _ = cost_func_evaluate(cost_fn, bc, shots, average_slice=1, verbose=verbose)
+        average, _ , _ = cost_func_evaluate(cost_fn, 
+                                            bc, 
+                                            shots, 
+                                            average_slice=1, 
+                                            verbose=verbose)
         #average is the average energy with no top slicing
         if verbose:
             print(f'cost, lowest, lowest_energy_bit_string = {cost}, {lowest}, {lowest_energy_bit_string}')
@@ -681,7 +748,7 @@ def update_parameters_using_gradient(locations: int, iterations: int,
             
             rots = rots - eta * gradient
         elif gradient_type == 'SPSA':
-            ak = a/((i+1+A)**(alpha))
+            ak = a/((i+1+big_a)**(alpha))
             ck = c/((i+1)**(gamma))
             gradient = my_gradient(cost_fn, qc, params, rots, s, shots,
                                    average_slice=average_slice,
@@ -689,35 +756,42 @@ def update_parameters_using_gradient(locations: int, iterations: int,
                                    ck=ck
                                    )
             if verbose:
-                print(f'For iteration {i} a = {a}, A = {A}, ak = {ak}, ck = {ck}')
+                print(f'For iteration {i} a = {a}, A = {big_a}, ak = {ak}, ck = {ck}')
                 print(f'rots = {rots}')
                 print(f'gradient = {gradient}')
             rots = rots - ak * gradient
         else:
             raise Exception(f'Error found when calculating gradient. {gradient_type} is not an allowed gradient type')
         gradient_list.append(gradient.tolist())
-        if i % print_frequency == 0:  
-            print(f'For iteration {i} using the best {average_slice*100} percent of the results')
-            print(f'The average cost from the sample is {average:.3f} and the top-sliced average of the best results is {cost:.3f}')
-            print(f'The lowest cost from the sample is {lowest:.3f}')
-            print(f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date} ')
-            print(f'and route {route_list}')
-            if verbose:
-                print(f'The gradient is {gradient}')
-                print(f'The rotations are {rots}')
-    return index_list, cost_list, lowest_list, gradient_list, average_list, parameter_list
+        if print_results:
+            if i % print_frequency == 0:  
+                print(f'For iteration {i} using the best {average_slice*100} percent of the results')
+                print(f'The average cost from the sample is {average:.3f} and the top-sliced average of the best results is {cost:.3f}')
+                print(f'The lowest cost from the sample is {lowest:.3f}')
+                print(f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date} ')
+                print(f'and route {route_list}')
+                if verbose:
+                    print(f'The gradient is {gradient}')
+                    print(f'The rotations are {rots}')
+    return index_list, cost_list, lowest_list, gradient_list, average_list, parameter_list, 
     
-def cost_func_evaluate(cost_fn, bc: QuantumCircuit, 
-                       shots: int = 1024, average_slice=1, 
-                       verbose:bool=False) -> tuple:
+def cost_func_evaluate(cost_fn, 
+                       model, 
+                       shots: int=1024, 
+                       average_slice: float=1, 
+                       verbose:bool=False,
+                       quantum:bool = True) -> tuple:
     """evaluate cost function on a quantum computer
     
     Parameters
     ----------
     cost_fn: function
         A function of a bit string evaluating a distance for that bit string
-    bc: QuantumCircuit
-        A quantum circuit with bound weights for which the energy is to be found
+    model : a model to evalulate an output bit string given weights eg
+        QuantumCircuit
+            A quantum circuit with bound weights for which the energy is to be found
+        Classical Model
+            A classical model with bound weights for which the energy is to be found
     shots: int
         The number of shots for which the quantum circuit is to be run
     average_slice: float
@@ -736,20 +810,26 @@ def cost_func_evaluate(cost_fn, bc: QuantumCircuit,
     lowest_energy_bit_string: string
         A list of the bits for the lowest energy bit string
     """
-
-    sampler = SamplerV2()
-    job = sampler.run([bc])
-    results = job.result()
-    counts = results[0].data.meas.get_counts()
+    if quantum:
+        sampler = SamplerV2()
+        job = sampler.run([model])
+        results = job.result()
+        counts = results[0].data.meas.get_counts()
+    else:
+        raise Exception('Classical model not yet coded for')
     if verbose:
         print(f'The counts directory is {counts}')
     cost, lowest, lowest_energy_bit_string = find_stats(cost_fn, counts, shots, average_slice, verbose)
     return(cost, lowest, lowest_energy_bit_string)
 
-def my_gradient(cost_fn, qc: QuantumCircuit, 
-                params: list, rots: np.array, s: float=0.5, 
-                shots:  int=1024, average_slice: float=1, verbose: bool=False,
-                gradient_type: str='parameter_shift',
+def my_gradient(cost_fn, qc:QuantumCircuit, 
+                params:list, 
+                rots:np.array, 
+                s:float=0.5, 
+                shots:int=1024, 
+                average_slice:float=1, 
+                verbose:bool=False,
+                gradient_type:str='parameter_shift',
                 ck:float=1e-2,     
                 ) -> list:
     """calculate gradient for a quantum circuit with parameters and rotations
@@ -989,3 +1069,67 @@ def bind_weights(params:list, rots:list, qc:QuantumCircuit) -> QuantumCircuit:
         binding_dict[str(params[i])] = rot
     bc = qc.assign_parameters(binding_dict)
     return(bc)
+
+def find_run_stats(lowest_list:list)-> tuple:
+    """finds the lowest energy and the iteration at which it was found
+    
+    Parameters
+    ----------
+    index_list: list
+        A list of integers showing the iteration number
+    lowest_list: list
+        A list of floats showing the lowest energy found at that iteration
+
+    Returns
+    -------
+    lowest_energy: float
+        The lowest energy found
+    iteration: int
+        The iteration at which the lowest energy was found
+    """
+    previous_lowest = max(lowest_list)
+    lowest_energy = previous_lowest
+    iteration = 0
+    for i, value in enumerate(lowest_list):
+        if value <  previous_lowest:
+            lowest_energy = value
+            previous_lowest = value
+            iteration = i
+    return(lowest_energy, iteration)
+
+def find_distances_array(locations, print_comments=False):
+    """finds the array of distances between locations and the best distance"""
+    sources_filename = Path(NETWORK_DIR).joinpath(DATA_SOURCES)
+    data_source_dict = load_dict_from_json(sources_filename)
+    filename = read_file_name(str(locations), data_source_dict)
+    filepath = Path(NETWORK_DIR).joinpath(filename)
+    best_dist = data_source_dict[str(locations)]['best']
+    if print_comments:
+        print(f'Data will be read from filename {filepath}.') 
+        print(f'It is known that the shortest distance is {best_dist}')
+    distance_array = np.genfromtxt(filepath)
+    validate_distance_array(distance_array, locations)
+    return distance_array, best_dist
+
+def format_boolean(string_input: str):
+    if string_input == 'TRUE':
+        output = True
+    elif string_input == 'FALSE':
+        output = False
+    else:
+        raise Exception(f'Unexpected boolean value {string_input}')
+    return output 
+
+"""def prepare_detailed_results_dict(epoch:list
+                                  av_cost:list,
+                                  lowest_cost:list,
+                                  sliced_cost:list,
+                                  ):
+    length = len(epoch)
+    if len(av_cost) != length:
+        raise Exception(f'The length of the average cost list is not the same as the epoch list')
+    if len(lowest_cost) != length:
+        raise Exception(f'The length of the average cost list is not the same as the epoch list')
+    if len(sliced_cost) != length:
+        raise Exception(f'The length of the sliced cost list is not the same as the epoch list')"""
+    

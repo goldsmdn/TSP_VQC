@@ -6,6 +6,9 @@ from modules.helper_functions_tsp import (
 import numpy as np
 import pytest as py
 
+from pathlib import Path
+from modules.config import NETWORK_DIR
+
 def my_cost_function1(bit_string_list):
     """A simple cost function for testing"""
     if bit_string_list == [0]:
@@ -80,7 +83,9 @@ def test_simple_circuit():
     params = []
     mode = 3
     locations = 5
-    filename = 'data/five_d.txt'
+    #filename = 'networks/five_d.txt'
+    file = 'five_d.txt'
+    filename = Path(NETWORK_DIR).joinpath(file)
     distance_array = np.genfromtxt(filename)
     gray = True
     shots = 1024
