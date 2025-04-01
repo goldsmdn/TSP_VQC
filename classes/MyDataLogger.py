@@ -24,6 +24,7 @@ from modules.config import (RESULTS_DIR,
                             )
 
 from modules.graph_functions import cost_graph_multi
+from modules.helper_functions_tsp import validate_gradient_type
                            
 @dataclass
 class MyDataLogger:
@@ -39,7 +40,7 @@ class MyDataLogger:
         self.graph_sub_path = self.create_sub_graph_path()
         self.results_sub_path = self.create_sub_results_path()
         self.summary_results_filename = self.find_summary_results_filename()
-        print(f'Data logger instantiated.  Run ID: {self.runid}')
+        #print(f'Data logger instantiated.  Run ID: {self.runid}')
 
     def create_sub_graph_path(self):
         """Create a folder for graphs"""
@@ -114,13 +115,24 @@ class MySubDataLogger(MyDataLogger):
         self.subid = strftime('%H-%M-%S') # Generate subid if not provided
         super().__post_init__() # call parent's self init
         self.detailed_results_filename = self.create_detailed_results_filename()
-        #self.graph_sub_path = self.create_sub_graph_path
-        #self.summary_results_filename = self.create_summary_results_filename()
-        #self.detailed_results_filename = self.create_detailed_results_filename()
         print(f'SubDataLogger instantiated.  Run ID = {self.runid} - {self.subid}')
-        #print(f'Detailed results are saved in file {self.detailed_results_filename}')
-        #print(f'Summary results are saved in file {self.summary_results_filename}')
-        #print(f'SubDataLogger instantiated.  Run ID = {self.runid} - {self.subid}')
+
+    def validate_input(self):
+        if not isinstance(self.quantum, bool):
+            raise Exception(f'Input field quantum is not boolean')
+        if not isinstance(self.gray, bool):
+            raise Exception(f'Input field gray is not boolean')
+        if not isinstance(self.hot_start, bool):
+            raise Exception(f'Input field hot start is not boolean')
+        if self.formulation not in ['original', 'new']:
+            raise Exception(f'Value {self.formulation} is not allowed for formulation' )
+        if self.quantum:
+            validate_gradient_type(self.gradient_type)
+            if self.mode not in [1,2]:
+                raise Exception(f'mode = {self.mode} is not permitted for quantum')
+        else:
+            if self.gradient_type != 'SGD':
+                raise Exception(f'Only gradient type SGD is allowed for non quantum, not {self.gradient_type}')
     
     def save_results_to_csv(self):
         results_dict = asdict(self)
@@ -129,12 +141,10 @@ class MySubDataLogger(MyDataLogger):
         del results_dict['average_list']
         del results_dict['lowest_list']
         del results_dict['sliced_list']
-        #data_row = [asdict(self)]
         data_row = [results_dict]
 
         # Save the data to the specified CSV file
         file_path = self.summary_results_filename
-        #file_path = self.find_summary_results_filename()
         print(f"Saving data to {file_path}")
         if file_path.exists():
             try:
