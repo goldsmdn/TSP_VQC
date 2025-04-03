@@ -654,32 +654,12 @@ def validate_gradient_type(gradient_type):
     if gradient_type not in allowed_types:
         raise Exception (f'Gradient type {gradient_type} is not coded for')
 
-"""def update_parameters_using_gradient(locations: int, 
-                                     iterations: int, 
-                                     params: list, 
-                                     rots: np.array, 
-                                     cost_fn, 
-                                     qc: QuantumCircuit, 
-                                     shots: int, 
-                                     s: float, 
-                                     eta: float, 
-                                     average_slice: float, 
-                                     gray: bool, 
-                                     verbose: bool, 
-                                     gradient_type: str='parameter_shift',
-                                     alpha: float = 0.602,
-                                     gamma:float = 0.101,
-                                     c:float = 1e-2,   
-                                     big_a:int = 50,
-                                     method: str='original',
-
-                                     ) -> list:"""
 def update_parameters_using_gradient(subdatalogger,
                                      params: list,
                                      rots: np.array,
                                      cost_fn: Callable,
                                      qc: QuantumCircuit,
-                                     print_results: str=True,
+                                     print_results: str=False,
                                      verbose:str = False,
                                      ):
     """updates parameters using SPSA or parameter shift gradients"""
@@ -1141,7 +1121,7 @@ def find_run_stats(lowest_list:list)-> tuple:
             lowest_energy = value
             previous_lowest = value
             iteration = i
-    return(lowest_energy, iteration)
+    return lowest_energy, iteration
 
 def find_distances_array(locations, print_comments=False):
     """finds the array of distances between locations and the best distance"""

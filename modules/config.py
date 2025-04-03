@@ -27,7 +27,7 @@ ITERATIONS =  20                    # updates, or iterations
 GRAY = True                         # Use Gray codes
 HOT_START = True                    # Make a hot start
 
-GRADIENT_TYPE = 'SGD'               # controls the optimiser used
+GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
                                     # quantum - 'parameter_shift' - default
                                     # quantum - 'SPSA' is a stochastic gradient descent
                                     # ml - 'SGD' stochastical

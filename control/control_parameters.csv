@@ -1,3 +1,7 @@
-﻿quantum,locations,slice,shots,layers,std_dev,mode,iterations,gray,hot_start,gradient_type,formulation,lr,weight_decay,momentum,alpha,big_a,c,eta,gamma,s
-TRUE,4,1,1024, , ,2,100,TRUE,TRUE,SPSA,original, , , ,0.602,50,0.314,0.02,0.101,0.5
-FALSE,4,1,64,2,0.5, ,100,TRUE,TRUE,SGD,original,0.0001,0.0002,0, , , , , , 
+﻿quantum,locations,slice,shots,mode,iterations,gray,hot_start,gradient_type,formulation,layers,std_dev,lr,weight_decay,momentum,alpha,big_a,c,eta,gamma,s
+TRUE,5,1,1024,2,20,TRUE,TRUE,SPSA,original,,,,,,0.602,50,0.3141592653589793,0.01,0.101,0.5
+TRUE,5,0.75,1024,2,20,TRUE,FALSE,SPSA,original,,,,,,0.602,50,0.3141592653589793,0.01,0.101,0.5
+TRUE,5,0.5,1024,2,20,FALSE,TRUE,SPSA,new,,,,,,0.602,50,0.3141592653589793,0.01,0.101,0.5
+TRUE,5,0.25,1024,2,20,FALSE,FALSE,SPSA,new,,,,,,0.602,50,0.3141592653589793,0.01,0.101,0.5
+FALSE,5,1,32,2,20,TRUE,TRUE,SGD,original,2,0.5,0.0001,0.0002,0,,,,,,
+FALSE,5,1,32,2,20,TRUE,TRUE,SGD,original,2,0.5,0.0001,0.0002,0,,,,,,
