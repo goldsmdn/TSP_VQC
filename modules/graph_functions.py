@@ -150,7 +150,7 @@ def plot_sine_activation():
     plt.savefig(filepath)
     plt.show()
 
-def plot_model_training(epoch_history, loss_history):
+"""def plot_model_training(epoch_history, loss_history):
     title = 'Loss_by_epoch'
     filepath = Path(GRAPH_DIR).joinpath(title + '.png')
     plt.plot(epoch_history, loss_history)
@@ -158,4 +158,4 @@ def plot_model_training(epoch_history, loss_history):
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.savefig(filepath)
-    plt.show
+    plt.show"""

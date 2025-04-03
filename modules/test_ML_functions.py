@@ -26,7 +26,12 @@ def test_estimate_gradient():
     filepath = Path(NETWORK_DIR).joinpath(filename)
     distance_array = np.genfromtxt(filepath)
     validate_distance_array(distance_array, LOCATIONS)
-    cost_fn = cost_fn_fact(LOCATIONS, distance_array, GRAY, method = DECODING_FORMULATION, verbose=VERBOSE)
+    cost_fn = cost_fn_fact(LOCATIONS, 
+                           distance_array, 
+                           GRAY, 
+                           method = 
+                           DECODING_FORMULATION
+                           )
     output = cost_fn_tensor(my_input, cost_fn).to(device)
     actual_result = estimate_cost_fn_gradient(my_input, output, cost_fn).float().to(device)
     expected_result = torch.tensor([[ -8.0, 6.0,  6.0,  -6.0,  0.0]]).float().to(device)
@@ -47,7 +52,11 @@ def test_estimate_gradient_2():
     filepath = Path(NETWORK_DIR).joinpath(filename)
     distance_array = np.genfromtxt(filepath)
     validate_distance_array(distance_array, LOCATIONS)
-    cost_fn = cost_fn_fact(LOCATIONS, distance_array, GRAY, method = DECODING_FORMULATION, verbose=VERBOSE)
+    cost_fn = cost_fn_fact(LOCATIONS, 
+                           distance_array, 
+                           GRAY, 
+                           method = DECODING_FORMULATION,
+                           )
     output = cost_fn_tensor(my_input, cost_fn).to(device)
     actual_result = estimate_cost_fn_gradient(my_input, output, cost_fn).float().to(device)
     expected_result = torch.tensor([[ -8.0, 6.0,  6.0,  -6.0,  0.0], 
@@ -69,10 +78,13 @@ def test_estimate_gradient_3():
     filepath = Path(NETWORK_DIR).joinpath(filename)
     distance_array = np.genfromtxt(filepath)
     validate_distance_array(distance_array, LOCATIONS)
-    cost_fn = cost_fn_fact(LOCATIONS, distance_array, GRAY, method = DECODING_FORMULATION, verbose=VERBOSE)
+    cost_fn = cost_fn_fact(LOCATIONS, 
+                           distance_array, 
+                           GRAY, 
+                           method = DECODING_FORMULATION,
+                           )
     output = cost_fn_tensor(my_input, cost_fn).to(device)
     actual_result = estimate_cost_fn_gradient(my_input, output, cost_fn).float().to(device)
-    #expected_result = torch.tensor([[-8.0, 1.0,  1.0,  -1.0,  -1.0]]).float().to(device)
     expected_result = torch.tensor([[ -8.0,  6.0,  6.0, -6.0,  0.0], 
                                     [ -8.0, -4.0, -4.0,  4.0, -2.0]]).float().to(device)
     assert torch.allclose(actual_result, expected_result, atol=1e-4)

@@ -3,14 +3,17 @@
 
 from collections import OrderedDict
 from modules.config import VERBOSE, CACHE_MAX_SIZE
-import torch
+#import torch
 
 class LRUCacheUnhashable:
     """
     A decorator class that caches results for functions with unhashable arguments.
     Uses an OrderedDict to implement a simple LRU eviction policy.
     """
-    def __init__(self, orig_func=None, maxsize=CACHE_MAX_SIZE):
+    def __init__(self, 
+                 orig_func=None, 
+                 maxsize=CACHE_MAX_SIZE
+                 ):
         """initialisation"""
         self.orig_func = orig_func
         self.maxsize = maxsize

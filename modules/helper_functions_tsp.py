@@ -291,7 +291,7 @@ def find_total_distance(int_list: list, locs: int, distance_array :np.array)-> f
 def cost_fn_fact(locs: int, 
                  distance_array: np.array, 
                  gray: bool=False, 
-                 verbose: bool=False,
+                 #verbose: bool=False,
                  method:str = 'original') -> Callable[[list], int]:
     """ returns a function
 
@@ -303,8 +303,6 @@ def cost_fn_fact(locs: int,
         Numpy symmetric array with distances between locations
     gray: bool
         If True Gray codes are used
-    verbose: bool
-        If True more information is printed out
     
     Returns
     -------
@@ -317,9 +315,18 @@ def cost_fn_fact(locs: int,
         """returns the value of the objective function for a bit_string"""
         if isinstance(bit_string_input, list):
             bit_string = bit_string_input
-            full_list_of_locs = convert_bit_string_to_cycle(bit_string, locs, gray, method)
-            total_distance = find_total_distance(full_list_of_locs, locs, distance_array)
-            valid = check_loc_list(full_list_of_locs,locs)
+            full_list_of_locs = convert_bit_string_to_cycle(bit_string, 
+                                                            locs, 
+                                                            gray, 
+                                                            method
+                                                            )
+            total_distance = find_total_distance(full_list_of_locs, 
+                                                 locs, 
+                                                 distance_array
+                                                 )
+            valid = check_loc_list(full_list_of_locs,
+                                   locs
+                                   )
             if not valid:
                 raise Exception('Algorithm returned incorrect cycle')  
             return total_distance

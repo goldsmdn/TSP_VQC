@@ -20,7 +20,12 @@ from modules.config import (RESULTS_DIR,
                             GAMMA, 
                             C, 
                             BIG_A,    
-                            DECODING_FORMULATION
+                            DECODING_FORMULATION,
+                            NUM_LAYERS, 
+                            STD_DEV,
+                            LR, 
+                            MOMENTUM,
+                            WEIGHT_DECAY
                             )
 
 from modules.graph_functions import cost_graph_multi
@@ -68,10 +73,11 @@ class MySubDataLogger(MyDataLogger):
     #file details
     subid = None
     detailed_results_filename: Path = None
+    graph_filename: Path = None
     #general inputs
     quantum: bool = None  # Fixed: Use 'bool' instead of 'Bool'
     locations: int = None
-    slice: float = None
+    slice: float = 1.0
     shots: int = None 
     mode: str = None
     iterations: int = None
@@ -86,12 +92,19 @@ class MySubDataLogger(MyDataLogger):
     weight_decay: float = None 
     momentum: float = None
     #quantum specific input
-    alpha: float = 0.602 
-    big_a: float = 50
-    c: float = 0.314
-    eta: float = 0.02
-    gamma: float = 0.101
-    s: float = 0.5
+    #alpha: float = 0.602 
+    #big_a: float = 50
+    #c: float = 0.314
+    #eta: float = 0.02
+    #gamma: float = 0.101
+    #s: float = 0.5
+    alpha: float = None #default= 0.602 
+    big_a: float = None #default= 0.50 
+    c: float = None     #default= 0.314
+    eta: float = None   #default= 0.02 
+    c: float = None     #default= 0.101
+    gamma: float = None #default= 0.5
+    s: float = None
     #calculated results
     qubits: int = None                 #number of qubits / binary variables needed
     elapsed: float = None 
@@ -109,12 +122,17 @@ class MySubDataLogger(MyDataLogger):
     average_list: list = field(default_factory=list)
     lowest_list: list = field(default_factory=list)
     sliced_list: list = field(default_factory=list)
+    #results for graphing
+    average_list_all: list = field(default_factory=list)
+    lowest_list_all: list = field(default_factory=list)
+    sliced_cost_list_all:list = field(default_factory=list)
 
     def __post_init__(self):
         """This method is called after __init__"""
         self.subid = strftime('%H-%M-%S') # Generate subid if not provided
         super().__post_init__() # call parent's self init
-        self.detailed_results_filename = self.create_detailed_results_filename()
+        self.detailed_results_filename = self.find_detailed_results_filename()
+        self.graph_filename = self.find_graph_filename()
         print(f'SubDataLogger instantiated.  Run ID = {self.runid} - {self.subid}')
 
     def validate_input(self):
@@ -131,7 +149,7 @@ class MySubDataLogger(MyDataLogger):
             if self.mode not in [1,2]:
                 raise Exception(f'mode = {self.mode} is not permitted for quantum')
         else:
-            if self.gradient_type != 'SGD':
+            if self.gradient_type not in ['SGD', 'Adam', 'RMSprop']:
                 raise Exception(f'Only gradient type SGD is allowed for non quantum, not {self.gradient_type}')
     
     def save_results_to_csv(self):
@@ -141,6 +159,9 @@ class MySubDataLogger(MyDataLogger):
         del results_dict['average_list']
         del results_dict['lowest_list']
         del results_dict['sliced_list']
+        del results_dict['average_list_all']
+        del results_dict['lowest_list_all']
+        del results_dict['sliced_cost_list_all']
         data_row = [results_dict]
 
         # Save the data to the specified CSV file
@@ -189,27 +210,43 @@ class MySubDataLogger(MyDataLogger):
         self.eta = ETA
         self.gamma = GAMMA
         self.s = S
-    
-    def create_detailed_results_filename(self):
+
+    def update_ml_constants_from_config(self):
+        self.layers= NUM_LAYERS
+        self.std_dev = STD_DEV
+        self.lr = LR
+        self.momentum = MOMENTUM
+        self.weight_decay = WEIGHT_DECAY
+
+    std_dev: float = None
+    lr: float = None
+    weight_decay: float = None 
+    momentum: float = None
+
+    def find_detailed_results_filename(self):
         """Create the filepath for the detailed results"""
         detailed_results_filename = Path.joinpath(self.results_sub_path, f'{self.subid}.csv')
         return detailed_results_filename
     
+    def find_graph_filename(self):
+        """Create the filepath for the graphs results"""
+        graph_filename = Path.joinpath(self.graph_sub_path, f'{self.subid}.png')
+        return graph_filename
+    
     def save_detailed_results(self):
         """Save detailed data"""
         field_name_list = ['index_list', 'average_list', 'lowest_list', 'sliced_list']
-        #file_path = self.create_detailed_results_filename()
         file_path = self.detailed_results_filename
         index_list = self.index_list
         average_list = list(map(float, self.average_list))
         lowest_list = list(map(float, self.lowest_list))
-        if self.sliced_list:
+        if self.sliced_list != []:
             sliced_list = list(map(float, self.sliced_list))
         try:
             with open(file_path, mode="a", newline="") as file: 
                 writer = csv.writer(file) 
                 writer.writerow(field_name_list)
-                if sliced_list:
+                if self.sliced_list != []:
                     for row in zip(index_list, average_list, lowest_list, sliced_list):
                         writer.writerow(row)
                 else:
@@ -220,54 +257,17 @@ class MySubDataLogger(MyDataLogger):
         except Exception as e:
                 print(f"An error occurred while saving the data to {file_path}: {e}")
 
-#@dataclass
-#class MyDetailedDataLogger(MySubDataLogger):
-    """responsible for holding detailed results"""
-    """detailed_results_filename: Path = None
-    #detailed_results
-    index_list:list = []
-    average_list:list = []
-    lowest_list:list = []
-    sliced_list:list = []
-    #results for graphing
-    #av_cost_list_all: list = None
-    #lowest_list_all: list = None
-    #sliced_cost_list_all = None"""
+    def save_plot(self):
+        """plot results"""
+        title = f'Evolution of loss for Run ID {self.runid} - {self.subid}' 
 
-    #def __post_init__(self):
-    #"""This method is called after __init__"""
-        #self.subid = strftime('%H-%M-%S') # Generate subid if not provided
-        #super().__post_init__() # call parent's self init
-        #self.graph_sub_path = self.create_sub_graph_path
-        #self.summary_results_filename = self.create_summary_results_filename()
-        #self.detailed_results_filename = self.create_detailed_results_filename()
-        #print(f'MyDetailedDataLogger instantiated.  Run ID = {self.runid} - {self.subid}')
-
-    #def create_detailed_results_filename(self):
-    #    """Create the filepath for the detailed results"""
-    #    detailed_results_filename = Path.joinpath(self.results_sub_path, f'{self.subid}.csv')
-    #    return detailed_results_filename
-
-    #def save_detailed_results(self):
-    #    """Save detailed data"""
-    #    field_name_list = ['index_list', 'average_list', 'lowest_list', 'sliced_list']
-    #    file_path = self.create_detailed_results_filename()
-    #    index_list = self.index_list
-    #    average_list = list(map(float, self.average_list))
-    #    lowest_list = list(map(float, self.lowest_list))
-    #    if self.sliced_list:
-    #        sliced_list = list(map(float, self.sliced_list))
-    #    try:
-     #       with open(file_path, mode="a", newline="") as file: 
-    #          writer = csv.writer(file) 
-    #            writer.writerow(field_name_list)
-    #            if sliced_list:
-    #                for row in zip(index_list, average_list, lowest_list, sliced_list):
-    #                    writer.writerow(row)
-    #            else:
-    #                for row in zip(index_list, average_list, lowest_list):
-    #                    writer.writerow(row)
-    #            print(f'Detailed data for Run ID: {self.runid} - {self.subid} successfully added to {file_path}')
-
-    #    except Exception as e:
-    #            print(f"An error occurred while saving the data to {file_path}: {e}")
+        print(f'Graph for Run ID: {self.runid}-{self.subid} being saved to {self.graph_filename}')
+        
+        cost_graph_multi(filename=self.graph_filename,
+                         x_list=self.index_list,
+                         av_list=self.average_list_all,
+                         lowest_list=self.lowest_list_all,
+                         sliced_list=self.sliced_cost_list_all,
+                         main_title=title,
+                         best=self.best_dist
+                         )
