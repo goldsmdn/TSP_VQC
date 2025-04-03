@@ -49,7 +49,8 @@ def train_model(num_epochs: int,
                 target:torch.Tensor, 
                 criterion:nn.Module,
                 optimizer:torch.optim.Optimizer, 
-                print_results:bool=False) -> tuple:
+                print_results:bool=False,
+                print_frequency:int=10) -> tuple:
     """Train the model for a number of epochs"""
     model_output = model(my_input)
     #lowest_cost = float(output)
@@ -74,7 +75,7 @@ def train_model(num_epochs: int,
             epoch_lowest_cost_found = epoch
         lowest_history.append(lowest_cost)
         if print_results:
-            if epoch % 2 == 0:
+            if epoch % print_frequency == 0:
                 print(
                     f'Epoch {epoch}, Average cost: {loss:.3f}', 
                     f'Epoch min cost:{epoch_min:.3f}, Lowest Cost to date: {lowest_cost:.3f}'

@@ -27,7 +27,7 @@ ITERATIONS =  20                    # updates, or iterations
 GRAY = True                         # Use Gray codes
 HOT_START = True                    # Make a hot start
 
-GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
+GRADIENT_TYPE = 'SGD'               # controls the optimiser used
                                     # quantum - 'parameter_shift' - default
                                     # quantum - 'SPSA' is a stochastic gradient descent
                                     # ml - 'SGD' stochastical
@@ -44,7 +44,7 @@ C = np.pi/10                        # initial CK for SPSA
 ETA = 0.01                          # eta - learning rate for parameter shift
 GAMMA = 0.101                       # constant that determines how quickly the SPSA perturbation decays
 S = 0.5                             # parameter for parameter shift.  Default is 0.5                                   
-PRINT_FREQUENCY = 10                # how often results are printed out
+PRINT_FREQUENCY = 5                 # how often results are printed out
 CHANGE_EACH_PARAMETER = True        # Iterate through each parameter in the circuit
 PLOT_PARAMETER_EVALUATION = True    # Plot the evaluation of each parameter         
 ROTATIONS = 10                      # number of rotations sampled in parameter graphs

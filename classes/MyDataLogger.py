@@ -7,6 +7,7 @@ from dataclasses import dataclass, asdict, field
 from modules.config import (RESULTS_DIR, 
                             RESULTS_FILE,
                             GRAPH_DIR,
+                            CACHE_MAX_SIZE,
                             LOCATIONS, 
                             SHOTS,
                             MODE, 
@@ -71,7 +72,7 @@ class MyDataLogger:
 class MySubDataLogger(MyDataLogger):
     """Child details of each data run"""
     #file details
-    subid = None
+    subid:str = None
     detailed_results_filename: Path = None
     graph_filename: Path = None
     #general inputs
@@ -92,19 +93,12 @@ class MySubDataLogger(MyDataLogger):
     weight_decay: float = None 
     momentum: float = None
     #quantum specific input
-    #alpha: float = 0.602 
-    #big_a: float = 50
-    #c: float = 0.314
-    #eta: float = 0.02
-    #gamma: float = 0.101
-    #s: float = 0.5
     alpha: float = None #default= 0.602 
     big_a: float = None #default= 0.50 
     c: float = None     #default= 0.314
     eta: float = None   #default= 0.02 
-    c: float = None     #default= 0.101
     gamma: float = None #default= 0.5
-    s: float = None
+    s: float = None 
     #calculated results
     qubits: int = None                 #number of qubits / binary variables needed
     elapsed: float = None 
@@ -113,10 +107,10 @@ class MySubDataLogger(MyDataLogger):
     best_dist: float = None
     iteration_found: int = None
     #Cache statistics
-    cache_max_size = None
-    cache_items = None
-    cache_hits = None 
-    cache_misses = None
+    cache_max_size:int = None
+    cache_items:int = None
+    cache_hits:int = None 
+    cache_misses:int = None
     #detailed_results
     index_list: list = field(default_factory=list)  # Use default_factory for mutable defaults
     average_list: list = field(default_factory=list)
@@ -202,6 +196,7 @@ class MySubDataLogger(MyDataLogger):
         self.hot_start = HOT_START
         self.gradient_type = GRADIENT_TYPE
         self.formulation = DECODING_FORMULATION
+        self.cache_max_size = CACHE_MAX_SIZE
 
     def update_quantum_constants_from_config(self):
         self.alpha = ALPHA
@@ -210,6 +205,7 @@ class MySubDataLogger(MyDataLogger):
         self.eta = ETA
         self.gamma = GAMMA
         self.s = S
+        self.cache_max_size = CACHE_MAX_SIZE
 
     def update_ml_constants_from_config(self):
         self.layers= NUM_LAYERS
@@ -218,10 +214,25 @@ class MySubDataLogger(MyDataLogger):
         self.momentum = MOMENTUM
         self.weight_decay = WEIGHT_DECAY
 
-    std_dev: float = None
-    lr: float = None
-    weight_decay: float = None 
-    momentum: float = None
+    def update_cache_statistics(self, cost_fn):
+        """update cache statistics"""
+        if hasattr(cost_fn, 'report_cache_stats'):
+            items, hits, misses = cost_fn.report_cache_stats()
+            self.cache_items = items
+            self.cache_hits = hits
+            self.cache_misses = misses
+        else:
+            self.cache_items = 0
+            self.cache_hits = 0
+            self.cache_misses = 0
+
+        if hasattr(cost_fn, 'clear_cache'):
+            cost_fn.clear_cache() 
+
+    #std_dev: float = None
+    #lr: float = None
+    #weight_decay: float = None 
+    #momentum: float = None
 
     def find_detailed_results_filename(self):
         """Create the filepath for the detailed results"""
