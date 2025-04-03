@@ -14,7 +14,8 @@ from typing import Callable # Import Callable for type hinting
 from pathlib import Path
 
 from modules.config import (NETWORK_DIR, 
-                            DATA_SOURCES)
+                            DATA_SOURCES, 
+                            PRINT_FREQUENCY)
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
@@ -290,7 +291,6 @@ def find_total_distance(int_list: list, locs: int, distance_array :np.array)-> f
 def cost_fn_fact(locs: int, 
                  distance_array: np.array, 
                  gray: bool=False, 
-                 verbose: bool=False,
                  method:str = 'original') -> Callable[[list], int]:
     """ returns a function
 
@@ -302,8 +302,6 @@ def cost_fn_fact(locs: int,
         Numpy symmetric array with distances between locations
     gray: bool
         If True Gray codes are used
-    verbose: bool
-        If True more information is printed out
     
     Returns
     -------
@@ -316,9 +314,18 @@ def cost_fn_fact(locs: int,
         """returns the value of the objective function for a bit_string"""
         if isinstance(bit_string_input, list):
             bit_string = bit_string_input
-            full_list_of_locs = convert_bit_string_to_cycle(bit_string, locs, gray, method)
-            total_distance = find_total_distance(full_list_of_locs, locs, distance_array)
-            valid = check_loc_list(full_list_of_locs,locs)
+            full_list_of_locs = convert_bit_string_to_cycle(bit_string, 
+                                                            locs, 
+                                                            gray, 
+                                                            method
+                                                            )
+            total_distance = find_total_distance(full_list_of_locs, 
+                                                 locs, 
+                                                 distance_array
+                                                 )
+            valid = check_loc_list(full_list_of_locs,
+                                   locs
+                                   )
             if not valid:
                 raise Exception('Algorithm returned incorrect cycle')  
             return total_distance
@@ -341,19 +348,17 @@ def cost_fn_tensor(input: torch.tensor,
     Returns
     -------
     distance_tensor : torch.tensor
-        a Torch array with on distance entry for each input
+        a Torch array with one distance entry for each input
 
     """
 
     if isinstance(input, torch.Tensor):
         if input.dim() != 2:
             raise Exception(f'input= {input} is a Torch tensor but does not have dimension 2')
-        #print(f'input = {input}')  
         rows = input.size(0)
         distance_tensor = torch.zeros(rows)
         for i in range(rows):
             row = input[i]
-            #print(f'bit_string = {row}')
             bit_string = row.int().tolist()
             distance = cost_fn(bit_string)
             distance_tensor[i] = distance
@@ -649,44 +654,51 @@ def validate_gradient_type(gradient_type):
     if gradient_type not in allowed_types:
         raise Exception (f'Gradient type {gradient_type} is not coded for')
 
-def update_parameters_using_gradient(locations: int, 
-                                     iterations: int, 
-                                     params: list, 
-                                     rots: np.array, 
-                                     cost_fn, 
-                                     qc: QuantumCircuit, 
-                                     shots: int, 
-                                     s: float, 
-                                     eta: float, 
-                                     average_slice: float, 
-                                     gray: bool, 
-                                     verbose: bool, 
-                                     gradient_type: str='parameter_shift',
-                                     alpha: float = 0.602,
-                                     gamma:float = 0.101,
-                                     c:float = 1e-2,   
-                                     big_a:int = 50,
-                                     method: str='original',
-                                     print_results: str=True,
-                                     print_frequency: int=50
-                                     ) -> list:
+def update_parameters_using_gradient(subdatalogger,
+                                     params: list,
+                                     rots: np.array,
+                                     cost_fn: Callable,
+                                     qc: QuantumCircuit,
+                                     print_results: str=False,
+                                     verbose:str = False,
+                                     ):
     """updates parameters using SPSA or parameter shift gradients"""
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
     parameter_list, average_list = [], []
+    locations = subdatalogger.locations
+    iterations = subdatalogger.iterations
+    shots =  subdatalogger.shots
+    s = subdatalogger.s
+    eta = subdatalogger.eta
+    average_slice = subdatalogger.slice
+    gray = subdatalogger.gray
+    gradient_type = subdatalogger.gradient_type
+    alpha = subdatalogger.alpha
+    gamma = subdatalogger.gamma
+    c = subdatalogger.c
+    big_a = subdatalogger.big_a
+    method = subdatalogger.formulation
+
     validate_gradient_type(gradient_type)
 
     if gradient_type == 'SPSA':
         #define_parameters
         # A is <= 10% of the number of iterations normally, but here the number of iterations is lower.
         #A = 50
-    # order of magnitude of first gradients
+        # order of magnitude of first gradients
         if verbose:
             print(f'c= {c}')
 
-        abs_gradient = np.abs(my_gradient(cost_fn, qc, params, rots, s=s, 
-                                          shots=shots, average_slice=average_slice,
+        abs_gradient = np.abs(my_gradient(cost_fn, 
+                                          qc, 
+                                          params, 
+                                          rots, 
+                                          s=s, 
+                                          shots=shots, 
+                                          average_slice=average_slice,
                                           verbose=verbose,
-                                          gradient_type='SPSA', ck=c
+                                          gradient_type='SPSA', 
+                                          ck=c
                                           )
                               )
         
@@ -709,15 +721,17 @@ def update_parameters_using_gradient(locations: int,
         #print(f'average_slice={average_slice}')
         cost, lowest, lowest_energy_bit_string = cost_func_evaluate(cost_fn, 
                                                                     bc, 
-                                                                    shots, 
-                                                                    average_slice, 
-                                                                    verbose)
+                                                                    shots = subdatalogger.shots, 
+                                                                    average_slice = subdatalogger.slice, 
+                                                                    verbose=verbose
+                                                                    )
         #cost is the top-sliced energy
         average, _ , _ = cost_func_evaluate(cost_fn, 
                                             bc, 
-                                            shots, 
+                                            shots = subdatalogger.shots, 
                                             average_slice=1, 
-                                            verbose=verbose)
+                                            verbose=verbose
+                                            )
         #average is the average energy with no top slicing
         if verbose:
             print(f'cost, lowest, lowest_energy_bit_string = {cost}, {lowest}, {lowest_energy_bit_string}')
@@ -740,19 +754,31 @@ def update_parameters_using_gradient(locations: int,
         lowest_list.append(lowest_to_date)
         average_list.append(average)
         parameter_list.append(rots)
-        if gradient_type == 'parameter_shift':
-            gradient = my_gradient(cost_fn, qc, params, rots, s, shots,
+        if subdatalogger.gradient_type == 'parameter_shift':
+            gradient = my_gradient(cost_fn, 
+                                   qc, 
+                                   params, 
+                                   rots, 
+                                   s, 
+                                   shots=shots,
                                    average_slice=average_slice,
-                                   verbose=verbose, gradient_type='parameter_shift'
+                                   verbose=verbose, 
+                                   gradient_type='parameter_shift'
                                    )
             
             rots = rots - eta * gradient
-        elif gradient_type == 'SPSA':
+        elif subdatalogger.gradient_type == 'SPSA':
             ak = a/((i+1+big_a)**(alpha))
             ck = c/((i+1)**(gamma))
-            gradient = my_gradient(cost_fn, qc, params, rots, s, shots,
+            gradient = my_gradient(cost_fn, 
+                                   qc, 
+                                   params, 
+                                   rots, 
+                                   s, 
+                                   shots,
                                    average_slice=average_slice,
-                                   verbose=verbose, gradient_type='SPSA',
+                                   verbose=verbose, 
+                                   gradient_type='SPSA',
                                    ck=ck
                                    )
             if verbose:
@@ -764,7 +790,7 @@ def update_parameters_using_gradient(locations: int,
             raise Exception(f'Error found when calculating gradient. {gradient_type} is not an allowed gradient type')
         gradient_list.append(gradient.tolist())
         if print_results:
-            if i % print_frequency == 0:  
+            if i % PRINT_FREQUENCY == 0:  
                 print(f'For iteration {i} using the best {average_slice*100} percent of the results')
                 print(f'The average cost from the sample is {average:.3f} and the top-sliced average of the best results is {cost:.3f}')
                 print(f'The lowest cost from the sample is {lowest:.3f}')
@@ -773,7 +799,7 @@ def update_parameters_using_gradient(locations: int,
                 if verbose:
                     print(f'The gradient is {gradient}')
                     print(f'The rotations are {rots}')
-    return index_list, cost_list, lowest_list, gradient_list, average_list, parameter_list, 
+    return index_list, cost_list, lowest_list, gradient_list, average_list, parameter_list 
     
 def cost_func_evaluate(cost_fn, 
                        model, 
@@ -1095,7 +1121,7 @@ def find_run_stats(lowest_list:list)-> tuple:
             lowest_energy = value
             previous_lowest = value
             iteration = i
-    return(lowest_energy, iteration)
+    return lowest_energy, iteration
 
 def find_distances_array(locations, print_comments=False):
     """finds the array of distances between locations and the best distance"""

@@ -445,7 +445,8 @@ def test_find_average():
     filename = 'networks/four_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    cost_fn = cost_fn_fact(LOCATIONS, distance_array, verbose=False)
+    #cost_fn = cost_fn_fact(LOCATIONS, distance_array, verbose=False)
+    cost_fn = cost_fn_fact(LOCATIONS, distance_array)
     average, _, _ = find_stats(cost_fn, counts, SHOTS, verbose=False)
     expected_result = 21.916
     assert expected_result == average
@@ -457,7 +458,7 @@ def test_find_lowest():
     filename = 'networks/four_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    cost_fn = cost_fn_fact(LOCATIONS, distance_array, verbose=False)
+    cost_fn = cost_fn_fact(LOCATIONS, distance_array)
     _ , lowest, _ = find_stats(cost_fn, counts, SHOTS, verbose=False)
     expected_result = 21.0
     assert expected_result == lowest
@@ -471,7 +472,9 @@ def test_find_average_slice1():
     SHOTS = 1000
     GRAY = True
     AVERAGE_SLICE = 0.6
-    cost_fn = cost_fn_fact(LOCATIONS, distance_array, gray=GRAY, verbose=False)
+    cost_fn = cost_fn_fact(LOCATIONS, 
+                           distance_array, 
+                           gray=GRAY, )
     average , _ , _ = find_stats(cost_fn, counts, SHOTS, AVERAGE_SLICE, verbose=False)
     expected_result = 21.0
     assert expected_result == average
@@ -484,7 +487,9 @@ def test_find_average_slice2():
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     GRAY = True
-    cost_fn = cost_fn_fact(LOCATIONS, distance_array, gray=GRAY, verbose=False)
+    cost_fn = cost_fn_fact(LOCATIONS, 
+                           distance_array, 
+                           gray=GRAY, )
     average , _ , _ = find_stats(cost_fn, counts, SHOTS, verbose=False)
     expected_result = 21.0
     assert expected_result == average
@@ -497,7 +502,10 @@ def test_find_average_slice2b():
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     GRAY = True
-    cost_fn = cost_fn_fact(LOCATIONS, distance_array, gray=GRAY, verbose=False)
+    cost_fn = cost_fn_fact(LOCATIONS, 
+                           distance_array, 
+                           gray=GRAY,
+                           )
     average , _ , _ = find_stats(cost_fn, counts, SHOTS, verbose=False)
     expected_result = 25.0
     assert expected_result == average
@@ -512,8 +520,16 @@ def test_find_average_slice3():
     SHOTS = 1000
     GRAY = True
     AVERAGE_SLICE = 0.4
-    cost_fn = cost_fn_fact(LOCATIONS, distance_array, gray=GRAY, verbose=False)
-    average , _ , _ = find_stats(cost_fn, counts, SHOTS, AVERAGE_SLICE, verbose=False)
+    cost_fn = cost_fn_fact(LOCATIONS, 
+                           distance_array, 
+                           gray=GRAY, 
+                           )
+    average , _ , _ = find_stats(cost_fn, 
+                                 counts, 
+                                 SHOTS, 
+                                 AVERAGE_SLICE, 
+                                 verbose=False
+                                 )
     expected_result = 21
     assert expected_result == average
 
@@ -527,8 +543,15 @@ def test_find_average_slice4():
     SHOTS = 1000
     GRAY = True
     AVERAGE_SLICE = 0.6
-    cost_fn = cost_fn_fact(LOCATIONS, distance_array, gray=GRAY, verbose=False)
-    average , _ , _ = find_stats(cost_fn, counts, SHOTS, AVERAGE_SLICE, verbose=False)
+    cost_fn = cost_fn_fact(LOCATIONS, 
+                           distance_array, 
+                           gray=GRAY, )
+    average , _ , _ = find_stats(cost_fn, 
+                                 counts, 
+                                 SHOTS, 
+                                 AVERAGE_SLICE, 
+                                 verbose=False
+                                 )
     expected_result = 21.3333
     assert expected_result - average < 0.0001
 
@@ -542,8 +565,14 @@ def test_find_average_slice5():
     SHOTS = 1000
     GRAY = True
     AVERAGE_SLICE = 0.8
-    cost_fn = cost_fn_fact(LOCATIONS, distance_array, gray=GRAY, verbose=True)
-    average , _ , _ = find_stats(cost_fn, counts, SHOTS, AVERAGE_SLICE, verbose=True)
+    cost_fn = cost_fn_fact(LOCATIONS, 
+                           distance_array, 
+                           gray=GRAY, )
+    average , _ , _ = find_stats(cost_fn, 
+                                 counts, 
+                                 SHOTS, 
+                                 AVERAGE_SLICE,
+                                 )
     expected_result = 20.25
     assert expected_result == average
 
@@ -557,8 +586,16 @@ def test_find_average_slice6():
     SHOTS = 1000
     GRAY = True
     AVERAGE_SLICE = 1
-    cost_fn = cost_fn_fact(LOCATIONS, distance_array, gray=GRAY, verbose=True)
-    average , _ , _ = find_stats(cost_fn, counts, SHOTS, AVERAGE_SLICE, verbose=True)
+    cost_fn = cost_fn_fact(LOCATIONS, 
+                           distance_array, 
+                           gray=GRAY, 
+                           )
+    average , _ , _ = find_stats(cost_fn, 
+                                 counts, 
+                                 SHOTS, 
+                                 AVERAGE_SLICE, 
+                                 verbose=False
+                                 )
     expected_result = 21.2
     assert expected_result == average
 
@@ -573,8 +610,16 @@ def test_find_average_slice7():
     SHOTS = 1000
     GRAY = True
     AVERAGE_SLICE = 0.2
-    cost_fn = cost_fn_fact(LOCATIONS, distance_array, gray=GRAY, verbose=True)
-    average , _ , _ = find_stats(cost_fn, counts, SHOTS, AVERAGE_SLICE, verbose=True)
+    cost_fn = cost_fn_fact(LOCATIONS, 
+                           distance_array, 
+                           gray=GRAY, 
+                           )
+    average , _ , _ = find_stats(cost_fn, 
+                                 counts, 
+                                 SHOTS, 
+                                 AVERAGE_SLICE, 
+                                 verbose=False
+                                 )
     expected_result = 19.0
     assert expected_result == average
 

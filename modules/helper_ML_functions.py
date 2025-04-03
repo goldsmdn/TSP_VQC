@@ -49,29 +49,37 @@ def train_model(num_epochs: int,
                 target:torch.Tensor, 
                 criterion:nn.Module,
                 optimizer:torch.optim.Optimizer, 
-                print_results:bool=False) -> tuple:
+                print_results:bool=False,
+                print_frequency:int=10) -> tuple:
     """Train the model for a number of epochs"""
-    output = model(my_input)
-    lowest_cost = float(output)
-    epoch_history = []
+    model_output = model(my_input)
+    #lowest_cost = float(output)
+    lowest_cost = float(model_output.min())
+    index_list = []
     loss_history = []
     lowest_history = []
     epoch_lowest_cost_found = 0
-
     for epoch in range(num_epochs):
-        epoch_history.append(epoch)
+        index_list.append(epoch)
         model_output = model(my_input)
-        loss = criterion(model_output, target)
+        #loss = criterion(model_output, target)
+        loss = criterion(model_output.mean(), target)
         loss_history.append(float(loss))
         loss.backward()
         optimizer.step()
-        if float(model_output ) < lowest_cost:
-            lowest_cost = float(loss)
+        epoch_min = float(model_output.min())
+        #if float(model_output ) < lowest_cost:
+        if epoch_min < lowest_cost:
+            #lowest_cost = float(loss)
+            lowest_cost = epoch_min
             epoch_lowest_cost_found = epoch
         lowest_history.append(lowest_cost)
         if print_results:
-            if epoch % 50 == 0:
-                print(f"Epoch {epoch}, Cost: {loss:.3f}, Lowest Cost to date =  {lowest_cost:.3f}")
+            if epoch % print_frequency == 0:
+                print(
+                    f'Epoch {epoch}, Average cost: {loss:.3f}', 
+                    f'Epoch min cost:{epoch_min:.3f}, Lowest Cost to date: {lowest_cost:.3f}'
+                    )
                 # Check gradients
                 for name, param in model.named_parameters():
                     if param.grad is not None:
@@ -80,5 +88,5 @@ def train_model(num_epochs: int,
                         print(f'Epoch {epoch}, {name} grad is None')
         optimizer.zero_grad()
     
-    return lowest_cost, epoch_lowest_cost_found, epoch_history, loss_history, lowest_history
+    return lowest_cost, epoch_lowest_cost_found, index_list, loss_history, lowest_history
 
