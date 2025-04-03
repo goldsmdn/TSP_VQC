@@ -291,7 +291,6 @@ def find_total_distance(int_list: list, locs: int, distance_array :np.array)-> f
 def cost_fn_fact(locs: int, 
                  distance_array: np.array, 
                  gray: bool=False, 
-                 #verbose: bool=False,
                  method:str = 'original') -> Callable[[list], int]:
     """ returns a function
 
@@ -349,7 +348,7 @@ def cost_fn_tensor(input: torch.tensor,
     Returns
     -------
     distance_tensor : torch.tensor
-        a Torch array with on distance entry for each input
+        a Torch array with one distance entry for each input
 
     """
 
