@@ -22,12 +22,12 @@ SLICES = [1, 0.75, 0.5, 0.25]
                                     #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
                                     # For example, 0.2 means that the best 20% 
                                     # of distances found is included in the average.
-SHOTS = 1024                        # shots used for each call of the quantum circuit
+SHOTS = 64                          # shots used for each call of the quantum circuit
 ITERATIONS =  20                    # updates, or iterations
 GRAY = True                         # Use Gray codes
-HOT_START = True                    # Make a hot start
+HOT_START = False                   # Make a hot start
 
-GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
+GRADIENT_TYPE = 'SGD'               # controls the optimiser used
                                     # quantum - 'parameter_shift' - default
                                     # quantum - 'SPSA' is a stochastic gradient descent
                                     # ml - 'SGD' stochastical
@@ -55,5 +55,4 @@ STD_DEV = 0.5                       #standard deviation for weight randomization
 LR = 0.0001                         #Learning rate
 MOMENTUM = 0.000                    #momentum for optimizer
 WEIGHT_DECAY = 0.0002               #importance of L2 regularization in optimiser
-#OPTIMIZER = 'SGD'                   #optimizer to use
 #                                    #options: 'Adam', 'SGD', 'RMSprop'
