@@ -4,7 +4,7 @@ import math
 from typing import Callable
 
 from modules.helper_ML_functions import find_device
-from modules.helper_functions_tsp import cost_fn_tensor
+from modules.helper_functions_tsp import (cost_fn_tensor)
 
 def estimate_cost_fn_gradient(my_input:torch.Tensor, 
                               output:torch.Tensor, 
@@ -53,8 +53,6 @@ class CostFunction(torch.autograd.Function):
         output = cost_fn_tensor(input, cost_fn).to(device)
         gradient_est = estimate_cost_fn_gradient(input, output, cost_fn)
         ctx.grad = gradient_est
-        #mean = torch.mean(output).to(device).requires_grad_(True)
-        #return mean
         return output
 
     @staticmethod
