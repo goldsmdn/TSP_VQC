@@ -12,8 +12,6 @@ def evaluate_model(model, shots):
     device = find_device()
     input = torch.zeros(shots, bits).to(device)
     binary_list = model(input).cpu()
-
-    #print(binary_list)
     counts = {}
     for bit_list in binary_list:
         string = ''
@@ -62,15 +60,12 @@ def train_model(num_epochs: int,
     for epoch in range(num_epochs):
         index_list.append(epoch)
         model_output = model(my_input)
-        #loss = criterion(model_output, target)
         loss = criterion(model_output.mean(), target)
         loss_history.append(float(loss))
         loss.backward()
         optimizer.step()
         epoch_min = float(model_output.min())
-        #if float(model_output ) < lowest_cost:
         if epoch_min < lowest_cost:
-            #lowest_cost = float(loss)
             lowest_cost = epoch_min
             epoch_lowest_cost_found = epoch
         lowest_history.append(lowest_cost)
