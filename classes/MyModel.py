@@ -106,26 +106,32 @@ class MyModel(nn.Module):
         self.hot_start = hot_start
         self.fc1 = nn.Linear(in_features=bits, out_features=bits)
         self.act1 = MySine()
-        if self.layers == 2:
+        if self.layers >= 2:
             self.fc2 = nn.Linear(in_features=bits, out_features=bits)
             self.act2 = MySine()
-        elif self.layers > 2:
-            raise Exception(f'Only 2 layers are coded for. {self.layers} is to many')
+        if self.layers == 3:
+            self.fc3 = nn.Linear(in_features=bits, out_features=bits)
+            self.act3 = MySine()
+        elif self.layers > 3:
+            raise Exception(f'Only 1, 2 and layers are coded for. {self.layers} is to many')
         self.sample = Sample_Binary()
         self.cost = BinaryToCost(self.cost_fn)
         if self.hot_start:
             # if hot_start is true, generate weights and biases
-            # otherwise, let Pytorch genereratem them with default random
+            # otherwise, let Pytorch genererate them with default random
             self.generate_weights_and_biases()
 
     def forward(self, x):
         x = self.fc1(x)
         x = self.act1(x)
-        if self.layers == 2:
+        if self.layers >= 2:
             x = self.fc2(x)
             x = self.act2(x)
-        elif self.layers > 2:
-            raise Exception(f'Only 2 layers are coded for.  {self.layers} is too many')
+        if self.layers == 3:
+            x = self.fc3(x)
+            x = self.act3(x)
+        elif self.layers > 3:
+            raise Exception(f'Only 1, 2, 3 layers are coded for.  {self.layers} is too many')
         x = self.sample(x)
         x = self.cost(x)
         return(x)
@@ -140,8 +146,11 @@ class MyModel(nn.Module):
 
         self.fc1.weight = torch.nn.Parameter(new_weights)
         self.fc1.bias = torch.nn.Parameter(new_bias)
-        if self.layers == 2:
+        if self.layers >= 2:
             self.fc2.weight = torch.nn.Parameter(new_weights)
             self.fc2.bias = torch.nn.Parameter(new_bias)
-        elif self.layers > 2:
+        if self.layers == 3:
+            self.fc2.weight = torch.nn.Parameter(new_weights)
+            self.fc2.bias = torch.nn.Parameter(new_bias)
+        elif self.layers > 4:
             raise Exception(f'Only 2 layers are coded for.  {self.layers} is to many')
