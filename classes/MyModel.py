@@ -92,13 +92,18 @@ class BinaryToCost(nn.Module):
         return x
 
 class MyModel(nn.Module):
-    def __init__(self, bits:int, layers:int, std_dev:float, cost_fn:Callable[[list], int]):
+    def __init__(self, bits:int, 
+                 layers:int, 
+                 std_dev:float, 
+                 cost_fn:Callable[[list], int],
+                 hot_start:bool = False):
         """initialize the model"""
         super(MyModel, self).__init__()
         self.bits = bits
         self.layers = layers
         self.std_dev = std_dev
         self.cost_fn = cost_fn
+        self.hot_start = hot_start
         self.fc1 = nn.Linear(in_features=bits, out_features=bits)
         self.act1 = MySine()
         if self.layers == 2:
@@ -108,7 +113,10 @@ class MyModel(nn.Module):
             raise Exception(f'Only 2 layers are coded for. {self.layers} is to many')
         self.sample = Sample_Binary()
         self.cost = BinaryToCost(self.cost_fn)
-        self.generate_weights_and_biases()
+        if self.hot_start:
+            # if hot_start is true, generate weights and biases
+            # otherwise, let Pytorch genereratem them with default random
+            self.generate_weights_and_biases()
 
     def forward(self, x):
         x = self.fc1(x)

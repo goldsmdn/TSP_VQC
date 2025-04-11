@@ -195,7 +195,6 @@ class MySubDataLogger(MyDataLogger):
         """Update the constants from a dictionary"""
         self.quantum = format_boolean(data_dict['quantum'])
         self.locations = int(data_dict['locations'])
-        self.slice = float(data_dict['slice'])
         self.shots = int(data_dict['shots'])
         self.iterations = int(data_dict['iterations'])
         self.gray = format_boolean(data_dict['gray'])
@@ -210,6 +209,7 @@ class MySubDataLogger(MyDataLogger):
             self.weight_decay = float(data_dict['weight_decay'])
             self.momentum = float(data_dict['momentum'])
         if self.quantum:
+            self.slice = float(data_dict['slice'])
             self.mode = int(data_dict['mode'])
             self.alpha = float(data_dict['alpha'])
             self.big_a = float(data_dict['big_a'])

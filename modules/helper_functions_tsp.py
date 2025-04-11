@@ -15,7 +15,8 @@ from pathlib import Path
 
 from modules.config import (NETWORK_DIR, 
                             DATA_SOURCES, 
-                            PRINT_FREQUENCY)
+                            PRINT_FREQUENCY
+                            )
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
@@ -1036,7 +1037,9 @@ def vqc_circuit(qubits: int, params: list, mode:int=1) -> QuantumCircuit:
     qc.measure_all()
     return qc
 
-def create_initial_rotations(qubits: int, mode: int, bin_hot_start_list: list=[], 
+def create_initial_rotations(qubits: int, 
+                             mode: int, 
+                             bin_hot_start_list: list=[], 
                              hot_start: bool=False) -> list:
     """initialise parameters with random weights
 
