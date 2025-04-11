@@ -143,11 +143,13 @@ class MySubDataLogger(MyDataLogger):
             raise Exception(f'Value {self.formulation} is not allowed for formulation' )
         if self.quantum:
             validate_gradient_type(self.gradient_type)
-            if self.mode not in [1,2]:
+            if self.mode not in [1, 2]:
                 raise Exception(f'mode = {self.mode} is not permitted for quantum')
         else:
             if self.gradient_type not in ['SGD', 'Adam', 'RMSprop']:
                 raise Exception(f'Only gradient type SGD is allowed for non quantum, not {self.gradient_type}')
+            if self.mode not in [8, 9]:
+                raise Exception(f'mode = {self.mode} is not permitted for non quantum')
     
     def save_results_to_csv(self):
         """Save the results to a CSV file"""
@@ -170,9 +172,7 @@ class MySubDataLogger(MyDataLogger):
                 with open(file_path, 'a', newline='') as csvfile:
                     fieldnames = data_row[0].keys()
                     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                    #print('Writing data')
                     writer.writerows(data_row)
-                    #print(f"Data saved to {file_path}")
 
             except Exception as e:
                 print(f"An error occurred while saving the data to {file_path}: {e}")
@@ -202,6 +202,7 @@ class MySubDataLogger(MyDataLogger):
         self.gradient_type = data_dict['gradient_type']
         self.formulation = data_dict['formulation']
         self.cache_max_size = CACHE_MAX_SIZE
+        self.mode = int(data_dict['mode'])
         if not self.quantum:
             self.layers = int(data_dict['layers'])
             self.std_dev = float(data_dict['std_dev'])
@@ -210,7 +211,7 @@ class MySubDataLogger(MyDataLogger):
             self.momentum = float(data_dict['momentum'])
         if self.quantum:
             self.slice = float(data_dict['slice'])
-            self.mode = int(data_dict['mode'])
+            #self.mode = int(data_dict['mode'])
             self.alpha = float(data_dict['alpha'])
             self.big_a = float(data_dict['big_a'])
             self.c = float(data_dict['c'])
