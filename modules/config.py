@@ -15,7 +15,7 @@ CACHE_MAX_SIZE = 500_000            # maximum size of the cache.
 
 # configuration information used in ALL manual runs
 
-LOCATIONS = 10                      # number of locations to be visited          
+LOCATIONS = 48                      # number of locations to be visited          
                                     # Slices to use when calculating the gradient
                                     #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
                                     # For example, 0.2 means that the best 20% 
@@ -49,7 +49,7 @@ PLOT_PARAMETER_EVALUATION = True    # Plot the evaluation of each parameter
 ROTATIONS = 10                      # number of rotations sampled in parameter graphs
 
 #information needed in ML manual runs:
-NUM_LAYERS = 2                      #number of layers in the mode
+NUM_LAYERS = 3                      #number of layers in the mode
 STD_DEV = 0.05                      #standard deviation for weight randomization
 LR = 0.00002                        #Learning rate
 MOMENTUM = 0.8                      #momentum for optimizer
