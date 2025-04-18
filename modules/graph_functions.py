@@ -1,9 +1,13 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+#import matplotlib.cm as cm
 from classes.MyModel import MySine
 from pathlib import Path
-from modules.config import GRAPH_DIR
 import torch
+from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
+
+from modules.config import GRAPH_DIR
 
 def parameter_graph(filename: str, 
                     title: str,
@@ -150,12 +154,51 @@ def plot_sine_activation():
     plt.savefig(filepath)
     plt.show()
 
-"""def plot_model_training(epoch_history, loss_history):
-    title = 'Loss_by_epoch'
-    filepath = Path(GRAPH_DIR).joinpath(title + '.png')
-    plt.plot(epoch_history, loss_history)
-    plt.title(title)
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.savefig(filepath)
-    plt.show"""
+#def plot_3d_graph(grouped_means: np.array,
+#                  input: str,
+#                  ):
+    """plots a 3D graph of the data"""
+    """fig = plt.figure(figsize=(10, 7))
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Map categorical data to numeric positions
+    locations = grouped_means['locations'].unique()
+    slices = sorted(grouped_means['slice'].unique())
+
+    loc_map = {loc: i for i, loc in enumerate(locations)}
+    slice_map = {sli: i for i, sli in enumerate(slices)}
+
+    # Assign colors for each location
+    colors = plt.get_cmap('Set3', len(locations))  # or 'Set3', 'Paired', etc.
+    location_colors = {loc: colors(i) for i, loc in enumerate(locations)}
+
+    # Bar sizes
+    dx = 0.5
+    dy = 0.25
+
+    # Plot bars with different colors
+    for i, row in grouped_means.iterrows():
+        x = slice_map[row['slice']] - dx/2 # Center the bar on the x-axis
+        y = loc_map[row['locations']] - dy/2  # Center the bar on the y-axis
+        z = 0
+        dz = row[input]  # Replace with your target column
+
+        color = location_colors[row['locations']]
+        ax.bar3d(x, y, z, dx, dy, dz, color=color, shade=True)
+
+    # Label axes
+    ax.set_xlabel('Slice')
+    ax.set_ylabel('Locations')
+    ax.set_zlabel(input)
+
+    # Set tick labels
+    ax.set_xticks(list(slice_map.values()))
+    ax.set_xticklabels(list(slice_map.keys()))
+    ax.set_yticks(list(loc_map.values()))
+    ax.set_yticklabels(list(loc_map.keys()))
+
+    legend_handles = [mpatches.Patch(color=location_colors[loc], label=loc) for loc in locations]
+    plt.legend(handles=legend_handles, title='Locations', loc='upper left', bbox_to_anchor=(1, 1))
+
+    plt.title(f'3D Bar Graph of {input} by location and slice')
+    plt.show()"""
