@@ -15,7 +15,8 @@ from pathlib import Path
 
 from modules.config import (NETWORK_DIR, 
                             DATA_SOURCES, 
-                            PRINT_FREQUENCY)
+                            PRINT_FREQUENCY
+                            )
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
@@ -714,7 +715,7 @@ def update_parameters_using_gradient(subdatalogger,
         if magnitude_g0 == 0:
             a = 999
         else:
-            a = 0.01*((big_a+1)**alpha)/magnitude_g0
+            a = eta*((big_a+1)**alpha)/magnitude_g0
 
     for i in range(0, iterations):
         bc = bind_weights(params, rots, qc)
@@ -1036,7 +1037,9 @@ def vqc_circuit(qubits: int, params: list, mode:int=1) -> QuantumCircuit:
     qc.measure_all()
     return qc
 
-def create_initial_rotations(qubits: int, mode: int, bin_hot_start_list: list=[], 
+def create_initial_rotations(qubits: int, 
+                             mode: int, 
+                             bin_hot_start_list: list=[], 
                              hot_start: bool=False) -> list:
     """initialise parameters with random weights
 
@@ -1145,17 +1148,3 @@ def format_boolean(string_input: str):
     else:
         raise Exception(f'Unexpected boolean value {string_input}')
     return output 
-
-"""def prepare_detailed_results_dict(epoch:list
-                                  av_cost:list,
-                                  lowest_cost:list,
-                                  sliced_cost:list,
-                                  ):
-    length = len(epoch)
-    if len(av_cost) != length:
-        raise Exception(f'The length of the average cost list is not the same as the epoch list')
-    if len(lowest_cost) != length:
-        raise Exception(f'The length of the average cost list is not the same as the epoch list')
-    if len(sliced_cost) != length:
-        raise Exception(f'The length of the sliced cost list is not the same as the epoch list')"""
-    

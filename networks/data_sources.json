@@ -32,12 +32,17 @@
     },
     "26": {
         "file": "fri26_d.txt",
-        "best": 699,
+        "best": 937,
         "source": "TSPLIB"
     },
     "42": {
         "file": "dantzig42_d.txt",
-        "best": 33523,
+        "best": 699,
+        "source": "TSPLIB"
+    },
+    "48": {
+        "file": "att48_d.txt",
+        "best": 10628,
         "source": "TSPLIB"
     },
     "6": {
@@ -63,5 +68,11 @@
         "best": 290.2,
         "source": "sim",
         "points": "sim_points_10_locs.txt"
+    },
+    "12": {
+        "file": "sim_dist_12_locs.txt",
+        "best": 297.2,
+        "source": "sim",
+        "points": "sim_points_12_locs.txt"
     }
 }

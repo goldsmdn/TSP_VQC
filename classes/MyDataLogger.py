@@ -30,8 +30,10 @@ from modules.config import (RESULTS_DIR,
                             )
 
 from modules.graph_functions import cost_graph_multi
-from modules.helper_functions_tsp import validate_gradient_type
-                           
+from modules.helper_functions_tsp import (validate_gradient_type,
+                                          format_boolean,
+                                          )                                       
+
 @dataclass
 class MyDataLogger:
     """Parent - header information for a group of data runs"""
@@ -130,6 +132,7 @@ class MySubDataLogger(MyDataLogger):
         print(f'SubDataLogger instantiated.  Run ID = {self.runid} - {self.subid}')
 
     def validate_input(self):
+        """Validate the input fields"""
         if not isinstance(self.quantum, bool):
             raise Exception(f'Input field quantum is not boolean')
         if not isinstance(self.gray, bool):
@@ -140,13 +143,16 @@ class MySubDataLogger(MyDataLogger):
             raise Exception(f'Value {self.formulation} is not allowed for formulation' )
         if self.quantum:
             validate_gradient_type(self.gradient_type)
-            if self.mode not in [1,2]:
+            if self.mode not in [1, 2]:
                 raise Exception(f'mode = {self.mode} is not permitted for quantum')
         else:
             if self.gradient_type not in ['SGD', 'Adam', 'RMSprop']:
                 raise Exception(f'Only gradient type SGD is allowed for non quantum, not {self.gradient_type}')
+            if self.mode not in [8, 9]:
+                raise Exception(f'mode = {self.mode} is not permitted for non quantum')
     
     def save_results_to_csv(self):
+        """Save the results to a CSV file"""
         results_dict = asdict(self)
         # delete items not needed in summary file
         del results_dict['index_list']
@@ -166,9 +172,7 @@ class MySubDataLogger(MyDataLogger):
                 with open(file_path, 'a', newline='') as csvfile:
                     fieldnames = data_row[0].keys()
                     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                    print('Writing data')
                     writer.writerows(data_row)
-                    print(f"Data saved to {file_path}")
 
             except Exception as e:
                 print(f"An error occurred while saving the data to {file_path}: {e}")
@@ -187,7 +191,36 @@ class MySubDataLogger(MyDataLogger):
             except Exception as e:
                 print(f"An error occurred while saving the data to {file_path}: {e}")
 
+    def update_constants_from_dict(self, data_dict):
+        """Update the constants from a dictionary"""
+        self.quantum = format_boolean(data_dict['quantum'])
+        self.locations = int(data_dict['locations'])
+        self.shots = int(data_dict['shots'])
+        self.iterations = int(data_dict['iterations'])
+        self.gray = format_boolean(data_dict['gray'])
+        self.hot_start = format_boolean(data_dict['hot_start'])
+        self.gradient_type = data_dict['gradient_type']
+        self.formulation = data_dict['formulation']
+        self.cache_max_size = CACHE_MAX_SIZE
+        self.mode = int(data_dict['mode'])
+        if not self.quantum:
+            self.layers = int(data_dict['layers'])
+            self.std_dev = float(data_dict['std_dev'])
+            self.lr = float(data_dict['lr'])
+            self.weight_decay = float(data_dict['weight_decay'])
+            self.momentum = float(data_dict['momentum'])
+        if self.quantum:
+            self.slice = float(data_dict['slice'])
+            #self.mode = int(data_dict['mode'])
+            self.alpha = float(data_dict['alpha'])
+            self.big_a = float(data_dict['big_a'])
+            self.c = float(data_dict['c'])
+            self.gamma = float(data_dict['gamma'])
+            self.eta = float(data_dict['eta'])
+            self.s = float(data_dict['s'])
+        
     def update_general_constants_from_config(self):
+        """Update general constants from the config file"""
         self.locations = LOCATIONS
         self.shots = SHOTS
         self.mode = MODE
@@ -199,6 +232,7 @@ class MySubDataLogger(MyDataLogger):
         self.cache_max_size = CACHE_MAX_SIZE
 
     def update_quantum_constants_from_config(self):
+        """Update constants needed for quantum from config file"""
         self.alpha = ALPHA
         self.big_a = BIG_A
         self.c = C
@@ -208,11 +242,13 @@ class MySubDataLogger(MyDataLogger):
         self.cache_max_size = CACHE_MAX_SIZE
 
     def update_ml_constants_from_config(self):
+        """Update constants needed for ML from config file"""
         self.layers= NUM_LAYERS
         self.std_dev = STD_DEV
         self.lr = LR
         self.momentum = MOMENTUM
         self.weight_decay = WEIGHT_DECAY
+
 
     def update_cache_statistics(self, cost_fn):
         """update cache statistics"""
@@ -228,11 +264,6 @@ class MySubDataLogger(MyDataLogger):
 
         if hasattr(cost_fn, 'clear_cache'):
             cost_fn.clear_cache() 
-
-    #std_dev: float = None
-    #lr: float = None
-    #weight_decay: float = None 
-    #momentum: float = None
 
     def find_detailed_results_filename(self):
         """Create the filepath for the detailed results"""

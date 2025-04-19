@@ -1,9 +1,13 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+#import matplotlib.cm as cm
 from classes.MyModel import MySine
 from pathlib import Path
-from modules.config import GRAPH_DIR
 import torch
+from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
+
+from modules.config import GRAPH_DIR
 
 def parameter_graph(filename: str, 
                     title: str,
@@ -149,13 +153,3 @@ def plot_sine_activation():
     plt.ylabel('y')
     plt.savefig(filepath)
     plt.show()
-
-"""def plot_model_training(epoch_history, loss_history):
-    title = 'Loss_by_epoch'
-    filepath = Path(GRAPH_DIR).joinpath(title + '.png')
-    plt.plot(epoch_history, loss_history)
-    plt.title(title)
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.savefig(filepath)
-    plt.show"""

@@ -4,7 +4,7 @@ import math
 from typing import Callable
 
 from modules.helper_ML_functions import find_device
-from modules.helper_functions_tsp import cost_fn_tensor
+from modules.helper_functions_tsp import (cost_fn_tensor)
 
 def estimate_cost_fn_gradient(my_input:torch.Tensor, 
                               output:torch.Tensor, 
@@ -53,8 +53,6 @@ class CostFunction(torch.autograd.Function):
         output = cost_fn_tensor(input, cost_fn).to(device)
         gradient_est = estimate_cost_fn_gradient(input, output, cost_fn)
         ctx.grad = gradient_est
-        #mean = torch.mean(output).to(device).requires_grad_(True)
-        #return mean
         return output
 
     @staticmethod
@@ -94,32 +92,46 @@ class BinaryToCost(nn.Module):
         return x
 
 class MyModel(nn.Module):
-    def __init__(self, bits:int, layers:int, std_dev:float, cost_fn:Callable[[list], int]):
+    def __init__(self, bits:int, 
+                 layers:int, 
+                 std_dev:float, 
+                 cost_fn:Callable[[list], int],
+                 hot_start:bool = False):
         """initialize the model"""
         super(MyModel, self).__init__()
         self.bits = bits
         self.layers = layers
         self.std_dev = std_dev
         self.cost_fn = cost_fn
+        self.hot_start = hot_start
         self.fc1 = nn.Linear(in_features=bits, out_features=bits)
         self.act1 = MySine()
-        if self.layers == 2:
+        if self.layers >= 2:
             self.fc2 = nn.Linear(in_features=bits, out_features=bits)
             self.act2 = MySine()
-        elif self.layers > 2:
-            raise Exception(f'Only 2 layers are coded for. {self.layers} is to many')
+        if self.layers == 3:
+            self.fc3 = nn.Linear(in_features=bits, out_features=bits)
+            self.act3 = MySine()
+        elif self.layers > 3:
+            raise Exception(f'Only 1, 2 and layers are coded for. {self.layers} is to many')
         self.sample = Sample_Binary()
         self.cost = BinaryToCost(self.cost_fn)
-        self.generate_weights_and_biases()
+        if self.hot_start:
+            # if hot_start is true, generate weights and biases
+            # otherwise, let Pytorch genererate them with default random
+            self.generate_weights_and_biases()
 
     def forward(self, x):
         x = self.fc1(x)
         x = self.act1(x)
-        if self.layers == 2:
+        if self.layers >= 2:
             x = self.fc2(x)
             x = self.act2(x)
-        elif self.layers > 2:
-            raise Exception(f'Only 2 layers are coded for.  {self.layers} is too many')
+        if self.layers == 3:
+            x = self.fc3(x)
+            x = self.act3(x)
+        elif self.layers > 3:
+            raise Exception(f'Only 1, 2, 3 layers are coded for.  {self.layers} is too many')
         x = self.sample(x)
         x = self.cost(x)
         return(x)
@@ -134,8 +146,11 @@ class MyModel(nn.Module):
 
         self.fc1.weight = torch.nn.Parameter(new_weights)
         self.fc1.bias = torch.nn.Parameter(new_bias)
-        if self.layers == 2:
+        if self.layers >= 2:
             self.fc2.weight = torch.nn.Parameter(new_weights)
             self.fc2.bias = torch.nn.Parameter(new_bias)
-        elif self.layers > 2:
+        if self.layers == 3:
+            self.fc2.weight = torch.nn.Parameter(new_weights)
+            self.fc2.bias = torch.nn.Parameter(new_bias)
+        elif self.layers > 4:
             raise Exception(f'Only 2 layers are coded for.  {self.layers} is to many')
