@@ -37,10 +37,11 @@ def estimate_cost_fn_gradient(my_input:torch.Tensor,
     for i in range(dim0):
         for j in range(dim1):
             old_bit = my_input[i,j]
-            sign = 2 * (old_bit - 0.5)
+            #sign = 2 * (old_bit - 0.5)
+            sign = 2 * old_bit - 1  # Convert to -1 or 1
             my_input_clone[i,j] = 1 - old_bit
             new_output = cost_fn_tensor(my_input_clone[[i]], cost_fn).to(device)
-            gradient_est[i, j] = (output[i] - new_output) * sign
+            gradient_est[i, j] = (output[i] - new_output) / sign
             my_input_clone[i, j] = old_bit 
     return gradient_est
 
@@ -127,7 +128,7 @@ class MyModel(nn.Module):
         if self.layers >= 2:
             x = self.fc2(x)
             x = self.act2(x)
-        if self.layers == 3:
+        if self.layers >= 3:
             x = self.fc3(x)
             x = self.act3(x)
         elif self.layers > 3:
@@ -149,8 +150,8 @@ class MyModel(nn.Module):
         if self.layers >= 2:
             self.fc2.weight = torch.nn.Parameter(new_weights)
             self.fc2.bias = torch.nn.Parameter(new_bias)
-        if self.layers == 3:
-            self.fc2.weight = torch.nn.Parameter(new_weights)
-            self.fc2.bias = torch.nn.Parameter(new_bias)
+        if self.layers >= 3:
+            self.fc3.weight = torch.nn.Parameter(new_weights)
+            self.fc3.bias = torch.nn.Parameter(new_bias)
         elif self.layers > 4:
             raise Exception(f'Only 2 layers are coded for.  {self.layers} is to many')
