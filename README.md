@@ -1,10 +1,16 @@
 # TSP_VQC
-Travelling Salesman problem with a Variational Quantum Circuit
+Travelling Salesman problem with a Variational Quantum Circuit.
+
+## Notebooks provided
+
+The following Jupyter notebooks are provided:
+ - [`auto_runs.ipynb`](auto_runs.ipynb): responsible for executing the automatic run, reading data from `control\control_parameters.csv` (control\control_parameters.csv)
+ - 
 
 ## Gradient calculation
 Two methods are available and can be chosen by setting the constant `GRADIENT_TYPE` to
- - `'parameter_shift` or
- - `'SPSA`
+ - `parameter_shift` or
+ - `SPSA`
 
 ### Parameter shift 
 Parameter shift uses the fact that qubit rotations are trigonometric functions to find an analytical expression for the gradient
