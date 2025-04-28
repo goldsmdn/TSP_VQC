@@ -9,7 +9,7 @@ The following Jupyter notebooks are provided for data execution:
  - [`manual_runs_VQC.ipynb`](manual_runs_VQC.ipynb): responsible for executing manual runs of the quantum machine learning model, reading configuration data from [`modules/config.py`](/modules/config.py)
 
 The following Jupyter notebooks are provided for data set up:
-- [`make_data.ipynb`](make_data.ipynb`): responsible for setting up new networks
+- [`make_data.ipynb`](make_data.ipynb): responsible for setting up new networks
 
 The following Jupyter notebooks are provided for data analysis:
 - [`show_results.ipynb`](show_results.ipynb): responsible for analysing the results stored in the [`result/results.csv`](result/results.csv file)
