@@ -12,8 +12,8 @@ The following Jupyter notebooks are provided for data set up:
 - [`make_data.ipynb`](make_data.ipynb): responsible for setting up new networks
 
 The following Jupyter notebooks are provided for data analysis:
-- [`show_results.ipynb`](show_results.ipynb): responsible for analysing the results stored in the [`result/results.csv`](result/results.csv file)
-- [`resource_requirements.ipynb](resource_requirements.ipynb): calculates the number of qubits needed for each formulation
+- [`show_results.ipynb`](show_results.ipynb): responsible for analysing the results stored in the [`result/results.csv`](result/results.csv) file
+- [`resource_requirements.ipynb`](resource_requirements.ipynb): calculates the number of qubits needed for each formulation
 - [`hot_start_analysis.ipynb`](hot_start_analysis.ipynb): compares the Hamming distance of the hot start binary string to the binary string of the optimum solution
 
 ## Gradient calculation
