@@ -4,8 +4,8 @@ Travelling Salesman problem with a Variational Quantum Circuit.
 ## Notebooks provided
 
 The following Jupyter notebooks are provided for execution:
- - [`auto_runs.ipynb`](auto_runs.ipynb): responsible for executing automatic runs, reading configuration data from [`control\control_parameters.csv`] (\control\control_parameters.csv)
- - [`manual_runs_ML.ipynb`](manual_runs_ML.ipynb): responsible for executing manual runs, reading configuration data from [`modules\config.py`](\modules\config.py)
+ - [`auto_runs.ipynb`](auto_runs.ipynb): responsible for executing automatic runs, reading configuration data from [`control\control_parameters.csv`](/control/control_parameters.csv)
+ - [`manual_runs_ML.ipynb`](manual_runs_ML.ipynb): responsible for executing manual runs, reading configuration data from [`modules/config.py`](/modules/config.py)
 
 ## Gradient calculation
 Two methods are available and can be chosen by setting the constant `GRADIENT_TYPE` to
