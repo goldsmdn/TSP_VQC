@@ -34,7 +34,7 @@ def estimate_cost_fn_gradient(my_input:torch.Tensor,
     dim1 = my_input.size(1)
 
     my_input_clone = my_input.clone()  # Clone once, modify in-place
-    for i in range(dim0):
+    for i in range(dim0): 
         for j in range(dim1):
             old_bit = my_input[i,j]
             #sign = 2 * (old_bit - 0.5)
