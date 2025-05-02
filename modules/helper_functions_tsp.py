@@ -390,12 +390,17 @@ def convert_bit_string_to_cycle(bit_string: list,
     end_cycle_list : list
         A list of integers showing a cycle.  The bit string is processed from left to right
     """
+
+    end_cycle_list = []
+    start_cycle_list = [i for i in range(locs)]
+
     if method == 'original':
         #need to avoid changing the original bit_string
         bit_string_copy = copy.deepcopy(bit_string)
-        end_cycle_list = []
-        start_cycle_list = [i for i in range(locs)]
+        #end_cycle_list = []
+        #start_cycle_list = [i for i in range(locs)]
         end_cycle_list.append(start_cycle_list.pop(0)) #end point of cycle is always 0
+
         for i in range(locs-1, 1, -1):
             bin_len = find_bin_length(i)
             bin_string = []
@@ -412,22 +417,30 @@ def convert_bit_string_to_cycle(bit_string: list,
         return(end_cycle_list)
     elif method == 'new':
         f = math.factorial(locs)
+        #print(f'factorial f = {f}, bit_string = {bit_string}')
         bit_string_length = math.ceil(math.log2(f))
         if len(bit_string) != bit_string_length:
             raise Exception(f'bit_string length {len(bit_string)} does not match {bit_string_length}')
         x = convert_binary_list_to_integer(bit_string, gray=gray)
         y = x % f
-        end_cycle_list = []
-        start_cycle_list = [i for i in range(locs)]
+        #end_cycle_list = []
+        #start_cycle_list = [i for i in range(locs)]
+        #print(f'start_cycle_list = {start_cycle_list}')
+        #print(f'end_cycle_list = {end_cycle_list}')       
         i = 0
         while i < locs:
+            #print(f'Starting loop with i = {i} y = {y} f={f}' )
             f = int(f / (locs - i))
+            #print(f'factorial f = {f}' )
             #correcting mistype in paper
             k = math.floor(y / f)
+            #print(f'k = {k}')
             end_cycle_list.append(start_cycle_list[k])
             start_cycle_list.remove(start_cycle_list[k])
-            #correcting mistype in paper
+            #print(f'start_cycle_list = {start_cycle_list}')
+            #print(f'end_cycle_list = {end_cycle_list}')            #correcting mistype in paper
             y -= k * f
+
             i += 1
         return end_cycle_list
     else:
