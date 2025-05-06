@@ -3,7 +3,7 @@
 
 from collections import OrderedDict
 from modules.config import VERBOSE, CACHE_MAX_SIZE
-#import torch
+from typing import Callable, Optional
 
 class LRUCacheUnhashable:
     """
@@ -11,8 +11,8 @@ class LRUCacheUnhashable:
     Uses an OrderedDict to implement a simple LRU eviction policy.
     """
     def __init__(self, 
-                 orig_func=None, 
-                 maxsize=CACHE_MAX_SIZE
+                 orig_func: Optional[Callable] = None,
+                 maxsize: int = CACHE_MAX_SIZE,
                  ):
         """initialisation"""
         self.orig_func = orig_func
@@ -21,8 +21,10 @@ class LRUCacheUnhashable:
         self.cache_hits = 0
         self.cache_misses = 0
 
-    def __call__(self, bit_string_list):
-        """call wrapper"""
+    def __call__(self, 
+                 bit_string_list: list[int],
+                 ) -> float:
+        """call wrapper and return result"""
         key = self.list_to_bit_string(bit_string_list)
         if key in self.cache:
             self.cache_hits += 1
@@ -45,7 +47,7 @@ class LRUCacheUnhashable:
         return result
 
     @staticmethod
-    def list_to_bit_string(bit_string_input):
+    def list_to_bit_string(bit_string_input: list[int]) -> str:
         """convert list in format [0,1] to bit string eg '01'"""
         if isinstance(bit_string_input, list):
             bit_string_list = bit_string_input
