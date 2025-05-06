@@ -2,14 +2,23 @@ import numpy as np
 from pytest import raises
 import math
 from pathlib import Path
-import torch
 
-from modules.helper_functions_tsp import(
-    validate_distance_array, find_distance, convert_binary_list_to_integer, 
-    check_loc_list, augment_loc_list, find_total_distance, find_problem_size,
-    convert_bit_string_to_cycle, find_stats, cost_fn_fact, hot_start,
-    hot_start_list_to_string, convert_integer_to_binary_list,
-    convert_binary_list_to_integer, find_run_stats)
+from modules.helper_functions_tsp import(validate_distance_array, 
+                                         find_distance, 
+                                         convert_binary_list_to_integer, 
+                                         check_loc_list, 
+                                         augment_loc_list, 
+                                         find_total_distance, 
+                                         find_problem_size,
+                                         convert_bit_string_to_cycle, 
+                                         find_stats, 
+                                         cost_fn_fact, 
+                                         hot_start,
+                                         hot_start_list_to_string, 
+                                         convert_integer_to_binary_list,
+                                         convert_binary_list_to_integer, 
+                                         find_run_stats
+                                         )
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
@@ -17,7 +26,6 @@ from modules.config import NETWORK_DIR
 
 def test_wrong_shape():
     """Checks that the correct error message is thrown for an array of the wrong shape """
-    #filename = 'networks/wrong_shape.txt'
     file = 'wrong_shape.txt'
     filename = Path(NETWORK_DIR).joinpath(file)
     locs = 5
@@ -27,7 +35,6 @@ def test_wrong_shape():
     
 def test_four_rows():
     """Checks that the correct error message is thrown for an array with 4 rows and 5 columns"""
-    #filename = 'networks/four_rows.txt'
     file = 'four_rows.txt'
     filename = Path(NETWORK_DIR).joinpath(file)
     locs = 5
@@ -37,7 +44,6 @@ def test_four_rows():
 
 def test_six_locs():
     """Checks that the correct error message is thrown for an 5 * 5 array when there are 6 locations"""
-    #filename = 'networks/five_d.txt'
     file = 'five_d.txt'
     filename = Path(NETWORK_DIR).joinpath(file)
     locs = 6
@@ -47,7 +53,6 @@ def test_six_locs():
 
 def test_four_cols():
     """Checks that the correct error message is thrown for an array with 5 rows and 4 columns"""
-    #filename = 'networks/four_cols.txt'
     file = 'four_cols.txt'
     filename = Path(NETWORK_DIR).joinpath(file)
     locs = 5
@@ -57,7 +62,6 @@ def test_four_cols():
 
 def test_unsymmetric():
     """Checks that the correct error message is thrown for an unsymmetric array"""
-    #filename = 'networks/fri26_bad.txt'
     file = 'fri26_bad.txt'
     filename = Path(NETWORK_DIR).joinpath(file)
     locs = 26
@@ -67,7 +71,6 @@ def test_unsymmetric():
 
 def test_distance_1():
     """Check distance read for an array element"""
-    #filename = 'networks/four_d.txt'
     file = 'four_d.txt'
     filename = Path(NETWORK_DIR).joinpath(file)
     loc1 = 1
@@ -79,7 +82,6 @@ def test_distance_1():
 
 def test_distance_2():
     """Check distance read for a diagonal element"""
-    #filename = 'networks/fri26_bad.txt'
     file = 'fri26_bad.txt'
     filename = Path(NETWORK_DIR).joinpath(file)
     loc1 = 25
@@ -91,7 +93,6 @@ def test_distance_2():
 
 def test_distance_3():
     """Check distance read for end of row"""
-    #filename = 'networks/four_d.txt'
     file = 'four_d.txt'
     filename = Path(NETWORK_DIR).joinpath(file)
     loc1 = 0
@@ -103,7 +104,6 @@ def test_distance_3():
 
 def test_distance_4():
     """Check distance read for end of column"""
-    #filename = 'networks/four_d.txt'
     file = 'four_d.txt'
     filename = Path(NETWORK_DIR).joinpath(file)
     loc1 = 3
@@ -445,7 +445,6 @@ def test_find_average():
     filename = 'networks/four_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    #cost_fn = cost_fn_fact(LOCATIONS, distance_array, verbose=False)
     cost_fn = cost_fn_fact(LOCATIONS, distance_array)
     average, _, _ = find_stats(cost_fn, counts, SHOTS, verbose=False)
     expected_result = 21.916
@@ -474,8 +473,14 @@ def test_find_average_slice1():
     AVERAGE_SLICE = 0.6
     cost_fn = cost_fn_fact(LOCATIONS, 
                            distance_array, 
-                           gray=GRAY, )
-    average , _ , _ = find_stats(cost_fn, counts, SHOTS, AVERAGE_SLICE, verbose=False)
+                           gray=GRAY, 
+                           )
+    average , _ , _ = find_stats(cost_fn, 
+                                 counts, 
+                                 SHOTS, 
+                                 AVERAGE_SLICE, 
+                                 verbose=False
+                                 )
     expected_result = 21.0
     assert expected_result == average
 
@@ -489,8 +494,13 @@ def test_find_average_slice2():
     GRAY = True
     cost_fn = cost_fn_fact(LOCATIONS, 
                            distance_array, 
-                           gray=GRAY, )
-    average , _ , _ = find_stats(cost_fn, counts, SHOTS, verbose=False)
+                           gray=GRAY, 
+                           )
+    average , _ , _ = find_stats(cost_fn, 
+                                 counts, 
+                                 SHOTS, 
+                                 verbose=False
+                                 )
     expected_result = 21.0
     assert expected_result == average
 
@@ -506,7 +516,11 @@ def test_find_average_slice2b():
                            distance_array, 
                            gray=GRAY,
                            )
-    average , _ , _ = find_stats(cost_fn, counts, SHOTS, verbose=False)
+    average , _ , _ = find_stats(cost_fn, 
+                                 counts, 
+                                 SHOTS, 
+                                 verbose=False
+                                 )
     expected_result = 25.0
     assert expected_result == average
 
@@ -545,7 +559,8 @@ def test_find_average_slice4():
     AVERAGE_SLICE = 0.6
     cost_fn = cost_fn_fact(LOCATIONS, 
                            distance_array, 
-                           gray=GRAY, )
+                           gray=GRAY, 
+                           )
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
@@ -594,7 +609,7 @@ def test_find_average_slice6():
                                  counts, 
                                  SHOTS, 
                                  AVERAGE_SLICE, 
-                                 verbose=False
+                                 verbose=False,
                                  )
     expected_result = 21.2
     assert expected_result == average
@@ -618,7 +633,7 @@ def test_find_average_slice7():
                                  counts, 
                                  SHOTS, 
                                  AVERAGE_SLICE, 
-                                 verbose=False
+                                 verbose=False,
                                  )
     expected_result = 19.0
     assert expected_result == average
@@ -708,6 +723,7 @@ def test_hot_start_list_to_string_15_locs_gray():
     assert expected_result == actual_result
 
 def test_bit_string_list_to_bit_string():
+    """test LRC cache conversion of list to bit string"""
     bit_string_list = [0, 1, 0, 1, 0, 1]
     expected_result = '010101'
     obj = LRUCacheUnhashable()
@@ -715,6 +731,7 @@ def test_bit_string_list_to_bit_string():
     assert expected_result == actual_result
 
 def test_binary_string_conversion():
+    """test conversion of binary string to integer and back without gray code"""
     length = 5
     gray = False
     expected_result = [i for i in range(2**length)]
@@ -726,6 +743,7 @@ def test_binary_string_conversion():
     assert expected_result == actual_result
 
 def test_binary_string_conversion_gray():
+    """test conversion of binary string to integer and back with gray code"""
     length = 5
     gray = True
     expected_result = [i for i in range(2**length)]
@@ -737,6 +755,7 @@ def test_binary_string_conversion_gray():
     assert expected_result == actual_result
 
 def test_bit_string_cycle_conversion_orig():
+    """test conversion of integers to binary lists without Gray code"""
     locs = 4
     f = math.factorial(locs)
     method = 'new'
@@ -755,6 +774,7 @@ def test_bit_string_cycle_conversion_orig():
     assert expected_result == actual_result
 
 def test_bit_string_cycle_conversion_orig():
+    """test conversion of integers to binary lists with Gray code"""
     locs = 4
     f = math.factorial(locs)
     method = 'new'
@@ -774,12 +794,14 @@ def test_bit_string_cycle_conversion_orig():
 
 
 def test_lowest_list1():
+    """test run stats with two low items"""
     test_list = [100, 90, 80, 80]
     expected_result = (80, 2)
     actual_result = find_run_stats(test_list)
     assert expected_result == actual_result
 
 def test_lowest_list2():
+    """test run stats with foru identical items"""
     test_list = [100, 100, 100, 100]
     expected_result = (100, 0)
     actual_result = find_run_stats(test_list)
