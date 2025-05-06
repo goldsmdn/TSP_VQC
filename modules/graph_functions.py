@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-#import matplotlib.cm as cm
 from classes.MyModel import MySine
 from pathlib import Path
 import torch
@@ -12,8 +11,9 @@ from modules.config import GRAPH_DIR
 def parameter_graph(filename: str, 
                     title: str,
                     index_list: list, 
-                    gradient_list:list, 
-                    legend:list):
+                    gradient_list: list, 
+                    legend:list,
+                    ):
     """plots a graph of the parameter evolution"""
     p = plt.plot(index_list, gradient_list)
     plt.grid(axis='x')
@@ -25,7 +25,7 @@ def parameter_graph(filename: str,
     plt.savefig(filename)
     plt.show()
 
-def find_size(cost_list):
+def find_size(cost_list: list)-> tuple:
     """find the number of subplots"""
     if cost_list:
         length = len(cost_list)
@@ -41,27 +41,21 @@ def find_size(cost_list):
         columns = 2
     return(length, rows, columns)
 
-def find_graph_statistics(av_list, best):
+def find_graph_statistics(av_list:np.array, 
+                          best:float)-> tuple:
     """helper function for graph plotting"""
     maximum = float(np.max(av_list))
-    #print(f'maximum = {maximum}, best = {best}')
     ymin, ymax = int(best*.9), int(maximum*1.1) 
     return(ymin, ymax)
 
-def find_best_coords(x_list, best):
+def find_best_coords(x_list:np.array, 
+                     best:float)->tuple:
     """helper function for graph plotting"""
     x1 =  [0, x_list[-1]]
     y1 =  [best, best]
     return(x1, y1)
 
-#def find_graph_statistics(x_list, best):
-    """helper function for graph plotting"""
-    """x1 =  [0, x_list[-1]]
-    y1 =  [best, best]
-    ymin, ymax = int(best-1), int(best*2) 
-    return(x1, y1, ymin, ymax)"""
-
-def find_i_j(count, rows):
+def find_i_j(count:int, rows:int)->tuple:
     """find indices for subplots"""        
     if count < rows:
         i, j = count, 0
@@ -86,7 +80,6 @@ def cost_graph_multi(filename: str,
     length, rows, columns = find_size(parameter_list)
     fig, axs = plt.subplots(rows, columns, figsize=figsize, squeeze=False)
     fig.suptitle(main_title)
-    #x1, y1, ymin, ymax = find_graph_statistics(x_list, best)
     ymin, ymax = find_graph_statistics(av_list, best)
     x1, y1 = find_best_coords(x_list, best)
 
@@ -110,7 +103,10 @@ def cost_graph_multi(filename: str,
     fig.tight_layout()
     fig.savefig(filename)
 
-def plot_shortest_routes(points, route1, route2=None):
+def plot_shortest_routes(points: list, 
+                         route1:list, 
+                         route2:list = None
+                         ):
     x = points[:, 0]
     y = points[:, 1]
     plt.scatter(x, y, marker='o')
@@ -128,7 +124,6 @@ def plot_shortest_routes(points, route1, route2=None):
             plt.plot([x[start_index], x[end_index]], 
                      [y[start_index], y[end_index]], 
                      color='red')
-
         # Connect the last point back to the first to complete the cycle
         start_index = route2[-1]
         end_index = route2[0]
@@ -140,7 +135,6 @@ def plot_shortest_routes(points, route1, route2=None):
         plt.plot([x[start_index], x[end_index]], 
                  [y[start_index], y[end_index]], 
                  color='blue')
-
         # Connect the last point back to the first to complete the cycle
         start_index = route1[-1]
         end_index = route1[0]
@@ -154,12 +148,10 @@ def plot_shortest_routes(points, route1, route2=None):
 def plot_sine_activation():    
     title = 'Sine_Activation_Function'
     filepath = Path(GRAPH_DIR).joinpath(title + '.png')
-
     # create custom dataset
     x = torch.linspace(0, 1, 100)
     k = MySine()
     y = k(x)
-
     # Plot the Sine Activation Function
     plt.plot(x, y)
     plt.grid(True)

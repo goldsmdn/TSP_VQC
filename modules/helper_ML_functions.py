@@ -4,10 +4,12 @@ import torch.nn as nn
 import torch
 
 def find_device():
+    """find out if we are using a GPU or CPU"""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     return(device)
 
-def evaluate_model(model, shots):
+def evaluate_model(model:nn.Module, shots:int)-> dict:
+    """store the bits strings from the model in a dictionary"""
     bits = model.find_bits()
     device = find_device()
     input = torch.zeros(shots, bits).to(device)
@@ -27,7 +29,8 @@ def get_ready_to_train(model:nn.Module,
                        optimizer:str, 
                        lr:float, 
                        weight_decay:float,
-                         **kwargs)-> tuple:
+                       **kwargs,
+                       )-> tuple:
     """Prepare for training by setting up the target, criterion, and optimizer"""
     target = torch.tensor(0.0, requires_grad=True)
     criterion = nn.L1Loss()
@@ -51,7 +54,6 @@ def train_model(num_epochs: int,
                 print_frequency:int=10) -> tuple:
     """Train the model for a number of epochs"""
     model_output = model(my_input)
-    #lowest_cost = float(output)
     lowest_cost = float(model_output.min())
     index_list = []
     loss_history = []

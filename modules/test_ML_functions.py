@@ -8,7 +8,8 @@ from modules.helper_functions_tsp import (load_dict_from_json,
                                           read_file_name,
                                           validate_distance_array,
                                           cost_fn_fact, 
-                                          cost_fn_tensor)
+                                          cost_fn_tensor,
+                                          )
 
 from modules.config import NETWORK_DIR, DATA_SOURCES
 
@@ -17,7 +18,6 @@ def test_estimate_gradient():
     LOCATIONS = 5
     DECODING_FORMULATION = 'original'
     GRAY = False
-    VERBOSE = False
     device = find_device()
     my_input = torch.tensor([[1., 0., 0., 1., 0.]]).float().to(device)
     sources_filename = Path(NETWORK_DIR).joinpath(DATA_SOURCES)
@@ -29,8 +29,7 @@ def test_estimate_gradient():
     cost_fn = cost_fn_fact(LOCATIONS, 
                            distance_array, 
                            GRAY, 
-                           method = 
-                           DECODING_FORMULATION
+                           method = DECODING_FORMULATION,
                            )
     output = cost_fn_tensor(my_input, cost_fn).to(device)
     actual_result = estimate_cost_fn_gradient(my_input, output, cost_fn).float().to(device)
@@ -42,7 +41,6 @@ def test_estimate_gradient_2():
     LOCATIONS = 5
     DECODING_FORMULATION = 'original'
     GRAY = False
-    VERBOSE = False
     device = find_device()
     my_input = torch.tensor([[1., 0., 0., 1., 0.], 
                           [1., 0., 0., 1., 0.]]).float().to(device)
@@ -68,7 +66,7 @@ def test_estimate_gradient_3():
     LOCATIONS = 5
     DECODING_FORMULATION = 'original'
     GRAY = False
-    VERBOSE = False
+    #VERBOSE = False
     device = find_device()
     my_input = torch.tensor([[1., 0., 0., 1., 0.], 
                              [0., 0., 0., 1., 0.]]).float().to(device)
@@ -88,8 +86,3 @@ def test_estimate_gradient_3():
     expected_result = torch.tensor([[ -8.0,  6.0,  6.0, -6.0,  0.0], 
                                     [ -8.0, -4.0, -4.0,  4.0, -2.0]]).float().to(device)
     assert torch.allclose(actual_result, expected_result, atol=1e-4)
-
-
-
-
-
