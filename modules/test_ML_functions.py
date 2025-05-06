@@ -18,7 +18,6 @@ def test_estimate_gradient():
     LOCATIONS = 5
     DECODING_FORMULATION = 'original'
     GRAY = False
-    VERBOSE = False
     device = find_device()
     my_input = torch.tensor([[1., 0., 0., 1., 0.]]).float().to(device)
     sources_filename = Path(NETWORK_DIR).joinpath(DATA_SOURCES)
@@ -42,7 +41,6 @@ def test_estimate_gradient_2():
     LOCATIONS = 5
     DECODING_FORMULATION = 'original'
     GRAY = False
-    VERBOSE = False
     device = find_device()
     my_input = torch.tensor([[1., 0., 0., 1., 0.], 
                           [1., 0., 0., 1., 0.]]).float().to(device)
@@ -68,7 +66,7 @@ def test_estimate_gradient_3():
     LOCATIONS = 5
     DECODING_FORMULATION = 'original'
     GRAY = False
-    VERBOSE = False
+    #VERBOSE = False
     device = find_device()
     my_input = torch.tensor([[1., 0., 0., 1., 0.], 
                              [0., 0., 0., 1., 0.]]).float().to(device)
