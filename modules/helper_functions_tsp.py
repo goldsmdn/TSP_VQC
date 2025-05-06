@@ -605,6 +605,7 @@ def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bool, me
     """invert the hot start integer list into a string
     
     Parameters:
+    ----------
     hot_start_list: list
         A list of integers showing an estimate of the lowest cycle
     locations: int 
