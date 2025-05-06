@@ -20,9 +20,10 @@ from modules.config import (NETWORK_DIR,
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
-def load_dict_from_json(filename):
-  with open(filename, 'r') as f:
-    return json.load(f)
+def load_dict_from_json(filename: str) -> dict:
+    """Loads a dictionary from a JSON file"""
+    with open(filename, 'r') as f:
+        return json.load(f)
 
 def read_index(filename: str, encoding: str) -> dict:
     """Reads CSV file and returns a dictionary
@@ -48,7 +49,10 @@ def read_index(filename: str, encoding: str) -> dict:
             dict[next(index)] = row
     return(dict)
 
-def read_file_name(locations: int, data_sources: dict, file_type:str='file') -> str:
+def read_file_name(locations: int, 
+                   data_sources: dict,
+                   file_type:str='file'
+                   ) -> str:
     """Find the filename for a certain number of locations
     
     Parameters
@@ -100,7 +104,11 @@ def validate_distance_array(array :np.array, locs: int):
             if array[i,j] != array[j,i]:
                 raise Exception('The array is not symmetrical')
 
-def find_distance(loc1: int, loc2: int, distance_array: np.array, verbose: bool=False) -> float:
+def find_distance(loc1: int, 
+                  loc2: int, 
+                  distance_array: np.array,
+                  verbose: bool=False,
+                  ) -> float:
     """Finds the distance between locations using the distance matrix
     
     Parameters
@@ -111,6 +119,8 @@ def find_distance(loc1: int, loc2: int, distance_array: np.array, verbose: bool=
         Second location
     distance_array : np.array
         An array containing the distances between locations
+    verbose : bool
+        If True then more information is printed
 
     Returns
     ----------
@@ -256,7 +266,10 @@ def augment_loc_list(loc_list:list, locs:int)-> list:
     loc_list.append(add_item)
     return(loc_list)
 
-def find_total_distance(int_list: list, locs: int, distance_array :np.array)-> float:
+def find_total_distance(int_list: list, 
+                        locs: int, 
+                        distance_array :np.array
+                        )-> float:
     """finds the total distance for a valid formatted bit string representing a cycle.
     
     Parameters
@@ -292,7 +305,8 @@ def find_total_distance(int_list: list, locs: int, distance_array :np.array)-> f
 def cost_fn_fact(locs: int, 
                  distance_array: np.array, 
                  gray: bool=False, 
-                 method:str = 'original') -> Callable[[list], int]:
+                 method:str = 'original',
+                 ) -> Callable[[list], int]:
     """ returns a function
 
     Parameters
@@ -311,7 +325,7 @@ def cost_fn_fact(locs: int,
     
     """
     @LRUCacheUnhashable
-    def cost_fn(bit_string_input):
+    def cost_fn(bit_string_input: list) -> float:
         """returns the value of the objective function for a bit_string"""
         if isinstance(bit_string_input, list):
             bit_string = bit_string_input
@@ -334,8 +348,8 @@ def cost_fn_fact(locs: int,
             raise Exception(f'bit_string {bit_string_input} is not a list or a tensor')
     return cost_fn
 
-def cost_fn_tensor(input: torch.tensor,
-                   cost_fn)-> torch.Tensor:
+def cost_fn_tensor(input: torch.tensor, 
+                   cost_fn: Callable)-> torch.Tensor:
 
     """ find the distance for each bit string input using cost_fn
 
@@ -397,8 +411,6 @@ def convert_bit_string_to_cycle(bit_string: list,
     if method == 'original':
         #need to avoid changing the original bit_string
         bit_string_copy = copy.deepcopy(bit_string)
-        #end_cycle_list = []
-        #start_cycle_list = [i for i in range(locs)]
         end_cycle_list.append(start_cycle_list.pop(0)) #end point of cycle is always 0
 
         for i in range(locs-1, 1, -1):
@@ -417,37 +429,31 @@ def convert_bit_string_to_cycle(bit_string: list,
         return(end_cycle_list)
     elif method == 'new':
         f = math.factorial(locs)
-        #print(f'factorial f = {f}, bit_string = {bit_string}')
         bit_string_length = math.ceil(math.log2(f))
         if len(bit_string) != bit_string_length:
             raise Exception(f'bit_string length {len(bit_string)} does not match {bit_string_length}')
         x = convert_binary_list_to_integer(bit_string, gray=gray)
         y = x % f
-        #end_cycle_list = []
-        #start_cycle_list = [i for i in range(locs)]
-        #print(f'start_cycle_list = {start_cycle_list}')
-        #print(f'end_cycle_list = {end_cycle_list}')       
         i = 0
         while i < locs:
-            #print(f'Starting loop with i = {i} y = {y} f={f}' )
             f = int(f / (locs - i))
-            #print(f'factorial f = {f}' )
             #correcting mistype in paper
             k = math.floor(y / f)
-            #print(f'k = {k}')
             end_cycle_list.append(start_cycle_list[k])
             start_cycle_list.remove(start_cycle_list[k])
-            #print(f'start_cycle_list = {start_cycle_list}')
-            #print(f'end_cycle_list = {end_cycle_list}')            #correcting mistype in paper
+            #correcting mistype in paper
             y -= k * f
-
             i += 1
         return end_cycle_list
     else:
         raise Exception(f'Unknown method {method}')
 
-def find_stats(cost_fn, counts: dict, shots: int, 
-               average_slice: float=1, verbose: bool=False)-> tuple:
+def find_stats(cost_fn: Callable,
+               counts: dict, 
+               shots: int, 
+               average_slice: float=1, 
+               verbose: bool=False
+               )-> tuple:
     """finds the average energy of the relevant counts, and the lowest energy
     
     Parameters
@@ -698,11 +704,10 @@ def update_parameters_using_gradient(subdatalogger,
     if gradient_type == 'SPSA':
         #define_parameters
         # A is <= 10% of the number of iterations normally, but here the number of iterations is lower.
-        #A = 50
-        # order of magnitude of first gradients
+        
         if verbose:
             print(f'c= {c}')
-
+        # order of magnitude of first gradients
         abs_gradient = np.abs(my_gradient(cost_fn, 
                                           qc, 
                                           params, 
@@ -721,18 +726,14 @@ def update_parameters_using_gradient(subdatalogger,
             print(f'abs_gradient {abs_gradient}, magnitude_g0 {magnitude_g0}')
             print(f'magnitude_g0, {magnitude_g0}')
  
-    # 2 is an estimative of the initial changes of the parameters,
-    # different changes might need other choices
-        #a = 2*((A+1)**alpha)/magnitude_g0
-        #big_a is <= 10% of the number of iterations normally, but here the number of iterations is lower.
         if magnitude_g0 == 0:
+        # stop div by zero error
             a = 999
         else:
             a = eta*((big_a+1)**alpha)/magnitude_g0
 
     for i in range(0, iterations):
         bc = bind_weights(params, rots, qc)
-        #print(f'average_slice={average_slice}')
         cost, lowest, lowest_energy_bit_string = cost_func_evaluate(cost_fn, 
                                                                     bc, 
                                                                     shots = subdatalogger.shots, 
@@ -815,7 +816,7 @@ def update_parameters_using_gradient(subdatalogger,
                     print(f'The rotations are {rots}')
     return index_list, cost_list, lowest_list, gradient_list, average_list, parameter_list 
     
-def cost_func_evaluate(cost_fn, 
+def cost_func_evaluate(cost_fn: Callable, 
                        model, 
                        shots: int=1024, 
                        average_slice: float=1, 
@@ -1053,7 +1054,8 @@ def vqc_circuit(qubits: int, params: list, mode:int=1) -> QuantumCircuit:
 def create_initial_rotations(qubits: int, 
                              mode: int, 
                              bin_hot_start_list: list=[], 
-                             hot_start: bool=False) -> list:
+                             hot_start: bool=False
+                             ) -> list:
     """initialise parameters with random weights
 
     Parameters
@@ -1139,7 +1141,7 @@ def find_run_stats(lowest_list:list)-> tuple:
             iteration = i
     return lowest_energy, iteration
 
-def find_distances_array(locations, print_comments=False):
+def find_distances_array(locations:int, print_comments:bool=False)-> tuple:
     """finds the array of distances between locations and the best distance"""
     sources_filename = Path(NETWORK_DIR).joinpath(DATA_SOURCES)
     data_source_dict = load_dict_from_json(sources_filename)
@@ -1153,7 +1155,8 @@ def find_distances_array(locations, print_comments=False):
     validate_distance_array(distance_array, locations)
     return distance_array, best_dist
 
-def format_boolean(string_input: str):
+def format_boolean(string_input: str)->bool:
+    """convert a string to a boolean value"""
     if string_input == 'TRUE':
         output = True
     elif string_input == 'FALSE':
