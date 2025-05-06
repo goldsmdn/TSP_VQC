@@ -17,7 +17,7 @@ from modules.helper_functions_tsp import(validate_distance_array,
                                          hot_start_list_to_string, 
                                          convert_integer_to_binary_list,
                                          convert_binary_list_to_integer, 
-                                         find_run_stats
+                                         find_run_stats,
                                          )
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
