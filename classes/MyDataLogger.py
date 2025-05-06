@@ -3,6 +3,7 @@ from time import strftime
 from pathlib import Path
 import csv
 from dataclasses import dataclass, asdict, field
+from typing import Callable
 
 from modules.config import (RESULTS_DIR, 
                             RESULTS_FILE,
@@ -48,7 +49,6 @@ class MyDataLogger:
         self.graph_sub_path = self.create_sub_graph_path()
         self.results_sub_path = self.create_sub_results_path()
         self.summary_results_filename = self.find_summary_results_filename()
-        #print(f'Data logger instantiated.  Run ID: {self.runid}')
 
     def create_sub_graph_path(self):
         """Create a folder for graphs"""
@@ -175,8 +175,7 @@ class MySubDataLogger(MyDataLogger):
                     writer.writerows(data_row)
 
             except Exception as e:
-                print(f"An error occurred while saving the data to {file_path}: {e}")
-        
+                print(f"An error occurred while saving the data to {file_path}: {e}")    
         else:
             try:
                 with open(file_path, 'w', newline='') as csvfile:
@@ -191,7 +190,9 @@ class MySubDataLogger(MyDataLogger):
             except Exception as e:
                 print(f"An error occurred while saving the data to {file_path}: {e}")
 
-    def update_constants_from_dict(self, data_dict):
+    def update_constants_from_dict(self, 
+                                   data_dict: dict,
+                                   ):
         """Update the constants from a dictionary"""
         self.quantum = format_boolean(data_dict['quantum'])
         self.locations = int(data_dict['locations'])
@@ -211,7 +212,6 @@ class MySubDataLogger(MyDataLogger):
             self.momentum = float(data_dict['momentum'])
         if self.quantum:
             self.slice = float(data_dict['slice'])
-            #self.mode = int(data_dict['mode'])
             self.alpha = float(data_dict['alpha'])
             self.big_a = float(data_dict['big_a'])
             self.c = float(data_dict['c'])
@@ -249,8 +249,9 @@ class MySubDataLogger(MyDataLogger):
         self.momentum = MOMENTUM
         self.weight_decay = WEIGHT_DECAY
 
-
-    def update_cache_statistics(self, cost_fn):
+    def update_cache_statistics(self, 
+                                cost_fn: Callable,
+                                ):
         """update cache statistics"""
         if hasattr(cost_fn, 'report_cache_stats'):
             items, hits, misses = cost_fn.report_cache_stats()
