@@ -25,4 +25,4 @@ jobs:
           touch .nojekyll
       - name: Publish to GitHub Pages
         run: |
-          ghp-import -n -p -f docs/_build/html  
+          ghp-import -n -p -f docs/build/html
