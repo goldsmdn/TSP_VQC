@@ -4,7 +4,7 @@ This note book provides the code to solve the Travelling Salesman problem (TSP) 
 ## Process overview
 
 An overview of the process is shown below.  In summary:
-- TSP networks are stored in the `networks` folder, either loaded from external sources, or created automatically by [`make_data.ipynb`](make_data.ipynb).  
+- TSP networks are stored in the [`networks`](/networks) folder, either loaded from external sources, or created automatically by [`make_data.ipynb`](make_data.ipynb).  
 - runs can be executed manually by [`manual_runs_ML.ipynb`](manual_runs_ML.ipynb) for classical ML and [`manual_runs_VQC.ipynb`](manual_runs_VQC.ipynb) for quantum.  These allow an interactive environment for simple experiments.  In manual executions the control parameters are read from the a configuration data in [`modules/config.py`](/modules/config.py)
 - most runs are executed automatically by [`auto_runs.ipynb`](auto_runs.ipynb)
 - in any cases results data is updated to the ['results.csv'](/results/results.csv) file, and to sub-run specific results files and graphs
@@ -22,7 +22,7 @@ The following Jupyter notebooks are provided for data execution:
  - [`manual_runs_VQC.ipynb`](manual_runs_VQC.ipynb): responsible for executing manual runs of the quantum machine learning model, reading configuration data from [`modules/config.py`](/modules/config.py)
 
 ### Network creation
-The following Jupyter notebooks are provided for create networks for testing.  The networks are stored in the `networks` folder.
+The following Jupyter notebooks are provided for create networks for testing.  The networks are stored in the [`networks`](/networks)  folder.
 - [`make_data.ipynb`](make_data.ipynb): responsible for setting up new networks
 
 ### Data analysis
@@ -45,15 +45,15 @@ A full suite of over 70 test Unit Test cases is provided and executed automatica
 - [`test_quantum_functions.py`](/modules/test_quantum_functions.py): unit test cases for quantum machine learning
 - [`test_tsp_helper.py`](/modules/test_quantum_functions.py): general unit test cases
 
-## Pythcn classes
+## Python classes
 The following object orientated code is provided:
-- [`LRUCacheUnhashalble.py`](/classes/LRUCacheUnhashalble.py): handles caches of bit string evaluations
+- [`LRUCacheUnhashable.py`](/classes/LRUCacheUnhashable.py): handles caches of bit string evaluations
 - [`MyDataLogger.py`](/classes/MyDataLogger.py): handles logging of data results including updating `results.txt`, and sub-run specific data summaries and graphs.  This module is object orientated, with objects for a parent `run-id` and child `sub-id`.
 - [`MyModel.py`](classes/MyModel.py): responsbile for classical machine learing PyTorch modules
 
 ## Key coding points
 
 ### Optimisers
-The optimiser is chosen setting the constant `GRADIENT_TYPE`.  For quantum two optimisers have been coded by hand:
+The optimiser is chosen setting the constant `GRADIENT_TYPE`.  For quantum two optimisers bespoke coding is provided:
  - `parameter_shift` which uses the fact that qubit rotations are trigonometric functions to find an analytical expression for the gradient.  Please see [Pennylane documentation](https://pennylane.ai/qml/glossary/parameter_shift) for a full description of parameter shift.
  - `SPSA` is an algorithm of optimisation invented by James C. Spall specially useful for noisy cost functions and the ones which the exact gradient is not available. Please see a [blog](https://www.geeksforgeeks.org/spsa-simultaneous-perturbation-stochastic-approximation-algorithm-using-python/) for a description of SPSA code that was modified.
