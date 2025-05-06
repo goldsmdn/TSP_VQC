@@ -164,4 +164,4 @@ cython_debug/
 #local graph and results files
 results/
 graphs/
-No push/
+never_push/
