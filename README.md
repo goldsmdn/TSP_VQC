@@ -1,5 +1,5 @@
 # TSP_VQC
-This note book provides the code to solve the Travelling Salesman problem (TSP) with a Variational Quantum Circuit, and a quantum inspired classical machine learning model.  The work is described in more detail in an [article](h.ttps://www.overleaf.com/project/67fd29849d97c8adf9efcd7b)  
+This note book provides the code to solve the Travelling Salesman problem (TSP) with a Variational Quantum Circuit, and a quantum inspired classical machine learning model.  The work is described in more detail in an ['article'](h.ttps://www.overleaf.com/project/67fd29849d97c8adf9efcd7b)  
 
 ## Process overview
 
@@ -7,7 +7,7 @@ An overview of the process is shown below.  In summary:
 - TSP networks are stored in the [`networks`](/networks) folder, either loaded from external sources, or created automatically by [`make_data.ipynb`](make_data.ipynb).  
 - runs can be executed manually by [`manual_runs_ML.ipynb`](manual_runs_ML.ipynb) for classical ML and [`manual_runs_VQC.ipynb`](manual_runs_VQC.ipynb) for quantum.  These allow an interactive environment for simple experiments.  In manual executions the control parameters are read from the a configuration data in [`modules/config.py`](/modules/config.py)
 - most runs are executed automatically by [`auto_runs.ipynb`](auto_runs.ipynb)
-- in any cases results data is updated to the ['results.csv'](/results/results.csv) file, and to sub-run specific results files and graphs
+- in any cases results data is updated to the [`results.csv`](/results/results.csv) file, and to sub-run specific results files and graphs
 - each execution of data causes a `run-id` to be created, and each different set of configuration data causes a `sub-id` to be created.  
 - data is analysed by [`show_results.ipynb`](show_results.ipynb)
 

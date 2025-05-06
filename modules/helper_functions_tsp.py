@@ -621,6 +621,7 @@ def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bool, me
         A list of bits that represents the bit string for the lowest cycle
     
     """
+    
     if method == 'original':
         if len(hot_start_list) != locations:
             raise Exception(f'The hot start list should be length {locations}')
