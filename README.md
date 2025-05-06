@@ -51,6 +51,48 @@ The following object orientated code is provided:
 - [`MyDataLogger.py`](/classes/MyDataLogger.py): handles logging of data results including updating `results.txt`, and sub-run specific data summaries and graphs.  This module is object orientated, with objects for a parent `run-id` and child `sub-id`.
 - [`MyModel.py`](classes/MyModel.py): responsbile for classical machine learing PyTorch modules
 
+## Requirements
+Requirements are given in `environment.yml`.  The main packages required are:
+ - numpy
+ - math
+ - copy
+ - graycode
+ - csv
+ - itertools
+ - qiskit 
+ - qiskit.circuit
+ - qiskit_aer.primitives
+ - random
+ - json
+ - torch 
+ - typing
+ - pathlib
+ - matplotlib
+ - mpl_toolkits
+ - pandas
+ - collections
+ - time
+
+ I installed [Anaconda](https://www.anaconda.com/) v2.6.3 and used the base environment, which contain a lot of the dependencies.  Then I cloned the base environment and loaded most of the dependencies with Anaconda `conda install`.  I sometimes needed to revert to `pip install`.
+
+ ## Installation of the repository locally
+Clone the repository to a suitable location on your computer using the following command:
+```
+git clone https://github.com/goldsmdn/TSP_VQC
+
+``` 
+## Running the notebooks
+To run one of the notebooks, for example `manual_runs_ML.ipynb`, open an Anaconda terminal window and navigate to the folder containing the repository.  Then run the following command:
+
+```
+jupyter notebook manual_runs_ML.ipynb
+
+```
+Alternatively you can run in the VS code development environment, setting the Python interpreter to Base.
+
+## Contributing
+Contributions to the repository are very welcome.  Please raise an issue if you have any problems, and feel free to contact me.
+
 ## Key coding points
 
 ### Optimisers
