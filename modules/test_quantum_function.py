@@ -1,7 +1,10 @@
 from qiskit.circuit import QuantumCircuit, QuantumRegister, Parameter
 
-from modules.helper_functions_tsp import (
-    vqc_circuit, cost_func_evaluate, my_gradient, cost_fn_fact)
+from modules.helper_functions_tsp import (vqc_circuit, 
+                                          cost_func_evaluate, 
+                                          my_gradient, 
+                                          cost_fn_fact
+                                          )
 
 import numpy as np
 import pytest as py
@@ -9,7 +12,7 @@ import pytest as py
 from pathlib import Path
 from modules.config import NETWORK_DIR
 
-def my_cost_function1(bit_string_list):
+def my_cost_function1(bit_string_list:list) -> int:
     """A simple cost function for testing"""
     if bit_string_list == [0]:
         return 0 
@@ -30,7 +33,6 @@ def test_gradient_1():
     actual_results = my_gradient(my_cost_function1, qc, params, init_rots)
     print(actual_results)
     expected_results = np.array([0])
-
     assert actual_results == py.approx(expected_results, abs=0.1)
 
 def test_gradient_2():
@@ -44,7 +46,6 @@ def test_gradient_2():
     params = [a]
     actual_results = my_gradient(my_cost_function1, qc, params, init_rots)
     expected_results = np.array([0])
-
     assert actual_results == py.approx(expected_results, abs=0.1)
 
 def test_gradient_3():
@@ -58,7 +59,6 @@ def test_gradient_3():
     params = [a]
     actual_results = my_gradient(my_cost_function1, qc, params, init_rots)
     expected_results = np.array([0.5])
-
     assert actual_results == py.approx(expected_results, abs=0.1)
 
 def test_gradient_4():
@@ -83,7 +83,6 @@ def test_simple_circuit():
     params = []
     mode = 3
     locations = 5
-    #filename = 'networks/five_d.txt'
     file = 'five_d.txt'
     filename = Path(NETWORK_DIR).joinpath(file)
     distance_array = np.genfromtxt(filename)
