@@ -1,6 +1,12 @@
 # TSP_VQC
 Travelling Salesman problem with a Variational Quantum Circuit.
 
+## Process overview
+
+An overview of the process is shown below:
+
+![Image overview](/images/flowchart.png)
+
 ## Notebooks provided
 
 The following Jupyter notebooks are provided for data execution:
