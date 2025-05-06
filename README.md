@@ -52,7 +52,7 @@ The following object orientated code is provided:
 - [`MyModel.py`](classes/MyModel.py): responsbile for classical machine learing PyTorch modules
 
 ## Requirements
-The full requirements can be found in `requirements.txt`.  The main packages required are:
+The main packages required are:
  - numpy
  - math
  - copy
