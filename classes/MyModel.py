@@ -34,13 +34,14 @@ def estimate_cost_fn_gradient(my_input:torch.Tensor,
     dim1 = my_input.size(1)
 
     my_input_clone = my_input.clone()  # Clone once, modify in-place
-    for i in range(dim0):
+    for i in range(dim0): 
         for j in range(dim1):
             old_bit = my_input[i,j]
-            sign = 2 * (old_bit - 0.5)
+            #sign = 2 * (old_bit - 0.5)
+            sign = 2 * old_bit - 1  # Convert to -1 or 1
             my_input_clone[i,j] = 1 - old_bit
             new_output = cost_fn_tensor(my_input_clone[[i]], cost_fn).to(device)
-            gradient_est[i, j] = (output[i] - new_output) * sign
+            gradient_est[i, j] = (output[i] - new_output) / sign
             my_input_clone[i, j] = old_bit 
     return gradient_est
 
@@ -109,11 +110,14 @@ class MyModel(nn.Module):
         if self.layers >= 2:
             self.fc2 = nn.Linear(in_features=bits, out_features=bits)
             self.act2 = MySine()
-        if self.layers == 3:
+        if self.layers >= 3:
             self.fc3 = nn.Linear(in_features=bits, out_features=bits)
             self.act3 = MySine()
-        elif self.layers > 3:
-            raise Exception(f'Only 1, 2 and layers are coded for. {self.layers} is to many')
+        if self.layers >= 4:
+            self.fc4 = nn.Linear(in_features=bits, out_features=bits)
+            self.act4 = MySine()
+        elif self.layers > 4:
+            raise Exception(f'Only 1, 2, 3 and 4 layers are coded for. {self.layers} is to many')
         self.sample = Sample_Binary()
         self.cost = BinaryToCost(self.cost_fn)
         if self.hot_start:
@@ -127,11 +131,14 @@ class MyModel(nn.Module):
         if self.layers >= 2:
             x = self.fc2(x)
             x = self.act2(x)
-        if self.layers == 3:
+        if self.layers >= 3:
             x = self.fc3(x)
             x = self.act3(x)
+        if self.layers >= 4:
+            x = self.fc4(x)
+            x = self.act4(x)
         elif self.layers > 3:
-            raise Exception(f'Only 1, 2, 3 layers are coded for.  {self.layers} is too many')
+            raise Exception(f'Only 1, 2, 3 and 4 layers are coded for. {self.layers} is to many')
         x = self.sample(x)
         x = self.cost(x)
         return(x)
@@ -149,8 +156,11 @@ class MyModel(nn.Module):
         if self.layers >= 2:
             self.fc2.weight = torch.nn.Parameter(new_weights)
             self.fc2.bias = torch.nn.Parameter(new_bias)
-        if self.layers == 3:
-            self.fc2.weight = torch.nn.Parameter(new_weights)
-            self.fc2.bias = torch.nn.Parameter(new_bias)
+        if self.layers >= 3:
+            self.fc3.weight = torch.nn.Parameter(new_weights)
+            self.fc3.bias = torch.nn.Parameter(new_bias)
+        if self.layers >= 3:
+            self.fc4.weight = torch.nn.Parameter(new_weights)
+            self.fc4.bias = torch.nn.Parameter(new_bias)
         elif self.layers > 4:
-            raise Exception(f'Only 2 layers are coded for.  {self.layers} is to many')
+            raise Exception(f'Only 1, 2, 3 and 4 layers are coded for. {self.layers} is to many')

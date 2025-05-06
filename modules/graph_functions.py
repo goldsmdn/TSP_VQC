@@ -41,12 +41,25 @@ def find_size(cost_list):
         columns = 2
     return(length, rows, columns)
 
-def find_graph_statistics(x_list, best):
+def find_graph_statistics(av_list, best):
+    """helper function for graph plotting"""
+    maximum = float(np.max(av_list))
+    #print(f'maximum = {maximum}, best = {best}')
+    ymin, ymax = int(best*.9), int(maximum*1.1) 
+    return(ymin, ymax)
+
+def find_best_coords(x_list, best):
     """helper function for graph plotting"""
     x1 =  [0, x_list[-1]]
     y1 =  [best, best]
+    return(x1, y1)
+
+#def find_graph_statistics(x_list, best):
+    """helper function for graph plotting"""
+    """x1 =  [0, x_list[-1]]
+    y1 =  [best, best]
     ymin, ymax = int(best-1), int(best*2) 
-    return(x1, y1, ymin, ymax)
+    return(x1, y1, ymin, ymax)"""
 
 def find_i_j(count, rows):
     """find indices for subplots"""        
@@ -73,7 +86,9 @@ def cost_graph_multi(filename: str,
     length, rows, columns = find_size(parameter_list)
     fig, axs = plt.subplots(rows, columns, figsize=figsize, squeeze=False)
     fig.suptitle(main_title)
-    x1, y1, ymin, ymax = find_graph_statistics(x_list, best)
+    #x1, y1, ymin, ymax = find_graph_statistics(x_list, best)
+    ymin, ymax = find_graph_statistics(av_list, best)
+    x1, y1 = find_best_coords(x_list, best)
 
     for count in range(length):
         i, j = find_i_j(count, rows)
