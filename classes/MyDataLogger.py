@@ -209,7 +209,8 @@ class MySubDataLogger(MyDataLogger):
             self.std_dev = float(data_dict['std_dev'])
             self.lr = float(data_dict['lr'])
             self.weight_decay = float(data_dict['weight_decay'])
-            self.momentum = float(data_dict['momentum'])
+            if self.gradient_type == 'SGD':
+                self.momentum = float(data_dict['momentum'])
         if self.quantum:
             self.slice = float(data_dict['slice'])
             self.alpha = float(data_dict['alpha'])
