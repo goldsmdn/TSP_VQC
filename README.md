@@ -10,6 +10,7 @@ An overview of the process is shown below.  In summary:
 - in any cases results data is updated to the [`results.csv`](/results/results.csv) file, and to sub-run specific results files and graphs
 - each execution of data causes a `run-id` to be created, and each different set of configuration data causes a `sub-id` to be created.  
 - data is analysed by [`show_results.ipynb`](show_results.ipynb)
+- bespoke graphs are plotted in ['plot_data.ipynb'](plot_data.ipynb)
 
 ![Image overview](/images/flowchart.png)
 
