@@ -72,7 +72,7 @@ def cost_graph_multi(filename: str,
                      best: float=None,
                      main_title: str='',
                      sub_title: str='',
-                     x_label: str='',
+                     x_label: str='Epoch',
                      figsize: tuple=(8,8),
                      ):
     """plots a graph of the cost function for multiple lists"""
@@ -158,5 +158,83 @@ def plot_sine_activation():
     plt.title(title)
     plt.xlabel('x')
     plt.ylabel('y')
+    plt.savefig(filepath)
+    plt.show()
+
+def plot_3d_graph_slice(grouped_means, input, show_sem=False):
+    """plot a 3D bar graph of the given input data grouped by locations and slice."""   
+    fig = plt.figure(figsize=(10, 7))
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Map categorical data to numeric positions
+    locations = grouped_means['locations'].unique()
+    slices = sorted(grouped_means['slice'].unique())
+
+    loc_map = {loc: i for i, loc in enumerate(locations)}
+    slice_map = {sli: i for i, sli in enumerate(slices)}
+
+    # Assign colors for each location
+    colors = plt.get_cmap('Set3', len(locations))  # or 'Set3', 'Paired', etc.
+    location_colors = {loc: colors(i) for i, loc in enumerate(locations)}
+
+    # Bar and cap width sizes
+    dx = 0.5
+    dy = 0.25
+    cap_width = 0.1
+
+    # Plot bars with different colors
+    for i, row in grouped_means.iterrows():
+        x = slice_map[row['slice']]   
+        y = loc_map[row['locations']]
+        x_bar = slice_map[row['slice']] - dx/2    # Center the bar on the x-axis
+        y_bar = loc_map[row['locations']] - dy/2  # Center the bar on the y-axis
+        z_bar = 0
+        dz = row[input]
+        if show_sem:
+            error = row['sem']
+
+        color = location_colors[row['locations']]
+        ax.bar3d(x_bar , y_bar, z_bar, dx, dy, dz, color=color, shade=True)
+        
+        x_center = x + dx / 4
+        y_center = y + dy / 4
+        y_center = y
+
+        if show_sem:
+            if error > 0:
+                #error bars
+                ax.plot(
+                    [x_center , x_center],
+                    [y_center, y_center],
+                    [0, dz + error],
+                    color='black',
+                    linewidth=2
+                    )     
+                # Horizontal cap at the top
+                ax.plot(
+                    [x_center - cap_width, x_center + cap_width],
+                    [y_center, y_center],
+                    [dz + error, dz + error],
+                    color='black',
+                    linewidth=2
+                    )
+    # Label axes
+    ax.set_xlabel('Slice')
+    ax.set_ylabel('Locations')
+    ax.set_zlabel(input)
+
+    # Set tick labels
+    ax.set_xticks(list(slice_map.values()))
+    ax.set_xticklabels(list(slice_map.keys()))
+    ax.set_yticks(list(loc_map.values()))
+    ax.set_yticklabels(list(loc_map.keys()))
+
+    legend_handles = [mpatches.Patch(color=location_colors[loc], label=loc) for loc in locations]
+    plt.legend(handles=legend_handles, title='Locations', loc='upper left', bbox_to_anchor=(1, 1))
+
+    formatted_input = input.replace('_', SPACE).lower()
+    title = f'3D bar graph of {formatted_input} by location and slice'
+    plt.title(title)
+    filepath = Path(GRAPH_DIR).joinpath(title)
     plt.savefig(filepath)
     plt.show()
