@@ -975,6 +975,32 @@ def my_gradient(cost_fn, qc:QuantumCircuit,
         raise Exception(f'Gradient type {gradient_type} is not an allowed choice')
     return gradient_array
 
+def calculate_parameter_numbers(qubits: int, mode: int) -> int:
+    """calculate the number of parameters in a variational quantum circuit
+    
+    Parameters
+    ----------
+    qubits: int
+        The number of qubits in the circuit
+    mode: int
+        Controls setting the circuit up in different modes
+
+    Returns
+    -------
+    num_params: int
+        The number of parameters in the circuit
+
+    """
+    #print(f'qubits = {qubits}, mode = {mode}')
+    if mode in [1,2]:
+        num_params = 2 * qubits
+    elif mode == 4:
+        num_params = qubits
+    else:
+        raise Exception(f'Mode {mode} has not been coded for')
+    return num_params
+    
+
 def define_parameters(qubits: int, mode: int=1) -> list:
     """set up parameters and initialise text
     
@@ -992,8 +1018,13 @@ def define_parameters(qubits: int, mode: int=1) -> list:
 
     """
     params = []
-    if mode in [1,2]:
-        num_params = 2 * qubits
+    #if mode in [1,2]:
+    #    num_params = 2 * qubits
+    #elif mode == 4:
+    #    num_params = qubits
+    #print(f'qubits = {qubits}, mode = {mode}')
+    num_params = calculate_parameter_numbers(qubits, mode)
+    if mode in [1,2,4]:
         for i in range(num_params):
             text = "param " + str(i)
             params.append(Parameter(text))
@@ -1048,6 +1079,9 @@ def vqc_circuit(qubits: int, params: list, mode:int=1) -> QuantumCircuit:
         qc.x(1)
         qc.x(3)
         qc.x(4)
+    elif mode == 4:
+        for i in range(qubits):
+            qc.rx(params[i], i)
     else:
         raise Exception(f'Mode {mode} has not been coded for')
     qc.measure_all()
@@ -1077,6 +1111,9 @@ def create_initial_rotations(qubits: int,
     """
     if mode in [1,2]:
         param_num = 2 * qubits
+    elif mode == 4:
+        param_num = qubits
+    
     else:
         raise Exception(f'Mode {mode} is not yet coded')
     if hot_start:
@@ -1091,6 +1128,7 @@ def create_initial_rotations(qubits: int,
         init_rots= [random.random() * 2 * math.pi for i in range(param_num)]
     init_rots_array = np.array(init_rots)
     return(init_rots_array)
+from typing import Callable
 
 def bind_weights(params:list, rots:list, qc:QuantumCircuit) -> QuantumCircuit:
     """bind parameters to rotations and return a bound quantum circuit

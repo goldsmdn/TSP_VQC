@@ -143,7 +143,7 @@ class MySubDataLogger(MyDataLogger):
             raise Exception(f'Value {self.formulation} is not allowed for formulation' )
         if self.quantum:
             validate_gradient_type(self.gradient_type)
-            if self.mode not in [1, 2]:
+            if self.mode not in [1, 2, 4]:
                 raise Exception(f'mode = {self.mode} is not permitted for quantum')
         else:
             if self.gradient_type not in ['SGD', 'Adam', 'RMSprop']:
