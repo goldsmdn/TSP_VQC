@@ -15,7 +15,7 @@ from pathlib import Path
 
 from modules.config import (NETWORK_DIR, 
                             DATA_SOURCES, 
-                            PRINT_FREQUENCY
+                            PRINT_FREQUENCY,
                             )
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
@@ -992,7 +992,7 @@ def calculate_parameter_numbers(qubits: int, mode: int) -> int:
 
     """
     #print(f'qubits = {qubits}, mode = {mode}')
-    if mode in [1,2]:
+    if mode in [1, 2, 3,]:
         num_params = 2 * qubits
     elif mode == 4:
         num_params = qubits
@@ -1018,13 +1018,9 @@ def define_parameters(qubits: int, mode: int=1) -> list:
 
     """
     params = []
-    #if mode in [1,2]:
-    #    num_params = 2 * qubits
-    #elif mode == 4:
-    #    num_params = qubits
-    #print(f'qubits = {qubits}, mode = {mode}')
+
     num_params = calculate_parameter_numbers(qubits, mode)
-    if mode in [1,2,4]:
+    if mode in [1, 2, 3, 4,]:
         for i in range(num_params):
             text = "param " + str(i)
             params.append(Parameter(text))
@@ -1074,14 +1070,30 @@ def vqc_circuit(qubits: int, params: list, mode:int=1) -> QuantumCircuit:
                 #ensure circuit is fully entangled
     elif mode == 3:
     #test mode
+    #    if qubits != 5:
+    #        raise Exception(f'test mode {mode} is only to be used with 5 qubits.  {qubits} qubits are specified')
+    #    qc.x(1)
+    #    qc.x(3)
+    #    qc.x(4)
+        for i in range(qubits):
+            qc.h(i)
+            if i < qubits-1:
+                qc.rzz(params[qubits+i], i, i+1,)
+            else:
+                qc.rzz(params[qubits+i], i, 0,)
+        for i in range(qubits):
+            qc.rz(params[i], i)
+            qc.h(i)
+    elif mode == 4:
+        for i in range(qubits):
+            qc.rx(params[i], i)
+    elif mode == 5:
+    #test mode
         if qubits != 5:
             raise Exception(f'test mode {mode} is only to be used with 5 qubits.  {qubits} qubits are specified')
         qc.x(1)
         qc.x(3)
         qc.x(4)
-    elif mode == 4:
-        for i in range(qubits):
-            qc.rx(params[i], i)
     else:
         raise Exception(f'Mode {mode} has not been coded for')
     qc.measure_all()
@@ -1109,7 +1121,7 @@ def create_initial_rotations(qubits: int,
         initial rotations
     
     """
-    if mode in [1,2]:
+    if mode in [1, 2, 3]:
         param_num = 2 * qubits
     elif mode == 4:
         param_num = qubits

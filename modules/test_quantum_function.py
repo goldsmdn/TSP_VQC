@@ -81,7 +81,8 @@ def test_simple_circuit():
     """test a simple circuit with known output"""
     qubits = 5
     params = []
-    mode = 3
+    #mode = 3
+    mode = 5
     locations = 5
     file = 'five_d.txt'
     filename = Path(NETWORK_DIR).joinpath(file)

@@ -15,7 +15,7 @@ CACHE_MAX_SIZE = 5_000_000          # maximum size of the cache.
 
 # configuration information used in ALL manual runs
 
-LOCATIONS = 6                       # number of locations to be visited          
+LOCATIONS = 4                       # number of locations to be visited          
                                     # Slices to use when calculating the gradient
                                     #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
                                     # For example, 0.2 means that the best 20% 
@@ -33,9 +33,9 @@ GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
 DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation from paper
 
 #information needed in QML manual runs:
-MODE = 4                            # MODE = 1 - rxgate, rygate, cnot gates
+MODE = 3                            # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 2 - rxgate, XX gates -can be used with Hot Start
-                                    # MODE = 3 - not currently used
+                                    # MODE = 3 - IQP based
                                     # MODE = 4 - rxgate
                                     # MODE = 8 - input is all zeros
                                     # MODE = 9 - input is 0.5
