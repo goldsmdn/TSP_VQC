@@ -30,7 +30,12 @@ def test_gradient_1():
     qc.measure_all()
     init_rots = [0]
     params = [a]
-    actual_results = my_gradient(my_cost_function1, qc, params, init_rots)
+    actual_results = my_gradient(my_cost_function1, 
+                                 False,
+                                 qc, 
+                                 params, 
+                                 init_rots
+                                 )
     print(actual_results)
     expected_results = np.array([0])
     assert actual_results == py.approx(expected_results, abs=0.1)
@@ -44,7 +49,12 @@ def test_gradient_2():
     qc.measure_all()
     init_rots = [np.pi]
     params = [a]
-    actual_results = my_gradient(my_cost_function1, qc, params, init_rots)
+    actual_results = my_gradient(my_cost_function1, 
+                                 False,
+                                 qc, 
+                                 params, 
+                                 init_rots
+                                 )
     expected_results = np.array([0])
     assert actual_results == py.approx(expected_results, abs=0.1)
 
@@ -57,7 +67,12 @@ def test_gradient_3():
     qc.measure_all()
     init_rots = [np.pi/2]
     params = [a]
-    actual_results = my_gradient(my_cost_function1, qc, params, init_rots)
+    actual_results = my_gradient(my_cost_function1, 
+                                 False,
+                                 qc, 
+                                 params, 
+                                 init_rots
+                                 )
     expected_results = np.array([0.5])
     assert actual_results == py.approx(expected_results, abs=0.1)
 
@@ -73,7 +88,12 @@ def test_gradient_4():
     qc.measure_all() 
     init_rots = [np.pi / 4, np.pi / 2]
     params = [a, b]
-    actual_results = my_gradient(my_cost_function1, qc, params, init_rots)
+    actual_results = my_gradient(my_cost_function1, 
+                                 False,
+                                 qc, 
+                                 params, 
+                                 init_rots
+                                 )
     expected_results = np.array([-0.353, 0.0]) #qiskit results
     assert actual_results == py.approx(expected_results, abs=0.1)
 
@@ -89,8 +109,19 @@ def test_simple_circuit():
     distance_array = np.genfromtxt(filename)
     gray = True
     shots = 1024
-    cost_fn = cost_fn_fact(locations,distance_array, gray)
-    qc = vqc_circuit(qubits, params, mode) 
-    actual_result, _ , _ = cost_func_evaluate(cost_fn, qc, shots)
+    cost_fn = cost_fn_fact(locations,
+                           distance_array, 
+                           gray
+                           )
+    qc = vqc_circuit(qubits, 
+                     params, 
+                     mode,
+                     )
+
+    actual_result, _ , _ = cost_func_evaluate(cost_fn, 
+                                              False,
+                                              qc, 
+                                              shots
+                                              )
     expected_result = 21.0
     assert actual_result == expected_result
