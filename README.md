@@ -29,6 +29,7 @@ The following Jupyter notebooks are provided for create networks for testing.  T
 ### Data analysis
 The following Jupyter notebooks are provided for data analysis:
 - [`show_results.ipynb`](show_results.ipynb): responsible for analysing the results stored in the [`result/results.csv`](result/results.csv) file
+- [`plot_data.ipynb`](plot_data.ipynb): resonsible for creating bespoke graphs of individual runs
 - [`resource_requirements.ipynb`](resource_requirements.ipynb): calculates the number of qubits needed for each formulation
 - [`hot_start_analysis.ipynb`](hot_start_analysis.ipynb): compares the Hamming distance of the hot start binary string to the binary string of the optimum solution
 

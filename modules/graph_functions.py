@@ -35,7 +35,9 @@ def find_size(cost_list: list)-> tuple:
         rows = 1    
         columns = 1
     elif length % 2 != 0:
-        raise Exception(f'For this plot the number of lists must be even, but the number of lists - {length} is odd')
+        #raise Exception(f'For this plot the number of lists must be even, but the number of lists - {length} is odd')
+        rows = length
+        columns = 1
     else:
         rows = int(length/2)
         columns = 2

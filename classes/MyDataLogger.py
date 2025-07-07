@@ -27,7 +27,8 @@ from modules.config import (RESULTS_DIR,
                             STD_DEV,
                             LR, 
                             MOMENTUM,
-                            WEIGHT_DECAY
+                            WEIGHT_DECAY,
+                            SIMULATE_NOISE
                             )
 
 from modules.graph_functions import cost_graph_multi
@@ -122,6 +123,8 @@ class MySubDataLogger(MyDataLogger):
     average_list_all: list = field(default_factory=list)
     lowest_list_all: list = field(default_factory=list)
     sliced_cost_list_all:list = field(default_factory=list)
+    #noise simulation
+    noise:bool = None
 
     def __post_init__(self):
         """This method is called after __init__"""
@@ -141,9 +144,11 @@ class MySubDataLogger(MyDataLogger):
             raise Exception(f'Input field hot start is not boolean')
         if self.formulation not in ['original', 'new']:
             raise Exception(f'Value {self.formulation} is not allowed for formulation' )
+        if not isinstance(self.noise, bool):
+            raise Exception(f'Input field noise is not boolean')
         if self.quantum:
             validate_gradient_type(self.gradient_type)
-            if self.mode not in [1, 2]:
+            if self.mode not in [1, 2, 3, 4]:
                 raise Exception(f'mode = {self.mode} is not permitted for quantum')
         else:
             if self.gradient_type not in ['SGD', 'Adam', 'RMSprop']:
@@ -219,6 +224,7 @@ class MySubDataLogger(MyDataLogger):
             self.gamma = float(data_dict['gamma'])
             self.eta = float(data_dict['eta'])
             self.s = float(data_dict['s'])
+            self.noise = format_boolean(data_dict['noise'])
         
     def update_general_constants_from_config(self):
         """Update general constants from the config file"""
@@ -241,6 +247,7 @@ class MySubDataLogger(MyDataLogger):
         self.gamma = GAMMA
         self.s = S
         self.cache_max_size = CACHE_MAX_SIZE
+        self.noise = SIMULATE_NOISE
 
     def update_ml_constants_from_config(self):
         """Update constants needed for ML from config file"""

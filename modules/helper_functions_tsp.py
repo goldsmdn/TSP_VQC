@@ -5,7 +5,16 @@ import graycode
 import csv
 from itertools import count
 from qiskit.circuit import Parameter
-from qiskit import QuantumCircuit
+from qiskit import QuantumCircuit, transpile
+from qiskit.providers.fake_provider import GenericBackendV2
+
+from qiskit_ibm_runtime.fake_provider import (FakeSherbrooke, 
+                                              FakeAuckland,
+                                              FakeBoeblingenV2, 
+                                              FakeBurlingtonV2
+)
+#from qiskit import execute
+
 from qiskit_aer.primitives import SamplerV2
 import random
 import json
@@ -15,7 +24,7 @@ from pathlib import Path
 
 from modules.config import (NETWORK_DIR, 
                             DATA_SOURCES, 
-                            PRINT_FREQUENCY
+                            PRINT_FREQUENCY,
                             )
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
@@ -682,7 +691,7 @@ def update_parameters_using_gradient(subdatalogger,
                                      cost_fn: Callable,
                                      qc: QuantumCircuit,
                                      print_results: str=False,
-                                     verbose:str = False,
+                                     verbose:str = False
                                      ):
     """updates parameters using SPSA or parameter shift gradients"""
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
@@ -700,6 +709,7 @@ def update_parameters_using_gradient(subdatalogger,
     c = subdatalogger.c
     big_a = subdatalogger.big_a
     method = subdatalogger.formulation
+    noise = subdatalogger.noise
 
     validate_gradient_type(gradient_type)
 
@@ -711,6 +721,7 @@ def update_parameters_using_gradient(subdatalogger,
             print(f'c= {c}')
         # order of magnitude of first gradients
         abs_gradient = np.abs(my_gradient(cost_fn, 
+                                          noise,
                                           qc, 
                                           params, 
                                           rots, 
@@ -719,7 +730,7 @@ def update_parameters_using_gradient(subdatalogger,
                                           average_slice=average_slice,
                                           verbose=verbose,
                                           gradient_type='SPSA', 
-                                          ck=c
+                                          ck=c,
                                           )
                               )
         
@@ -737,17 +748,19 @@ def update_parameters_using_gradient(subdatalogger,
     for i in range(0, iterations):
         bc = bind_weights(params, rots, qc)
         cost, lowest, lowest_energy_bit_string = cost_func_evaluate(cost_fn, 
+                                                                    noise,
                                                                     bc, 
-                                                                    shots = subdatalogger.shots, 
-                                                                    average_slice = subdatalogger.slice, 
-                                                                    verbose=verbose
+                                                                    shots=subdatalogger.shots, 
+                                                                    average_slice= subdatalogger.slice, 
+                                                                    verbose=verbose,
                                                                     )
         #cost is the top-sliced energy
         average, _ , _ = cost_func_evaluate(cost_fn, 
+                                            noise,
                                             bc, 
                                             shots = subdatalogger.shots, 
                                             average_slice=1, 
-                                            verbose=verbose
+                                            verbose=verbose,
                                             )
         #average is the average energy with no top slicing
         if verbose:
@@ -773,6 +786,7 @@ def update_parameters_using_gradient(subdatalogger,
         parameter_list.append(rots)
         if subdatalogger.gradient_type == 'parameter_shift':
             gradient = my_gradient(cost_fn, 
+                                   noise,
                                    qc, 
                                    params, 
                                    rots, 
@@ -780,7 +794,7 @@ def update_parameters_using_gradient(subdatalogger,
                                    shots=shots,
                                    average_slice=average_slice,
                                    verbose=verbose, 
-                                   gradient_type='parameter_shift'
+                                   gradient_type='parameter_shift',
                                    )
             
             rots = rots - eta * gradient
@@ -788,6 +802,7 @@ def update_parameters_using_gradient(subdatalogger,
             ak = a/((i+1+big_a)**(alpha))
             ck = c/((i+1)**(gamma))
             gradient = my_gradient(cost_fn, 
+                                   noise,
                                    qc, 
                                    params, 
                                    rots, 
@@ -796,7 +811,7 @@ def update_parameters_using_gradient(subdatalogger,
                                    average_slice=average_slice,
                                    verbose=verbose, 
                                    gradient_type='SPSA',
-                                   ck=ck
+                                   ck=ck,
                                    )
             if verbose:
                 print(f'For iteration {i} a = {a}, A = {big_a}, ak = {ak}, ck = {ck}')
@@ -819,11 +834,13 @@ def update_parameters_using_gradient(subdatalogger,
     return index_list, cost_list, lowest_list, gradient_list, average_list, parameter_list 
     
 def cost_func_evaluate(cost_fn: Callable, 
+                       noise,
                        model, 
                        shots: int=1024, 
                        average_slice: float=1, 
                        verbose:bool=False,
-                       quantum:bool = True) -> tuple:
+                       quantum:bool= True,
+                       ) -> tuple:
     """evaluate cost function on a quantum computer
     
     Parameters
@@ -854,10 +871,17 @@ def cost_func_evaluate(cost_fn: Callable,
         A list of the bits for the lowest energy bit string
     """
     if quantum:
-        sampler = SamplerV2()
-        job = sampler.run([model])
-        results = job.result()
-        counts = results[0].data.meas.get_counts()
+        if noise:
+            backend = FakeAuckland()
+            job = backend.run(model, shots=shots)     
+            #job = execute(model, backend=backend, shots=shots)
+            counts = job.result().get_counts()
+        else:
+            sampler = SamplerV2()
+            #job = sampler.run([model])
+            job = sampler.run([model], shots=shots)
+            results = job.result()
+            counts = results[0].data.meas.get_counts()
     else:
         raise Exception('Classical model not yet coded for')
     if verbose:
@@ -865,7 +889,9 @@ def cost_func_evaluate(cost_fn: Callable,
     cost, lowest, lowest_energy_bit_string = find_stats(cost_fn, counts, shots, average_slice, verbose)
     return(cost, lowest, lowest_energy_bit_string)
 
-def my_gradient(cost_fn, qc:QuantumCircuit, 
+def my_gradient(cost_fn, 
+                noise,
+                qc:QuantumCircuit, 
                 params:list, 
                 rots:np.array, 
                 s:float=0.5, 
@@ -873,7 +899,7 @@ def my_gradient(cost_fn, qc:QuantumCircuit,
                 average_slice:float=1, 
                 verbose:bool=False,
                 gradient_type:str='parameter_shift',
-                ck:float=1e-2,     
+                ck:float=1e-2, 
                 ) -> list:
     """calculate gradient for a quantum circuit with parameters and rotations
     
@@ -919,15 +945,25 @@ def my_gradient(cost_fn, qc:QuantumCircuit,
             if verbose:
                 print(f'New rots+ = {new_rots}')
             bc = bind_weights(params, new_rots, qc)
-            cost_plus, _, _ = cost_func_evaluate(cost_fn, bc, shots, 
-                                                average_slice, verbose)
+            cost_plus, _, _ = cost_func_evaluate(cost_fn, 
+                                                 noise,
+                                                 bc, 
+                                                 shots, 
+                                                 average_slice, 
+                                                 verbose,
+                                                 )
             
             new_rots[i] = theta - np.pi/(4*s)
             if verbose:
                 print(f'New rots- = {new_rots}')
             bc = bind_weights(params, new_rots, qc)
-            cost_minus, _, _ = cost_func_evaluate(cost_fn, bc, shots, 
-                                                average_slice, verbose)
+            cost_minus, _, _ = cost_func_evaluate(cost_fn, 
+                                                  noise,
+                                                  bc, 
+                                                  shots, 
+                                                  average_slice, 
+                                                  verbose, 
+                                                  )
 
             delta = s * (cost_plus - cost_minus)
 
@@ -952,16 +988,26 @@ def my_gradient(cost_fn, qc:QuantumCircuit,
         if verbose:
             print(f'params = {params}, new_rots = {new_rots}')
         bc = bind_weights(params, new_rots, qc)
-        cost_plus, _, _ = cost_func_evaluate(cost_fn, bc, shots, 
-                                             average_slice, verbose)
+        cost_plus, _, _ = cost_func_evaluate(cost_fn, 
+                                             noise,
+                                             bc, 
+                                             shots, 
+                                             average_slice, 
+                                             verbose,
+                                             )
 
         new_rots = rots - ck_deltak
         if verbose:
             print(f'New rots- = {new_rots}')
 
         bc = bind_weights(params, new_rots, qc)
-        cost_minus, _, _ = cost_func_evaluate(cost_fn, bc, shots, 
-                                             average_slice, verbose)
+        cost_minus, _, _ = cost_func_evaluate(cost_fn, 
+                                              noise,
+                                              bc, 
+                                              shots, 
+                                              average_slice, 
+                                              verbose,
+                                              )
 
         delta = cost_plus - cost_minus
         gradient_array = delta / (2 * ck_deltak)
@@ -974,6 +1020,32 @@ def my_gradient(cost_fn, qc:QuantumCircuit,
     else:
         raise Exception(f'Gradient type {gradient_type} is not an allowed choice')
     return gradient_array
+
+def calculate_parameter_numbers(qubits: int, mode: int) -> int:
+    """calculate the number of parameters in a variational quantum circuit
+    
+    Parameters
+    ----------
+    qubits: int
+        The number of qubits in the circuit
+    mode: int
+        Controls setting the circuit up in different modes
+
+    Returns
+    -------
+    num_params: int
+        The number of parameters in the circuit
+
+    """
+    #print(f'qubits = {qubits}, mode = {mode}')
+    if mode in [1, 2, 3,]:
+        num_params = 2 * qubits
+    elif mode == 4:
+        num_params = qubits
+    else:
+        raise Exception(f'Mode {mode} has not been coded for')
+    return num_params
+    
 
 def define_parameters(qubits: int, mode: int=1) -> list:
     """set up parameters and initialise text
@@ -992,16 +1064,29 @@ def define_parameters(qubits: int, mode: int=1) -> list:
 
     """
     params = []
-    if mode in [1,2]:
-        num_params = 2 * qubits
+
+    num_params = calculate_parameter_numbers(qubits, mode)
+    if mode in [1, 2, 3, 4,]:
         for i in range(num_params):
             text = "param " + str(i)
             params.append(Parameter(text))
         return params
     else:   
         raise Exception(f'Mode {mode} has not been coded for')
+    
 
-def vqc_circuit(qubits: int, params: list, mode:int=1) -> QuantumCircuit:
+def generate_backend() -> GenericBackendV2:
+    """use with noise"""
+#   #return GenericBackendV2(num_qubits=qubits)
+    #return FakeBurlingtonV2()  # or any other backend you want to use
+    return FakeSherbrooke()
+    #return FakeAuckland()
+
+def vqc_circuit(qubits: int, 
+                params: list,
+                mode:int=1,
+                noise:bool=False,
+                ) -> QuantumCircuit:
     """set up a variational quantum circuit
 
     Parameters
@@ -1012,6 +1097,8 @@ def vqc_circuit(qubits: int, params: list, mode:int=1) -> QuantumCircuit:
         A list of parameters (the texts)
     mode: int
         Controls setting the circuit up in different modes
+    noise: bool
+
 
     Returns
     -------
@@ -1042,6 +1129,19 @@ def vqc_circuit(qubits: int, params: list, mode:int=1) -> QuantumCircuit:
                     qc.rxx(params[qubits+i], i, 0,)
                 #ensure circuit is fully entangled
     elif mode == 3:
+        for i in range(qubits):
+            qc.h(i)
+            if i < qubits-1:
+                qc.rzz(params[qubits+i], i, i+1,)
+            else:
+                qc.rzz(params[qubits+i], i, 0,)
+        for i in range(qubits):
+            qc.rz(params[i], i)
+            qc.h(i)
+    elif mode == 4:
+        for i in range(qubits):
+            qc.rx(params[i], i)
+    elif mode == 5:
     #test mode
         if qubits != 5:
             raise Exception(f'test mode {mode} is only to be used with 5 qubits.  {qubits} qubits are specified')
@@ -1051,6 +1151,10 @@ def vqc_circuit(qubits: int, params: list, mode:int=1) -> QuantumCircuit:
     else:
         raise Exception(f'Mode {mode} has not been coded for')
     qc.measure_all()
+    if noise:
+        #backend = generate_backend
+        backend = FakeAuckland()
+        qc= transpile(qc, backend)
     return qc
 
 def create_initial_rotations(qubits: int, 
@@ -1075,8 +1179,11 @@ def create_initial_rotations(qubits: int,
         initial rotations
     
     """
-    if mode in [1,2]:
+    if mode in [1, 2, 3]:
         param_num = 2 * qubits
+    elif mode == 4:
+        param_num = qubits
+    
     else:
         raise Exception(f'Mode {mode} is not yet coded')
     if hot_start:
@@ -1091,6 +1198,7 @@ def create_initial_rotations(qubits: int,
         init_rots= [random.random() * 2 * math.pi for i in range(param_num)]
     init_rots_array = np.array(init_rots)
     return(init_rots_array)
+from typing import Callable
 
 def bind_weights(params:list, rots:list, qc:QuantumCircuit) -> QuantumCircuit:
     """bind parameters to rotations and return a bound quantum circuit
