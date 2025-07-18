@@ -6,7 +6,7 @@ import csv
 from itertools import count
 from qiskit.circuit import Parameter
 from qiskit import QuantumCircuit, transpile
-from qiskit.providers.fake_provider import GenericBackendV2
+#from qiskit.providers.fake_provider import GenericBackendV2
 
 from qiskit_ibm_runtime.fake_provider import (FakeSherbrooke, 
                                               FakeAuckland,
@@ -1075,11 +1075,11 @@ def define_parameters(qubits: int, mode: int=1) -> list:
         raise Exception(f'Mode {mode} has not been coded for')
     
 
-def generate_backend() -> GenericBackendV2:
-    """use with noise"""
+#def generate_backend() -> GenericBackendV2:
+#    """use with noise"""
 #   #return GenericBackendV2(num_qubits=qubits)
     #return FakeBurlingtonV2()  # or any other backend you want to use
-    return FakeSherbrooke()
+#    return FakeSherbrooke()
     #return FakeAuckland()
 
 def vqc_circuit(qubits: int, 
