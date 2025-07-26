@@ -13,7 +13,7 @@ SIMULATE_NOISE = True                  # Simulate noise in the quantum circuit
 
 #General control parameters - verbosity, cache size, etc.
 VERBOSE = False                     # controls how much is printed
-CACHE_MAX_SIZE = 5_000_000          # maximum size of the cache.
+CACHE_MAX_SIZE = 50_000_000         # maximum size of the cache.
 
 # configuration information used in ALL manual runs
 
