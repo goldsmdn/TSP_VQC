@@ -9,7 +9,7 @@ RESULTS_DIR = 'results'
 RESULTS_FILE = 'results.csv'
 ENCODING = 'utf-8-sig'              # Encoding of csv file
 
-SIMULATE_NOISE = True                  # Simulate noise in the quantum circuit
+SIMULATE_NOISE = False              # Simulate noise in the quantum circuit
 
 #General control parameters - verbosity, cache size, etc.
 VERBOSE = False                     # controls how much is printed
@@ -22,8 +22,8 @@ LOCATIONS = 4                       # number of locations to be visited
                                     #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
                                     # For example, 0.2 means that the best 20% 
                                     # of distances found is included in the average.
-#SHOTS = 1024                        # shots used for each call of the quantum circuit
-SHOTS = 64
+SHOTS = 1024                        # shots used for each call of the quantum circuit
+
 ITERATIONS =  10                    # updates, or iterations
 PRINT_FREQUENCY = 10                # how often results are printed out
 GRAY = False                        # Use Gray codes
@@ -36,10 +36,12 @@ GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
 DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation from paper
 
 #information needed in QML manual runs:
-MODE = 2                            # MODE = 1 - rxgate, rygate, cnot gates
+MODE = 6                            # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 2 - rxgate, XX gates -can be used with Hot Start
                                     # MODE = 3 - IQP based
                                     # MODE = 4 - rxgate
+                                    # MODE = 5 - test mode
+                                    # MODE = 6 - rxgate, ry gate
                                     # MODE = 8 - input is all zeros
                                     # MODE = 9 - input is 0.5
 SLICES = [0.8]                      # Slices to use when calculating the gradient                                   

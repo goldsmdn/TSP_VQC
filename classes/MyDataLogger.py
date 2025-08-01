@@ -125,6 +125,8 @@ class MySubDataLogger(MyDataLogger):
     sliced_cost_list_all:list = field(default_factory=list)
     #noise simulation
     noise:bool = None
+    #monte carlo
+    monte_carlo: bool = False
 
     def __post_init__(self):
         """This method is called after __init__"""
@@ -148,7 +150,8 @@ class MySubDataLogger(MyDataLogger):
             raise Exception(f'Input field noise is not boolean')
         if self.quantum:
             validate_gradient_type(self.gradient_type)
-            if self.mode not in [1, 2, 3, 4]:
+            #if self.mode not in [1, 2, 3, 4]:
+            if self.mode not in [1, 2, 3, 4, 6, ]:
                 raise Exception(f'mode = {self.mode} is not permitted for quantum')
         else:
             if self.gradient_type not in ['SGD', 'Adam', 'RMSprop']:
