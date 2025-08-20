@@ -6,14 +6,12 @@ import csv
 from itertools import count
 from qiskit.circuit import Parameter
 from qiskit import QuantumCircuit, transpile
-#from qiskit.providers.fake_provider import GenericBackendV2
 
 from qiskit_ibm_runtime.fake_provider import (FakeSherbrooke, 
                                               FakeAuckland,
                                               FakeBoeblingenV2, 
                                               FakeBurlingtonV2
 )
-#from qiskit import execute
 
 from qiskit_aer.primitives import SamplerV2
 import random
@@ -1037,8 +1035,6 @@ def calculate_parameter_numbers(qubits: int, mode: int) -> int:
         The number of parameters in the circuit
 
     """
-    #print(f'qubits = {qubits}, mode = {mode}')
-    #if mode in [1, 2, 3,]:
     if mode in [1, 2, 3, 6,]:
         num_params = 2 * qubits
     elif mode == 4:
@@ -1067,7 +1063,6 @@ def define_parameters(qubits: int, mode: int=1) -> list:
     params = []
 
     num_params = calculate_parameter_numbers(qubits, mode)
-    #if mode in [1, 2, 3, 4,]:
     if mode in [1, 2, 3, 4, 6,]:
         for i in range(num_params):
             text = "param " + str(i)
@@ -1177,7 +1172,6 @@ def create_initial_rotations(qubits: int,
         initial rotations
     
     """
-    #if mode in [1, 2, 3]:
     if mode in [1, 2, 3, 6,]:
         param_num = 2 * qubits
     elif mode == 4:
