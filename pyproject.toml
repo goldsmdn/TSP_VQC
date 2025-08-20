@@ -13,6 +13,7 @@ dependencies = [
     "pathlib>=1.0.1",
     "pip>=25.2",
     "pylatexenc>=2.10",
+    "pytest>=8.4.1",
     "qiskit>=2.1.2",
     "qiskit-aer>=0.17.1",
     "qiskit-ibm-runtime>=0.41.1",
