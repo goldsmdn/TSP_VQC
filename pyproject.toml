@@ -3,7 +3,7 @@ name = "tsp-vqc"
 version = "0.1.0"
 description = "Travelling Salesman optimisation"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "graycode>=1.0.5",
     "ipykernel>=6.30.1",
@@ -16,6 +16,12 @@ dependencies = [
     "qiskit>=2.1.2",
     "qiskit-aer>=0.17.1",
     "qiskit-ibm-runtime>=0.41.1",
-    "torch>=2.8.0",
+    "torch",
+    "torchaudio>=2.5.1",
+    "torchvision>=0.20.1",
     "torchviz>=0.0.3",
 ]
+
+[[tool.uv.index]]
+url = "https://pypi.org/simple"
+default = true
