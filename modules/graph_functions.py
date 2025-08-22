@@ -5,8 +5,13 @@ from pathlib import Path
 import torch
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
+import pandas as pd
 
 from modules.config import GRAPH_DIR
+
+SPACE = ' '
+CMAP = 'Set3'
+CMAP_HEATMAP = 'cividis'
 
 def parameter_graph(filename: str, 
                     title: str,
@@ -163,6 +168,56 @@ def plot_sine_activation():
     plt.savefig(filepath)
     plt.show()
 
+def plot_3d_graph_models(grouped_means, input, input2 = 'layers'):
+    """plot a 3D bar graph of the given input data grouped by layers and locations""" 
+    fig = plt.figure(figsize=(10, 7))
+    ax = fig.add_subplot(111, projection='3d')
+
+    input2_vals = sorted(grouped_means[input2].unique())
+    locations = sorted(grouped_means['locations'].unique(), reverse=True)
+
+    input2_map = {sli: i for i, sli in enumerate(input2_vals)}
+    loc_map = {loc: i for i, loc in enumerate(locations)}
+    
+    # Assign colors for each location
+    colors = plt.get_cmap(CMAP, len(input2_vals))  # or 'Set3', 'Paired', etc.
+    input2_colors = {item: colors(i) for i, item in enumerate(input2_vals)}
+
+    # Bar sizes
+    dx = 0.5
+    dy = 0.15
+
+    # Plot bars with different colors
+    for i, row in grouped_means.iterrows():
+        x = loc_map[row['locations']] - dx/2    # Center the bar on the x-axis
+        y = input2_map[row[input2]] - dy/2  # Center the bar on the y-axis
+        z = 0
+        dz = row[input]
+
+        color = input2_colors[row[input2]]
+        ax.bar3d(x, y, z, dx, dy, dz, color=color, shade=True)
+
+    # Label axes
+    ax.set_xlabel('Locations')
+    ax.set_ylabel(input2)
+    ax.set_zlabel(input)
+
+    # Set tick labels
+    ax.set_xticks(list(loc_map.values()))
+    ax.set_xticklabels(list(loc_map.keys()))
+    ax.set_yticks(list(input2_map.values()))
+    ax.set_yticklabels(list(input2_map.keys()))
+
+    legend_handles = [mpatches.Patch(color=input2_colors[layer], label=layer) for layer in input2_vals]
+    plt.legend(handles=legend_handles, title=input2, loc='upper left', bbox_to_anchor=(1, 1))
+    plt.grid(color = 'green', linestyle = '--', linewidth = 0.5)
+    formatted_input = input.replace('_', SPACE).lower()
+    title = f'3D bar graph of {formatted_input} by {input2} and locations'
+    plt.title(title)
+    filepath = Path(GRAPH_DIR).joinpath(title)
+    plt.savefig(filepath)
+    plt.show()
+
 def plot_3d_graph_slice(grouped_means, input, show_sem=False):
     """plot a 3D bar graph of the given input data grouped by locations and slice."""   
     fig = plt.figure(figsize=(10, 7))
@@ -176,7 +231,7 @@ def plot_3d_graph_slice(grouped_means, input, show_sem=False):
     slice_map = {sli: i for i, sli in enumerate(slices)}
 
     # Assign colors for each location
-    colors = plt.get_cmap('Set3', len(locations))  # or 'Set3', 'Paired', etc.
+    colors = plt.get_cmap(CMAP, len(locations))  # or 'Set3', 'Paired', etc.
     location_colors = {loc: colors(i) for i, loc in enumerate(locations)}
 
     # Bar and cap width sizes
@@ -239,4 +294,45 @@ def plot_3d_graph_slice(grouped_means, input, show_sem=False):
     plt.title(title)
     filepath = Path(GRAPH_DIR).joinpath(title)
     plt.savefig(filepath)
+    plt.show()
+
+def plot_heatmap(input: pd.DataFrame,
+                 title: str,
+                 x_label:str,
+                 y_label:str,
+                 )-> None:
+    """Plot a heat map of the given input data."""
+    # Prepare the data
+    heatmap_data = input.values
+    x_labels = input.columns.format()
+    y_labels = input.index
+
+    # Create the plot
+    plt.figure(figsize=(8, 6))
+    im = plt.imshow(heatmap_data, aspect='auto', cmap=CMAP_HEATMAP)
+
+    # Add colorbar
+    plt.colorbar(im, label='Solution Quality')
+
+    # Set axis ticks and labels
+    plt.xticks(ticks=np.arange(len(x_labels)), labels=x_labels, rotation=45)
+    plt.yticks(ticks=np.arange(len(y_labels)), labels=y_labels)
+
+    # Annotate each cell with the numeric value
+    for i in range(heatmap_data.shape[0]):       # rows
+        for j in range(heatmap_data.shape[1]):   # columns
+            value = heatmap_data[i, j]
+            if not np.isnan(value):  # skip missing values
+                if value > 80:
+                    color = 'black'
+                else:
+                    color = 'white'
+                plt.text(j, i, f"{value:.1f}", ha='center', va='center', color=color)
+
+    # Add labels and title
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.title(title)
+
+    plt.tight_layout()
     plt.show()
