@@ -56,3 +56,11 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
+
+modules.helper\_results module
+-------------------------------------
+
+.. automodule:: modules.helper_results
+   :members:
+   :undoc-members:
+   :show-inheritance:
