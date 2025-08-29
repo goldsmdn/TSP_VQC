@@ -5,7 +5,8 @@ import torch
 
 def find_device():
     """find out if we are using a GPU or CPU"""
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     return(device)
 
 def evaluate_model(model:nn.Module, shots:int)-> dict:
