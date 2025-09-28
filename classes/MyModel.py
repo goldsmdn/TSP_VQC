@@ -110,25 +110,30 @@ class MyModel(nn.Module):
         self.mode = mode
         if self.mode in [8, 9]:
             self.activation = MySine()
-        if self.mode in [18, 19]:
+        elif self.mode in [18, 19]:
             self.activation = nn.Sigmoid()
-        self.fc1 = nn.Linear(in_features=bits, out_features=bits)
-        #self.act1 = MySine()
-        self.act1 = self.activation
-        if self.layers >= 2:
-            self.fc2 = nn.Linear(in_features=bits, out_features=bits)
-            #self.act2 = MySine()
-            self.act2 = self.activation
-        if self.layers >= 3:
-            self.fc3 = nn.Linear(in_features=bits, out_features=bits)
-            #self.act3 = MySine()
-            self.act3 = self.activation
-        if self.layers >= 4:
-            self.fc4 = nn.Linear(in_features=bits, out_features=bits)
-            #self.act4 = MySine()
-            self.act4 = self.activation
-        elif self.layers > 4:
-            raise Exception(f'Only 1, 2, 3 and 4 layers are coded for. {self.layers} is to many')
+        else:
+            raise Exception(f'Mode {self.mode} is not supported')
+        for i in range(1, self.layers + 1):
+            # iterate through the layers and create them
+            setattr(self, f'fc{i}', nn.Linear(in_features=bits, out_features=bits))
+            setattr(self, f'act{i}', self.activation)
+
+        #equivalent to the code below in a loop
+        #self.fc1 = nn.Linear(in_features=bits, out_features=bits)
+        #self.act1 = self.activation
+
+        #if self.layers >= 2:
+        #    self.fc2 = nn.Linear(in_features=bits, out_features=bits)
+        #    self.act2 = self.activation
+        #if self.layers >= 3:
+        #    self.fc3 = nn.Linear(in_features=bits, out_features=bits)
+        #    self.act3 = self.activation
+        #if self.layers >= 4:
+        #    self.fc4 = nn.Linear(in_features=bits, out_features=bits)
+        #    self.act4 = self.activation
+        #elif self.layers > 4:
+        #    raise Exception(f'Only 1, 2, 3 and 4 layers are coded for. {self.layers} is to many')
         self.sample = Sample_Binary()
         self.cost = BinaryToCost(self.cost_fn)
         if self.hot_start:
@@ -137,19 +142,26 @@ class MyModel(nn.Module):
             self.generate_weights_and_biases()
 
     def forward(self, x):
-        x = self.fc1(x)
-        x = self.act1(x)
-        if self.layers >= 2:
-            x = self.fc2(x)
-            x = self.act2(x)
-        if self.layers >= 3:
-            x = self.fc3(x)
-            x = self.act3(x)
-        if self.layers >= 4:
-            x = self.fc4(x)
-            x = self.act4(x)
-        elif self.layers > 3:
-            raise Exception(f'Only 1, 2, 3 and 4 layers are coded for. {self.layers} is to many')
+        #x = self.fc1(x)
+        #x = self.act1(x)
+        #if self.layers >= 2:
+        #    x = self.fc2(x)
+        #    x = self.act2(x)
+        #if self.layers >= 3:
+        #    x = self.fc3(x)
+        #    x = self.act3(x)
+        #if self.layers >= 4:
+        #    x = self.fc4(x)
+        #    x = self.act4(x)
+        #elif self.layers > 3:
+        #    raise Exception(f'Only 1, 2, 3 and 4 layers are coded for. {self.layers} is to many')
+
+        for i in range(1, self.layers + 1):
+            #iterate through the layers and create a forward pass
+            fc = getattr(self, f'fc{i}')
+            act = getattr(self, f'act{i}')
+            x = fc(x)
+            x = act(x)
         x = self.sample(x)
         x = self.cost(x)
         return(x)
