@@ -150,13 +150,12 @@ class MySubDataLogger(MyDataLogger):
             raise Exception(f'Input field noise is not boolean')
         if self.quantum:
             validate_gradient_type(self.gradient_type)
-            #if self.mode not in [1, 2, 3, 4]:
             if self.mode not in [1, 2, 3, 4, 6, ]:
                 raise Exception(f'mode = {self.mode} is not permitted for quantum')
         else:
             if self.gradient_type not in ['SGD', 'Adam', 'RMSprop']:
                 raise Exception(f'Only gradient type SGD is allowed for non quantum, not {self.gradient_type}')
-            if self.mode not in [8, 9]:
+            if self.mode not in [8, 9, 18, 19]:
                 raise Exception(f'mode = {self.mode} is not permitted for non quantum')
     
     def save_results_to_csv(self):

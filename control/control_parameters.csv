@@ -1,2 +1,5 @@
 ﻿quantum,locations,slice,shots,mode,iterations,gray,hot_start,gradient_type,formulation,layers,std_dev,lr,weight_decay,momentum,alpha,big_a,c,eta,gamma,s,noise
-TRUE,6,0.8,1024,2,250,FALSE,FALSE,SPSA,original,,,,,,0.602,25,0.314,0.1,0.101,0.5,FALSE
+FALSE,8,1,1024,8,300,FALSE,FALSE,SGD,original,4,0.05,2.00E-05,0.0006,0.8,,,,,,,
+FALSE,8,1,1024,9,300,FALSE,FALSE,SGD,original,4,0.05,2.00E-05,0.0006,0.8,,,,,,,
+FALSE,8,1,1024,18,300,FALSE,FALSE,SGD,original,4,0.05,2.00E-05,0.0006,0.8,,,,,,,
+FALSE,8,1,1024,19,300,FALSE,FALSE,SGD,original,4,0.05,2.00E-05,0.0006,0.8,,,,,,,
