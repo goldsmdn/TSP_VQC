@@ -717,6 +717,7 @@ def update_parameters_using_gradient(subdatalogger,
         
         if verbose:
             print(f'c= {c}')
+            print(f'Evaluating first gradient to find magnitude_g0')
         # order of magnitude of first gradients
         abs_gradient = np.abs(my_gradient(cost_fn, 
                                           noise,
@@ -744,6 +745,8 @@ def update_parameters_using_gradient(subdatalogger,
             a = eta*((big_a+1)**alpha)/magnitude_g0
 
     for i in range(0, iterations):
+        if verbose:
+            print(f'Iteration {i} of {iterations}')
         bc = bind_weights(params, rots, qc)
         cost, lowest, lowest_energy_bit_string = cost_func_evaluate(cost_fn, 
                                                                     noise,

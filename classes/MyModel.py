@@ -4,7 +4,7 @@ import math
 from typing import Callable
 
 from modules.helper_ML_functions import find_device
-from modules.helper_functions_tsp import (cost_fn_tensor)
+from modules.helper_functions_tsp import cost_fn_tensor
 
 def estimate_cost_fn_gradient(my_input:torch.Tensor, 
                               output:torch.Tensor, 
@@ -92,11 +92,14 @@ class BinaryToCost(nn.Module):
         return x
 
 class MyModel(nn.Module):
+    """A simple feedforward neural network model for TSP"""
     def __init__(self, bits:int, 
                  layers:int, 
                  std_dev:float, 
                  cost_fn:Callable[[list], int],
-                 hot_start:bool = False):
+                 hot_start:bool = False,
+                 mode:int = 8,
+                 ):
         """initialize the model"""
         super(MyModel, self).__init__()
         self.bits = bits
@@ -104,17 +107,26 @@ class MyModel(nn.Module):
         self.std_dev = std_dev
         self.cost_fn = cost_fn
         self.hot_start = hot_start
+        self.mode = mode
+        if self.mode in [8, 9]:
+            self.activation = MySine()
+        if self.mode in [18, 19]:
+            self.activation = nn.Sigmoid()
         self.fc1 = nn.Linear(in_features=bits, out_features=bits)
-        self.act1 = MySine()
+        #self.act1 = MySine()
+        self.act1 = self.activation
         if self.layers >= 2:
             self.fc2 = nn.Linear(in_features=bits, out_features=bits)
-            self.act2 = MySine()
+            #self.act2 = MySine()
+            self.act2 = self.activation
         if self.layers >= 3:
             self.fc3 = nn.Linear(in_features=bits, out_features=bits)
-            self.act3 = MySine()
+            #self.act3 = MySine()
+            self.act3 = self.activation
         if self.layers >= 4:
             self.fc4 = nn.Linear(in_features=bits, out_features=bits)
-            self.act4 = MySine()
+            #self.act4 = MySine()
+            self.act4 = self.activation
         elif self.layers > 4:
             raise Exception(f'Only 1, 2, 3 and 4 layers are coded for. {self.layers} is to many')
         self.sample = Sample_Binary()

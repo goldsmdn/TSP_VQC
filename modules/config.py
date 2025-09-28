@@ -22,9 +22,9 @@ LOCATIONS = 4                       # number of locations to be visited
                                     #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
                                     # For example, 0.2 means that the best 20% 
                                     # of distances found is included in the average.
-SHOTS = 1024                        # shots used for each call of the quantum circuit
+SHOTS = 1_024                       # shots used for each call of the quantum circuit
 
-ITERATIONS =  10                    # updates, or iterations
+ITERATIONS =  50                    # updates, or iterations
 PRINT_FREQUENCY = 10                # how often results are printed out
 GRAY = False                        # Use Gray codes
 HOT_START = False                   # Make a hot start
@@ -36,7 +36,7 @@ GRADIENT_TYPE = 'SGD'               # controls the optimiser used
 DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation from paper
 
 #information needed in QML manual runs:
-MODE = 8                            # MODE = 1 - rxgate, rygate, cnot gates
+MODE = 9                            # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 2 - rxgate, XX gates -can be used with Hot Start
                                     # MODE = 3 - IQP based
                                     # MODE = 4 - rxgate
@@ -51,12 +51,12 @@ C = np.pi/10                        # initial CK for SPSA
 ETA = 0.1                           # eta - learning rate for parameter shift
 GAMMA = 0.101                       # constant that determines how quickly the SPSA perturbation decays
 S = 0.5                             # parameter for parameter shift.  Default is 0.5                                   
-CHANGE_EACH_PARAMETER = True        # Iterate through each parameter in the circuit
-PLOT_PARAMETER_EVALUATION = True    # Plot the evaluation of each parameter         
+CHANGE_EACH_PARAMETER = False       # Iterate through each parameter in the circuit
+PLOT_PARAMETER_EVALUATION = False   # Plot the evaluation of each parameter         
 ROTATIONS = 10                      # number of rotations sampled in parameter graphs
 
 #information needed in ML manual runs:
-NUM_LAYERS = 4                      #number of layers in the mode
+NUM_LAYERS = 1                      #number of layers in the mode
 STD_DEV = 0.05                      #standard deviation for weight randomization
 LR = 0.00002                        #Learning rate
 MOMENTUM = 0.8                      #momentum for optimizer

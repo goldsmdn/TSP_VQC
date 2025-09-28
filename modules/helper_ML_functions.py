@@ -2,10 +2,11 @@
 
 import torch.nn as nn
 import torch
+#from classes.MyDataLogger import MySubDataLogger
 
-def find_device():
+def find_device() -> torch.device:
     """find out if we are using a GPU or CPU"""
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     return(device)
 
 def evaluate_model(model:nn.Module, shots:int)-> dict:
@@ -55,9 +56,7 @@ def train_model(num_epochs: int,
     """Train the model for a number of epochs"""
     model_output = model(my_input)
     lowest_cost = float(model_output.min())
-    index_list = []
-    loss_history = []
-    lowest_history = []
+    index_list, loss_history, lowest_history = [], [], []
     epoch_lowest_cost_found = 0
     for epoch in range(num_epochs):
         index_list.append(epoch)
@@ -86,4 +85,17 @@ def train_model(num_epochs: int,
         optimizer.zero_grad()
     
     return lowest_cost, epoch_lowest_cost_found, index_list, loss_history, lowest_history
+
+def set_up_input_no_hot_start(sdl,
+                              device: torch.device,
+                              )-> torch.Tensor:    
+    """if ML and no Hot Start set the initial input to zero OR 0.5, depending on the mode"""
+    if sdl.mode in [8, 18]:
+        #input is all zeros
+        unrepeated_input = torch.full((1,sdl.qubits), 0).float().to(device)
+    elif sdl.mode in [9, 19]:
+        #input is all 0.5
+        unrepeated_input = torch.full((1,sdl.qubits), 0.5).float().to(device)
+    my_input = unrepeated_input.repeat(sdl.shots, 1).requires_grad_(True)
+    return(unrepeated_input, my_input)
 
