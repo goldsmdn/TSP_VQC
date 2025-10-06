@@ -7,11 +7,9 @@ from itertools import count
 from qiskit.circuit import Parameter
 from qiskit import QuantumCircuit, transpile
 
-from qiskit_ibm_runtime.fake_provider import (FakeSherbrooke, 
-                                              FakeAuckland,
-                                              FakeBoeblingenV2, 
-                                              FakeBurlingtonV2
-)
+from qiskit_aer import AerSimulator
+
+from qiskit_ibm_runtime.fake_provider import FakeAuckland
 
 from qiskit_aer.primitives import SamplerV2
 import random
@@ -747,7 +745,10 @@ def update_parameters_using_gradient(subdatalogger,
     for i in range(0, iterations):
         if verbose:
             print(f'Iteration {i} of {iterations}')
-        bc = bind_weights(params, rots, qc)
+        if detect_quantum_GPU_support:
+            bc = qc.assign_parameters({params: rot for params, rot in zip(params, rots)})
+        else:
+            bc = bind_weights(params, rots, qc)
         cost, lowest, lowest_energy_bit_string = cost_func_evaluate(cost_fn, 
                                                                     noise,
                                                                     bc, 
@@ -875,14 +876,17 @@ def cost_func_evaluate(cost_fn: Callable,
         if noise:
             backend = FakeAuckland()
             job = backend.run(model, shots=shots)     
-            #job = execute(model, backend=backend, shots=shots)
             counts = job.result().get_counts()
         else:
-            sampler = SamplerV2()
-            #job = sampler.run([model])
-            job = sampler.run([model], shots=shots)
-            results = job.result()
-            counts = results[0].data.meas.get_counts()
+            if detect_quantum_GPU_support():
+                simulator = AerSimulator(method='statevector', device='GPU')
+                results = simulator.run(model).result()
+                counts = results.get_counts(model)
+            else:
+                sampler = SamplerV2()
+                job = sampler.run([model], shots=shots)
+                results = job.result()
+                counts = results[0].data.meas.get_counts()
     else:
         raise Exception('Classical model not yet coded for')
     if verbose:
@@ -1270,3 +1274,13 @@ def format_boolean(string_input: str)->bool:
     else:
         raise Exception(f'Unexpected boolean value {string_input}')
     return output 
+
+def detect_quantum_GPU_support()-> bool:
+    """detect if a GPU is available for quantum simulations"""
+    devices = AerSimulator().available_devices()
+    if 'GPU' in devices:
+        #print('GPU support detected for quantum simulations')
+        return True
+    else:
+       # print('No GPU support detected for quantum simulations')
+        return False

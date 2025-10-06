@@ -35,9 +35,9 @@ def get_ready_to_train(model:nn.Module,
     """Prepare for training by setting up the target, criterion, and optimizer"""
     target = torch.tensor(0.0, requires_grad=True)
     criterion = nn.L1Loss()
-    if optimizer == 'Adam':
-        optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
-    elif optimizer == 'SGD':
+    if optimizer in ['Adam', 'Adam+X',]:
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(kwargs['momentum'], 0.999))
+    elif optimizer in ['SGD', 'SGD+X',]:
         optimizer = torch.optim.SGD(model.parameters(), momentum=kwargs['momentum'], lr=lr, weight_decay=weight_decay)
     elif optimizer == 'RMSprop':
         optimizer = torch.optim.RMSprop(model.parameters(), lr=lr, weight_decay=weight_decay)

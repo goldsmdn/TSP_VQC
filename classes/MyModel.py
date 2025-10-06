@@ -93,85 +93,128 @@ class BinaryToCost(nn.Module):
 
 class MyModel(nn.Module):
     """A simple feedforward neural network model for TSP"""
-    def __init__(self, bits:int, 
-                 layers:int, 
-                 std_dev:float, 
-                 cost_fn:Callable[[list], int],
-                 hot_start:bool = False,
-                 mode:int = 8,
-                 ):
+    #def __init__(self, bits:int, 
+    #             layers:int, 
+    #             std_dev:float, 
+    #             cost_fn:Callable[[list], int],
+    #             hot_start:bool = False,
+    #             mode:int = 8,
+    #             optimizer:str = 'SGD'
+    #             ):
+    def __init__(self, sdl, cost_fn:Callable[[list], int]):
         """initialize the model"""
         super(MyModel, self).__init__()
-        self.bits = bits
-        self.layers = layers
-        self.std_dev = std_dev
+        self.bits = sdl.qubits
+        self.layers = sdl.layers
+        self.std_dev = sdl.std_dev
         self.cost_fn = cost_fn
-        self.hot_start = hot_start
-        self.mode = mode
+        self.hot_start = sdl.hot_start
+        self.mode = sdl.mode
+        self.gradient_type = sdl.gradient_type
         if self.mode in [8, 9]:
             self.activation = MySine()
-        if self.mode in [18, 19]:
+        elif self.mode in [18, 19]:
             self.activation = nn.Sigmoid()
-        self.fc1 = nn.Linear(in_features=bits, out_features=bits)
-        #self.act1 = MySine()
-        self.act1 = self.activation
-        if self.layers >= 2:
-            self.fc2 = nn.Linear(in_features=bits, out_features=bits)
-            #self.act2 = MySine()
-            self.act2 = self.activation
-        if self.layers >= 3:
-            self.fc3 = nn.Linear(in_features=bits, out_features=bits)
-            #self.act3 = MySine()
-            self.act3 = self.activation
-        if self.layers >= 4:
-            self.fc4 = nn.Linear(in_features=bits, out_features=bits)
-            #self.act4 = MySine()
-            self.act4 = self.activation
-        elif self.layers > 4:
-            raise Exception(f'Only 1, 2, 3 and 4 layers are coded for. {self.layers} is to many')
+        else:
+            raise Exception(f'Mode {self.mode} is not supported')
+        
+        #build the layers
+        self._build_layers()
+
+        #for i in range(1, self.layers + 1):
+        #    # iterate through the layers and create them
+        #    fc = nn.Linear(in_features=bits, out_features=bits)
+        #    if not self.hot_start:
+        #        # Xavier initialization
+        #        nn.init.xavier_uniform_(fc.weight)
+        #        if fc.bias is not None:
+        #            nn.init.zeros_(fc.bias)
+        #    setattr(self, f'fc{i}', fc)
+        #    setattr(self, f'act{i}', self.activation)
+
+        #self.sample = Sample_Binary()
+        #self.cost = BinaryToCost(self.cost_fn)
+        #if self.hot_start:
+        # if hot_start is true, generate weights and biases
+        #otherwise, assigned above
+        #    self.generate_weights_and_biases()
+
+    def _init_weights(self, fc, first_layer:bool=False):
+        """Helper: initialize weights depending on hot_start mode"""
+        with torch.no_grad():
+            if not self.hot_start:
+                # Xavier initialization for sigmoid, SIREN for sine
+                if self.gradient_type in ['SGD+X', 'Adam+X']:
+                    if isinstance(self.activation, nn.Sigmoid):
+                        gain = nn.init.calculate_gain("sigmoid")
+                        nn.init.xavier_uniform_(fc.weight, gain=gain)
+                        if fc.bias is not None:
+                            nn.init.zeros_(fc.bias)
+                    elif isinstance(self.activation, MySine):
+                        # Sitzmann et al. 2020 (SIREN)
+                        if first_layer:
+                            # First layer: uniform(-1/num_inputs, 1/num_inputs)
+                            fc.weight.uniform_(-1 / self.bits, 1 / self.bits)
+                            if fc.bias is not None:
+                                #fc.bias.uniform_(-1 / self.bits, 1 / self.bits)
+                                fc.bias.zero_()
+                        else:
+                            # Hidden layers: uniform(-sqrt(6 / num_inputs)/ω, sqrt(6 / num_inputs)/ω)
+                            # Default ω₀ = 30 in the SIREN paper
+                            w0 = 30.0
+                            bound = (6 / self.bits) ** 0.5 / w0
+                            fc.weight.uniform_(-bound, bound)
+                            if fc.bias is not None:
+                                fc.bias.uniform_(-bound, bound)
+                    else:
+                        raise Exception('Activation function {self.activation} not supported for SGD+X')
+
+            else:
+                # In place Custom: identity + Gaussian noise
+                #weights_zeros = torch.zeros(self.bits, self.bits)
+                #new_weights = torch.eye(self.bits) + torch.normal(mean=weights_zeros, std=self.std_dev)
+                #bias_zeros = torch.zeros(self.bits)
+                #new_bias = torch.normal(mean=bias_zeros, std=self.std_dev)
+
+                #fc.weight = nn.Parameter(new_weights.clone())
+                #fc.bias = nn.Parameter(new_bias.clone())
+                    fc.weight.copy_(torch.eye(self.bits))
+                    fc.weight.add_(torch.normal(mean=0.0, std=self.std_dev, size=fc.weight.shape))
+                    fc.bias.copy_(torch.normal(mean=0.0, std=self.std_dev, size=fc.bias.shape))
+
+    def _build_layers(self):
+        """Create layers fc1..fcN and act1..actN."""
+
+        for i in range(1, self.layers + 1):
+            fc = nn.Linear(in_features=self.bits, out_features=self.bits)
+            self._init_weights(fc, first_layer=(i == 1))
+            setattr(self, f"fc{i}", fc)
+            setattr(self, f"act{i}", self.activation)
         self.sample = Sample_Binary()
         self.cost = BinaryToCost(self.cost_fn)
-        if self.hot_start:
-            # if hot_start is true, generate weights and biases
-            # otherwise, let Pytorch genererate them with default random
-            self.generate_weights_and_biases()
 
     def forward(self, x):
-        x = self.fc1(x)
-        x = self.act1(x)
-        if self.layers >= 2:
-            x = self.fc2(x)
-            x = self.act2(x)
-        if self.layers >= 3:
-            x = self.fc3(x)
-            x = self.act3(x)
-        if self.layers >= 4:
-            x = self.fc4(x)
-            x = self.act4(x)
-        elif self.layers > 3:
-            raise Exception(f'Only 1, 2, 3 and 4 layers are coded for. {self.layers} is to many')
+        """define the forward pass"""
+        for i in range(1, self.layers + 1):
+            #iterate through the layers and create a forward pass
+            fc = getattr(self, f'fc{i}')
+            act = getattr(self, f'act{i}')
+            x = fc(x)
+            x = act(x)
         x = self.sample(x)
         x = self.cost(x)
         return(x)
     
-    def generate_weights_and_biases(self):
-        """generate random weights and biases"""
-        weights_zeros = torch.zeros(self.bits, self.bits)
-        new_weights = torch.eye(self.bits) + torch.normal(mean=weights_zeros, 
-                                           std=self.std_dev)
-        bias_zeros = torch.zeros(self.bits)
-        new_bias = torch.normal(mean=bias_zeros, std=self.std_dev)
-
-        self.fc1.weight = torch.nn.Parameter(new_weights)
-        self.fc1.bias = torch.nn.Parameter(new_bias)
-        if self.layers >= 2:
-            self.fc2.weight = torch.nn.Parameter(new_weights)
-            self.fc2.bias = torch.nn.Parameter(new_bias)
-        if self.layers >= 3:
-            self.fc3.weight = torch.nn.Parameter(new_weights)
-            self.fc3.bias = torch.nn.Parameter(new_bias)
-        if self.layers >= 3:
-            self.fc4.weight = torch.nn.Parameter(new_weights)
-            self.fc4.bias = torch.nn.Parameter(new_bias)
-        elif self.layers > 4:
-            raise Exception(f'Only 1, 2, 3 and 4 layers are coded for. {self.layers} is to many')
+    #def generate_weights_and_biases(self):
+    #    """generate random weights and biases"""
+    #    weights_zeros = torch.zeros(self.bits, self.bits)
+    #    new_weights = torch.eye(self.bits) + torch.normal(mean=weights_zeros, 
+    #                                       std=self.std_dev)
+    #    bias_zeros = torch.zeros(self.bits)
+    #    new_bias = torch.normal(mean=bias_zeros, std=self.std_dev)
+#
+    #    for i in range(1, self.layers + 1):
+     #       # iterate through the layers and assign weights and biases
+     #       fc = getattr(self, f'fc{i}')
+     #       fc.weight = torch.nn.Parameter(new_weights.clone())
+     #       fc.bias = torch.nn.Parameter(new_bias.clone())  

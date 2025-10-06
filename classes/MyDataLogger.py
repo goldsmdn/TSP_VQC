@@ -153,10 +153,13 @@ class MySubDataLogger(MyDataLogger):
             if self.mode not in [1, 2, 3, 4, 6, ]:
                 raise Exception(f'mode = {self.mode} is not permitted for quantum')
         else:
-            if self.gradient_type not in ['SGD', 'Adam', 'RMSprop']:
-                raise Exception(f'Only gradient type SGD is allowed for non quantum, not {self.gradient_type}')
+            if self.gradient_type not in ['SGD', 'SGD+X', 'Adam', 'Adam+X', 'RMSprop',]:
+                raise Exception(f'Only certain gradient type are allowed for non quantum, not {self.gradient_type}')
             if self.mode not in [8, 9, 18, 19]:
                 raise Exception(f'mode = {self.mode} is not permitted for non quantum')
+            if self.gradient_type in ['SGD+X', 'Adam+X']:
+                if self.hot_start:
+                    raise Exception(f'Hot start is not allowed with SGD+X')
     
     def save_results_to_csv(self):
         """Save the results to a CSV file"""
