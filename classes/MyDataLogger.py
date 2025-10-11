@@ -34,7 +34,7 @@ from modules.config import (RESULTS_DIR,
 from modules.graph_functions import cost_graph_multi
 from modules.helper_functions_tsp import (validate_gradient_type,
                                           format_boolean,
-                                          )                                       
+                                          )                                   
 
 @dataclass
 class MyDataLogger:
@@ -136,6 +136,17 @@ class MySubDataLogger(MyDataLogger):
         self.graph_filename = self.find_graph_filename()
         print(f'SubDataLogger instantiated.  Run ID = {self.runid} - {self.subid}')
 
+    def calculate_parameter_numbers(self) -> int:
+        """calculate the number of parameters in a variational quantum circuit"""
+
+        if self.mode in [1, 2, 3, 6,]:
+            num_params = 2 * self.qubits * self.layers
+        elif self.mode == 4:
+            num_params = self.qubits * self.layers
+        else:
+            raise Exception(f'Mode {self.mode} has not been coded for')
+        return num_params
+
     def validate_input(self):
         """Validate the input fields"""
         if not isinstance(self.quantum, bool):
@@ -152,6 +163,8 @@ class MySubDataLogger(MyDataLogger):
             validate_gradient_type(self.gradient_type)
             if self.mode not in [1, 2, 3, 4, 6, ]:
                 raise Exception(f'mode = {self.mode} is not permitted for quantum')
+            if self.mode == 4 and self.layers> 1:
+                raise Exception(f'mode = {self.mode} is only for 1 layer')
         else:
             if self.gradient_type not in ['SGD', 'SGD+X', 'Adam', 'Adam+X', 'RMSprop',]:
                 raise Exception(f'Only certain gradient type are allowed for non quantum, not {self.gradient_type}')
@@ -214,8 +227,8 @@ class MySubDataLogger(MyDataLogger):
         self.formulation = data_dict['formulation']
         self.cache_max_size = CACHE_MAX_SIZE
         self.mode = int(data_dict['mode'])
+        self.layers = int(data_dict['layers'])
         if not self.quantum:
-            self.layers = int(data_dict['layers'])
             self.std_dev = float(data_dict['std_dev'])
             self.lr = float(data_dict['lr'])
             self.weight_decay = float(data_dict['weight_decay'])
@@ -241,7 +254,7 @@ class MySubDataLogger(MyDataLogger):
         self.hot_start = HOT_START
         self.gradient_type = GRADIENT_TYPE
         self.formulation = DECODING_FORMULATION
-        self.cache_max_size = CACHE_MAX_SIZE
+        self.layers= NUM_LAYERS
 
     def update_quantum_constants_from_config(self):
         """Update constants needed for quantum from config file"""
@@ -256,7 +269,7 @@ class MySubDataLogger(MyDataLogger):
 
     def update_ml_constants_from_config(self):
         """Update constants needed for ML from config file"""
-        self.layers= NUM_LAYERS
+        #self.layers= NUM_LAYERS
         self.std_dev = STD_DEV
         self.lr = LR
         self.momentum = MOMENTUM

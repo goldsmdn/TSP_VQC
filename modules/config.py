@@ -17,7 +17,7 @@ CACHE_MAX_SIZE = 50_000_000         # maximum size of the cache.
 
 # configuration information used in ALL manual runs
 
-LOCATIONS = 6                       # number of locations to be visited          
+LOCATIONS = 4                       # number of locations to be visited          
                                     # Slices to use when calculating the gradient
                                     #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
                                     # For example, 0.2 means that the best 20% 
@@ -35,9 +35,10 @@ GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
                                     # ml - 'SGD+X' stochastical with Xavier initialization
                                     # ml - 'Adam' 
 DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation from paper
+NUM_LAYERS = 2                      #number of layers in the model
 
 #information needed in QML manual runs:
-MODE = 2                            # MODE = 1 - rxgate, rygate, cnot gates
+MODE = 6                            # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 2 - rxgate, XX gates -can be used with Hot Start
                                     # MODE = 3 - IQP based
                                     # MODE = 4 - rxgate
@@ -59,7 +60,6 @@ PLOT_PARAMETER_EVALUATION = False   # Plot the evaluation of each parameter
 ROTATIONS = 10                      # number of rotations sampled in parameter graphs
 
 #information needed in ML manual runs:
-NUM_LAYERS = 4                      #number of layers in the mode
 STD_DEV = 0.05                      #standard deviation for warm start weight randomization
 #LR = 0.00002                       #Learning rate
 LR = 1e-3                           #Learning rate

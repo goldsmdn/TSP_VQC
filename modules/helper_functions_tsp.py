@@ -681,7 +681,8 @@ def validate_gradient_type(gradient_type):
     if gradient_type not in allowed_types:
         raise Exception (f'Gradient type {gradient_type} is not coded for')
 
-def update_parameters_using_gradient(subdatalogger,
+def update_parameters_using_gradient(#subdatalogger,
+                                     sdl,
                                      params: list,
                                      rots: np.array,
                                      cost_fn: Callable,
@@ -692,42 +693,28 @@ def update_parameters_using_gradient(subdatalogger,
     """updates parameters using SPSA or parameter shift gradients"""
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
     parameter_list, average_list = [], []
-    locations = subdatalogger.locations
-    iterations = subdatalogger.iterations
-    shots =  subdatalogger.shots
-    s = subdatalogger.s
-    eta = subdatalogger.eta
-    average_slice = subdatalogger.slice
-    gray = subdatalogger.gray
-    gradient_type = subdatalogger.gradient_type
-    alpha = subdatalogger.alpha
-    gamma = subdatalogger.gamma
-    c = subdatalogger.c
-    big_a = subdatalogger.big_a
-    method = subdatalogger.formulation
-    noise = subdatalogger.noise
 
-    validate_gradient_type(gradient_type)
+    validate_gradient_type(sdl.gradient_type)
 
-    if gradient_type == 'SPSA':
+    if sdl.gradient_type == 'SPSA':
         #define_parameters
         # A is <= 10% of the number of iterations normally, but here the number of iterations is lower.
         
         if verbose:
-            print(f'c= {c}')
+            print(f'c= {sdl.c}')
             print(f'Evaluating first gradient to find magnitude_g0')
         # order of magnitude of first gradients
         abs_gradient = np.abs(my_gradient(cost_fn, 
-                                          noise,
+                                          sdl.noise,
                                           qc, 
                                           params, 
                                           rots, 
-                                          s=s, 
-                                          shots=shots, 
-                                          average_slice=average_slice,
+                                          s=sdl.s, 
+                                          shots=sdl.shots, 
+                                          average_slice=sdl.slice,
                                           verbose=verbose,
                                           gradient_type='SPSA', 
-                                          ck=c,
+                                          ck=sdl.c,
                                           )
                               )
         
@@ -740,27 +727,27 @@ def update_parameters_using_gradient(subdatalogger,
         # stop div by zero error
             a = 999
         else:
-            a = eta*((big_a+1)**alpha)/magnitude_g0
+            a = sdl.eta*((sdl.big_a+1)**sdl.alpha)/magnitude_g0
 
-    for i in range(0, iterations):
+    for i in range(0, sdl.iterations):
         if verbose:
-            print(f'Iteration {i} of {iterations}')
+            print(f'Iteration {i} of {sdl.iterations}')
         if detect_quantum_GPU_support:
             bc = qc.assign_parameters({params: rot for params, rot in zip(params, rots)})
         else:
             bc = bind_weights(params, rots, qc)
         cost, lowest, lowest_energy_bit_string = cost_func_evaluate(cost_fn, 
-                                                                    noise,
+                                                                    sdl.noise,
                                                                     bc, 
-                                                                    shots=subdatalogger.shots, 
-                                                                    average_slice= subdatalogger.slice, 
+                                                                    shots=sdl.shots, 
+                                                                    average_slice= sdl.slice, 
                                                                     verbose=verbose,
                                                                     )
         #cost is the top-sliced energy
         average, _ , _ = cost_func_evaluate(cost_fn, 
-                                            noise,
+                                            sdl.noise,
                                             bc, 
-                                            shots = subdatalogger.shots, 
+                                            shots = sdl.shots, 
                                             average_slice=1, 
                                             verbose=verbose,
                                             )
@@ -780,52 +767,56 @@ def update_parameters_using_gradient(subdatalogger,
                 lowest_string_to_date = lowest_energy_bit_string
                 if verbose:
                     print(f'lowest,  lowest_to_date {lowest}, {lowest_to_date}')
-        route_list = convert_bit_string_to_cycle(lowest_string_to_date, locations, gray, method)
+        route_list = convert_bit_string_to_cycle(lowest_string_to_date, 
+                                                 sdl.locations, 
+                                                 sdl.gray, 
+                                                 sdl.formulation,
+                                                 )
         index_list.append(i)
         cost_list.append(cost)
         lowest_list.append(lowest_to_date)
         average_list.append(average)
         parameter_list.append(rots)
-        if subdatalogger.gradient_type == 'parameter_shift':
+        if sdl.gradient_type == 'parameter_shift':
             gradient = my_gradient(cost_fn, 
-                                   noise,
+                                   sdl.noise,
                                    qc, 
                                    params, 
                                    rots, 
-                                   s, 
-                                   shots=shots,
-                                   average_slice=average_slice,
+                                   sdl.s, 
+                                   shots=sdl.shots,
+                                   average_slice=sdl.slice,
                                    verbose=verbose, 
                                    gradient_type='parameter_shift',
                                    )
             
-            rots = rots - eta * gradient
-        elif subdatalogger.gradient_type == 'SPSA':
-            ak = a/((i+1+big_a)**(alpha))
-            ck = c/((i+1)**(gamma))
+            rots = rots - sdl.eta * gradient
+        elif sdl.gradient_type == 'SPSA':
+            ak = a/((i+1+sdl.big_a)**(sdl.alpha))
+            ck = sdl.c/((i+1)**(sdl.gamma))
             gradient = my_gradient(cost_fn, 
-                                   noise,
+                                   sdl.noise,
                                    qc, 
                                    params, 
                                    rots, 
-                                   s, 
-                                   shots,
-                                   average_slice=average_slice,
+                                   sdl.s, 
+                                   sdl.shots,
+                                   average_slice=sdl.slice,
                                    verbose=verbose, 
                                    gradient_type='SPSA',
                                    ck=ck,
                                    )
             if verbose:
-                print(f'For iteration {i} a = {a}, A = {big_a}, ak = {ak}, ck = {ck}')
+                print(f'For iteration {i} a = {a}, A = {sdl.big_a}, ak = {ak}, ck = {ck}')
                 print(f'rots = {rots}')
                 print(f'gradient = {gradient}')
             rots = rots - ak * gradient
         else:
-            raise Exception(f'Error found when calculating gradient. {gradient_type} is not an allowed gradient type')
+            raise Exception(f'Error found when calculating gradient. {sdl.gradient_type} is not an allowed gradient type')
         gradient_list.append(gradient.tolist())
         if print_results:
             if i % PRINT_FREQUENCY == 0:  
-                print(f'For iteration {i} using the best {average_slice*100} percent of the results')
+                print(f'For iteration {i} using the best {sdl.average_slice*100} percent of the results')
                 print(f'The average cost from the sample is {average:.3f} and the top-sliced average of the best results is {cost:.3f}')
                 print(f'The lowest cost from the sample is {lowest:.3f}')
                 print(f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date} ')
@@ -1024,42 +1015,21 @@ def my_gradient(cost_fn,
             print(f'ck_deltak = {ck_deltak}')
     else:
         raise Exception(f'Gradient type {gradient_type} is not an allowed choice')
-    return gradient_array
-
-def calculate_parameter_numbers(qubits: int, mode: int) -> int:
-    """calculate the number of parameters in a variational quantum circuit
+    return gradient_array   
     
-    Parameters
-    ----------
-    qubits: int
-        The number of qubits in the circuit
-    mode: int
-        Controls setting the circuit up in different modes
-
-    Returns
-    -------
-    num_params: int
-        The number of parameters in the circuit
-
-    """
-    if mode in [1, 2, 3, 6,]:
-        num_params = 2 * qubits
-    elif mode == 4:
-        num_params = qubits
-    else:
-        raise Exception(f'Mode {mode} has not been coded for')
-    return num_params
-    
-
-def define_parameters(qubits: int, mode: int=1) -> list:
+def define_parameters(sdl) -> list:
     """set up parameters and initialise text
     
     Parameters
     ----------
-    qubits: int
-        The number of qubits in the circuit
-    mode: int
-        Controls setting the circuit up in different modes
+
+    sdl: MySubDataLogger
+        A sub data logger holding the parameters for the run with key fields:
+
+        sdl.qubits: int
+            The number of qubits in the circuit
+        sdl.mode: int
+            Controls setting the circuit up in different modes
 
     Returns
     -------
@@ -1068,33 +1038,30 @@ def define_parameters(qubits: int, mode: int=1) -> list:
 
     """
     params = []
-
-    num_params = calculate_parameter_numbers(qubits, mode)
-    if mode in [1, 2, 3, 4, 6,]:
-        for i in range(num_params):
+    if sdl.mode in [1, 2, 3, 4, 6,]:
+        for i in range(sdl.num_params):
             text = "param " + str(i)
             params.append(Parameter(text))
         return params
     else:   
-        raise Exception(f'Mode {mode} has not been coded for')
+        raise Exception(f'Mode {sdl.mode} has not been coded for')
     
-def vqc_circuit(qubits: int, 
-                params: list,
-                mode:int=1,
-                noise:bool=False,
-                ) -> QuantumCircuit:
+def vqc_circuit(sdl, params: list) -> QuantumCircuit:
     """set up a variational quantum circuit
 
     Parameters
     ----------
-    qubits: int
-        The number of qubits in the circuit
+    sdl: MySubDataLogger
+        A sub data logger holding the parameters for the run with key fields:
+        sdl.qubits: int
+            The number of qubits in the circuit
+        sdl.mode: int
+            Controls setting the circuit up in different modes
+        sdl.noise: bool
+            Controls if noise is included in the circuit
+
     params: list
         A list of parameters (the texts)
-    mode: int
-        Controls setting the circuit up in different modes
-    noise: bool
-
 
     Returns
     -------
@@ -1102,65 +1069,75 @@ def vqc_circuit(qubits: int,
         A quantum circuit without bound weights
     
     """
-
-    qc = QuantumCircuit(qubits)
-    if mode == 1:
-        for i in range(qubits):
-            qc.h(i)
-            qc.ry(params[i], i)
-            qc.rx(params[qubits+i], i)
-        for i in range(qubits):
-            if i < qubits-1:
-                qc.cx(i,i+1)
-            else:
-                qc.cx(i,0)
-                #ensure circuit is fully entangled
-    elif mode == 2:
-        for i in range(qubits):
-            qc.rx(params[i], i)
-        for i in range(qubits):
-                if i < qubits-1:
-                    qc.rxx(params[qubits+i], i, i+1,)
+    
+    qc = QuantumCircuit(sdl.qubits)
+    if sdl.mode == 1:
+        for layer in range(sdl.layers):
+            offset = layer * sdl.qubits * 2
+            for i in range(sdl.qubits):
+                qc.h(i)
+                qc.ry(params[i+offset], i)
+                qc.rx(params[sdl.qubits+i+offset], i)
+            for i in range(sdl.qubits):
+                if i < sdl.qubits-1:
+                    qc.cx(i,i+1)
                 else:
-                    qc.rxx(params[qubits+i], i, 0,)
-                #ensure circuit is fully entangled
-    elif mode == 3:
-        for i in range(qubits):
-            qc.h(i)
-            if i < qubits-1:
-                qc.rzz(params[qubits+i], i, i+1,)
-            else:
-                qc.rzz(params[qubits+i], i, 0,)
-        for i in range(qubits):
-            qc.rz(params[i], i)
-            qc.h(i)
-    elif mode == 4:
-        for i in range(qubits):
-            qc.rx(params[i], i)
-    elif mode == 5:
+                    qc.cx(i,0)
+    elif sdl.mode == 2:
+        for layer in range(sdl.layers):
+            offset = layer * sdl.qubits * 2
+            for i in range(sdl.qubits):
+                qc.rx(params[i+offset], i)
+            for i in range(sdl.qubits):
+                if i < sdl.qubits-1:
+                    qc.rxx(params[sdl.qubits+i+offset], i, i+1,)
+                else:
+                    qc.rxx(params[sdl.qubits+i+offset], i, 0,)
+    elif sdl.mode == 3:
+        for layer in range(sdl.layers):
+            offset = layer * sdl.qubits * 2
+            for i in range(sdl.qubits):
+                qc.h(i)
+                if i < sdl.qubits-1:
+                    qc.rzz(params[sdl.qubits+i+offset], i, i+1,)
+                else:
+                    qc.rzz(params[sdl.qubits+i+offset], i, 0,)
+            for i in range(sdl.qubits):
+                qc.rz(params[i+offset], i)
+                qc.h(i)
+    elif sdl.mode == 4:
+        for layer in range(sdl.layers):
+            offset = layer * sdl.qubits
+            for i in range(sdl.qubits):
+                qc.rx(params[i+offset], i)
+    elif sdl.mode == 5:
     #test mode
-        if qubits != 5:
-            raise Exception(f'test mode {mode} is only to be used with 5 qubits.  {qubits} qubits are specified')
+        if sdl.qubits != 5:
+            raise Exception(f'test mode {sdl.mode} is only to be used with 5 qubits.  {sdl.qubits} qubits are specified')
         qc.x(1)
         qc.x(3)
         qc.x(4)
-    elif mode == 6:
-        for i in range(qubits):
-            qc.h(i)
-            qc.ry(params[i], i)
-            qc.rx(params[qubits+i], i)
+
+    elif sdl.mode == 6:
+        for layer in range(sdl.layers):
+            offset = layer * sdl.qubits * 2
+            for i in range(sdl.qubits):
+                qc.h(i)
+                qc.ry(params[i+offset], i)
+                qc.rx(params[sdl.qubits+i+offset], i)
     else:
-        raise Exception(f'Mode {mode} has not been coded for')
+        raise Exception(f'Mode {sdl.mode} has not been coded for')
     qc.measure_all()
-    if noise:
+    if sdl.noise:
         backend = FakeAuckland()
         qc= transpile(qc, backend)
     return qc
 
 def create_initial_rotations(qubits: int, 
                              mode: int, 
-                             bin_hot_start_list: list=[], 
-                             hot_start: bool=False
+                             layers:int=1,
+                             bin_hot_start_list: list=False, 
+                             hot_start: bool=False,
                              ) -> list:
     """initialise parameters with random weights
 
@@ -1179,15 +1156,16 @@ def create_initial_rotations(qubits: int,
         initial rotations
     
     """
-    if mode in [1, 2, 3, 6,]:
-        param_num = 2 * qubits
-    elif mode == 4:
-        param_num = qubits
     
+    if mode in [1, 2, 3, 6,]:
+        param_num = 2 * qubits * layers
+    elif mode == 4:
+        param_num = qubits * layers
     else:
         raise Exception(f'Mode {mode} is not yet coded')
     if hot_start:
-        if mode in [1]:
+        #if mode in [1]:
+        if layers in [1]:
             raise Exception('Cannot use a hot start for mode {mode}')
         init_rots = [0 for i in range(param_num)]
         for i, item in enumerate(bin_hot_start_list):
@@ -1279,8 +1257,6 @@ def detect_quantum_GPU_support()-> bool:
     """detect if a GPU is available for quantum simulations"""
     devices = AerSimulator().available_devices()
     if 'GPU' in devices:
-        #print('GPU support detected for quantum simulations')
         return True
     else:
-       # print('No GPU support detected for quantum simulations')
         return False
