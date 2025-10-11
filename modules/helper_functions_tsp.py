@@ -1051,14 +1051,17 @@ def vqc_circuit(sdl, params: list) -> QuantumCircuit:
 
     Parameters
     ----------
-    qubits: int
-        The number of qubits in the circuit
+    sdl: MySubDataLogger
+        A sub data logger holding the parameters for the run with key fields:
+        sdl.qubits: int
+            The number of qubits in the circuit
+        sdl.mode: int
+            Controls setting the circuit up in different modes
+        sdl.noise: bool
+            Controls if noise is included in the circuit
+
     params: list
         A list of parameters (the texts)
-    mode: int
-        Controls setting the circuit up in different modes
-    noise: bool
-
 
     Returns
     -------
@@ -1116,10 +1119,12 @@ def vqc_circuit(sdl, params: list) -> QuantumCircuit:
         qc.x(4)
 
     elif sdl.mode == 6:
-        for i in range(sdl.qubits):
-            qc.h(i)
-            qc.ry(params[i], i)
-            qc.rx(params[sdl.qubits+i], i)
+        for layer in range(sdl.layers):
+            offset = layer * sdl.qubits * 2
+            for i in range(sdl.qubits):
+                qc.h(i)
+                qc.ry(params[i+offset], i)
+                qc.rx(params[sdl.qubits+i+offset], i)
     else:
         raise Exception(f'Mode {sdl.mode} has not been coded for')
     qc.measure_all()

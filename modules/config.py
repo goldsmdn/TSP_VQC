@@ -38,7 +38,7 @@ DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation f
 NUM_LAYERS = 2                      #number of layers in the model
 
 #information needed in QML manual runs:
-MODE = 2                            # MODE = 1 - rxgate, rygate, cnot gates
+MODE = 6                            # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 2 - rxgate, XX gates -can be used with Hot Start
                                     # MODE = 3 - IQP based
                                     # MODE = 4 - rxgate
