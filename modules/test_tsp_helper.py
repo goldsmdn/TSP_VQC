@@ -801,8 +801,8 @@ def test_lowest_list1():
     assert expected_result == actual_result
 
 def test_lowest_list2():
-    """test run stats with foru identical items"""
+    """test run stats with for identical items"""
     test_list = [100, 100, 100, 100]
     expected_result = (100, 0)
     actual_result = find_run_stats(test_list)
-    assert expected_result == actual_result
+    assert expected_result == actual_result 

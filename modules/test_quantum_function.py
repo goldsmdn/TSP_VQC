@@ -1,5 +1,7 @@
 from qiskit.circuit import QuantumCircuit, QuantumRegister, Parameter
 
+from classes.MyDataLogger import MyDataLogger, MySubDataLogger
+
 from modules.helper_functions_tsp import (vqc_circuit, 
                                           cost_func_evaluate, 
                                           my_gradient, 
@@ -99,24 +101,23 @@ def test_gradient_4():
 
 def test_simple_circuit():
     """test a simple circuit with known output"""
-    qubits = 5
+    datalogger = MyDataLogger()
+    sdl = MySubDataLogger(runid = datalogger.runid)
+    sdl.qubits = 5
     params = []
-    #mode = 3
-    mode = 5
-    locations = 5
+    sdl.mode = 5
+    sdl.locations = 5
     file = 'five_d.txt'
     filename = Path(NETWORK_DIR).joinpath(file)
     distance_array = np.genfromtxt(filename)
     gray = True
     shots = 1024
-    cost_fn = cost_fn_fact(locations,
+    cost_fn = cost_fn_fact(sdl.locations,
                            distance_array, 
                            gray
                            )
-    qc = vqc_circuit(qubits, 
-                     params, 
-                     mode,
-                     )
+    
+    qc = vqc_circuit(sdl, params) 
 
     actual_result, _ , _ = cost_func_evaluate(cost_fn, 
                                               False,
@@ -125,3 +126,14 @@ def test_simple_circuit():
                                               )
     expected_result = 21.0
     assert actual_result == expected_result
+
+def test_calculate_parameter_numbers_2_1():
+    """test parameter numbers with input 2,1"""
+    datalogger = MyDataLogger()
+    sdl = MySubDataLogger(runid = datalogger.runid)
+    sdl.qubits = 4
+    sdl.mode = 1
+    sdl.layers = 2  
+    expected_result = 16
+    actual_result = sdl.calculate_parameter_numbers() 
+    assert expected_result == actual_result  
