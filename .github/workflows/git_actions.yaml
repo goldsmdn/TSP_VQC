@@ -19,7 +19,6 @@ jobs:
             uv --version
       - name: Install dependencies with uv
         run: |
-          export PATH="$HOME/.local/bin:$PATH"
           uv venv .venv
           source .venv/bin/activate
           uv pip install numpy pytest graycode qiskit qiskit_aer torch \
@@ -28,13 +27,15 @@ jobs:
 
       - name: Test with pytest
         run: |
-          export PATH="$HOME/.local/bin:$PATH"
+          source .venv/bin/activate
           pytest --verbose
 
       - name: Produce html in Sphinx
         run: |
+          source .venv/bin/activate
           sphinx-build -M html docs docs/build/
           touch .nojekyll
       - name: Publish to GitHub Pages
         run: |
+          source .venv/bin/activate
           ghp-import -n -p -f docs/build/html
