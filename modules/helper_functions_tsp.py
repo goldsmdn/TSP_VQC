@@ -145,34 +145,34 @@ def find_bin_length(i: int) -> int:
     bin_len = math.ceil((math.log2(i)))
     return(bin_len) 
 
-def find_problem_size(locations:int, method='original') -> tuple:
+#def find_problem_size(locations:int, method='original') -> tuple:
+def find_problem_size(sdl) -> int:
     """Finds the number of binary variables needed
     
     Parameters
     ----------
-    locations : int
-        Number of locations
+    sdl: subdate logger containing fields
+        sdl.locations : int
+            Number of locations
+        sdl.formulation:
+            'original' => method from Goldsmith D, Day-Evans J.
+            'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
 
     Returns
     ----------
-    #bin_len : int
-    #    Length of the longest bit string needed to hold the next integer in the cycle
     pb_dim : int
         Length of the bit string needed to store the problem
-    method : str
-        'original' => method from Goldsmith D, Day-Evans J.
-        'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
     """
-    if method == 'original':
+    if sdl.formulation == 'original':
         pb_dim = 0
-        for i in range(1, locations):
+        for i in range(1, sdl.locations):
             bin_len = find_bin_length(i)
             pb_dim += bin_len
-    elif method == 'new':
-        f = math.factorial(locations)
+    elif sdl.formulation == 'new':
+        f = math.factorial(sdl.locations)
         pb_dim = find_bin_length(f)
     else:
-        raise Exception(f'Unknown method {method}')
+        raise Exception(f'Unknown method {sdl.formulation}')
     return(pb_dim)
 
 def convert_binary_list_to_integer(binary_list: list, gray:bool=False)->int:
@@ -307,11 +307,6 @@ def find_total_distance(int_list: list,
         total_distance += distance
     return total_distance
 
-#def cost_fn_fact(locs: int, 
-#                 distance_array: np.array, 
-#                 gray: bool=False, 
-#                 method:str = 'original',
-#                 ) -> Callable[[list], int]:
 def cost_fn_fact(sdl, distance_array: np.array, ) -> Callable[[list], int]:
     """ returns a function
 
@@ -555,13 +550,15 @@ def find_stats(cost_fn: Callable,
 
     return(average_energy, lowest_energy, lowest_energy_bit_string)
 
-def hot_start(distance_array: np.array, locs: int) -> list:
+#def hot_start(distance_array: np.array, locs: int) -> list:
+def hot_start(sdl, distance_array: np.array) -> list:
     """finds a route from a distance array where the distance to the next point is the shortest available
     
     Parameters
     ----------
-    locs: int
-        The number of locations in the problem
+    sdl : SubDataLogger object containing key parameters:
+        sdl.locations: int
+            The number of locations in the problem
     distance_array: array
         Numpy symmetric array with distances between locations
 
@@ -571,12 +568,12 @@ def hot_start(distance_array: np.array, locs: int) -> list:
         A list of integers showing the an estimate of the lowest cycle
     
     """
-    validate_distance_array(distance_array, locs)
-    remaining_cycle_list = [i for i in range(locs)]
+    validate_distance_array(distance_array, sdl.locations)
+    remaining_cycle_list = [i for i in range(sdl.locations)]
     end_cycle_list = []
     end_cycle_list.append(remaining_cycle_list.pop(0)) #start point of cycle is always 0
     next_row = 0
-    for i in range(locs-1):
+    for i in range(sdl.locations-1):
         for j, column in enumerate(remaining_cycle_list):
             distance = distance_array[next_row][column]
             if j == 0:
@@ -611,20 +608,22 @@ def binary_string_format(binary_string: str, bin_len: str) -> str:
     return(formatted_string)    
     
 
-def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bool, method='original') -> list:
+#def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bool, method='original') -> list:
+def hot_start_list_to_string(sdl, hot_start_list: list) -> list:
     """invert the hot start integer list into a string
     
     Parameters:
     ----------
+    sdl : SubDataLogger object containing key parameters:
+        sdl.locations: int 
+            The number of location in the problem
+        sdl.gray: bool
+            If True Gray codes are used
+        sdl.formulation: str
+            'original' => method from Goldsmith D, Day-Evans J.
+            'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
     hot_start_list: list
         A list of integers showing an estimate of the lowest cycle
-    locations: int 
-        The number of location in the problem
-    gray: bool
-        If True Gray codes are used
-    method: str
-        'original' => method from Goldsmith D, Day-Evans J.
-        'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
 
     Returns
     -------
@@ -633,16 +632,16 @@ def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bool, me
     
     """
     
-    if method == 'original':
-        if len(hot_start_list) != locations:
-            raise Exception(f'The hot start list should be length {locations}')
+    if sdl.formulation == 'original':
+        if len(hot_start_list) != sdl.locations:
+            raise Exception(f'The hot start list should be length {sdl.locations}')
         
         first_item = hot_start_list.pop(0)
         #remove the first item for the list which should be zero
         if first_item != 0:
             raise Exception(f'The first item of the list must be zero')
         
-        initial_list = [i for i in range(1, locations)]    
+        initial_list = [i for i in range(1, sdl.locations)]    
         total_binary_string = ''
         result_list = []
         
@@ -651,7 +650,7 @@ def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bool, me
             if bin_len > 0:
             #find the index of integer in hot start list
                 index = initial_list.index(integer)
-                if gray:
+                if sdl.gray:
                     binary_string = bin(graycode.tc_to_gray_code(index))
                 else:
                     binary_string = bin(index)
@@ -661,24 +660,25 @@ def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bool, me
         for i in range(len(total_binary_string)):
             result_list.append(int(total_binary_string[i]))
         return(result_list)
-    elif method == 'new':
-        dim = find_problem_size(locations, method='new')
-        f = math.factorial(locations)
+    elif sdl.formulation == 'new':
+        #dim = find_problem_size(sdl.locations, sdl,formulation='new')
+        dim = find_problem_size(sdl)
+        f = math.factorial(sdl.locations)
         y = 0
         i = 0
-        start_cycle_list = [i for i in range(locations)]
-        while i < locations:
-            f = int(f / (locations - i))
+        start_cycle_list = [i for i in range(sdl.locations)]
+        while i < sdl.locations:
+            f = int(f / (sdl.locations - i))
             m = hot_start_list[i]
             j = start_cycle_list.index(m)
             start_cycle_list.remove(m)  
             y += j * f
             i += 1
 
-        result_list = convert_integer_to_binary_list(y, dim, gray=gray)
+        result_list = convert_integer_to_binary_list(y, dim, gray=sdl.gray)
         return result_list
     else:
-        raise Exception(f'Unknown method {method}')
+        raise Exception(f'Unknown method {sdl.formulation}')
 
 def validate_gradient_type(gradient_type):
     """check that the gradient type is valid"""

@@ -12,18 +12,30 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install dependencies
+      - name: Install uv
         run: |
-          python -m pip install --upgrade pip
-          pip install numpy pytest graycode qiskit qiskit_aer torch sphinx sphinx_rtd_theme sphinx-autodoc-typehints matplotlib ghp-import
-          pip install qiskit_ibm_runtime pandas
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+            export PATH="$HOME/.local/bin:$PATH"
+            uv --version
+      - name: Install dependencies with uv
+        run: |
+          uv venv .venv
+          source .venv/bin/activate
+          uv pip install numpy pytest graycode qiskit qiskit_aer torch \
+            sphinx sphinx_rtd_theme sphinx-autodoc-typehints matplotlib ghp-import \
+            qiskit_ibm_runtime pandas
+
       - name: Test with pytest
-        run: pytest --verbose
+        run: |
+          source .venv/bin/activate
+          pytest --verbose
 
       - name: Produce html in Sphinx
         run: |
+          source .venv/bin/activate
           sphinx-build -M html docs docs/build/
           touch .nojekyll
       - name: Publish to GitHub Pages
         run: |
+          source .venv/bin/activate
           ghp-import -n -p -f docs/build/html
