@@ -107,15 +107,13 @@ def test_simple_circuit():
     params = []
     sdl.mode = 5
     sdl.locations = 5
+    sdl.gray = True
+    sdl.formulation = 'original'
     file = 'five_d.txt'
     filename = Path(NETWORK_DIR).joinpath(file)
     distance_array = np.genfromtxt(filename)
-    gray = True
     shots = 1024
-    cost_fn = cost_fn_fact(sdl.locations,
-                           distance_array, 
-                           gray
-                           )
+    cost_fn = cost_fn_fact(sdl, distance_array,)
     
     qc = vqc_circuit(sdl, params) 
 

@@ -258,6 +258,7 @@ class MySubDataLogger(MyDataLogger):
 
     def update_quantum_constants_from_config(self):
         """Update constants needed for quantum from config file"""
+        self.quantum = True
         self.alpha = ALPHA
         self.big_a = BIG_A
         self.c = C
@@ -269,7 +270,8 @@ class MySubDataLogger(MyDataLogger):
 
     def update_ml_constants_from_config(self):
         """Update constants needed for ML from config file"""
-        #self.layers= NUM_LAYERS
+        self.quantum = False
+        self.noise = False # noise is for quantum, not classical
         self.std_dev = STD_DEV
         self.lr = LR
         self.momentum = MOMENTUM

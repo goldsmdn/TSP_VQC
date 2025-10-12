@@ -3,6 +3,8 @@ from pytest import raises
 import math
 from pathlib import Path
 
+from classes.MyDataLogger import MyDataLogger, MySubDataLogger
+
 from modules.helper_functions_tsp import(validate_distance_array, 
                                          find_distance, 
                                          convert_binary_list_to_integer, 
@@ -440,41 +442,50 @@ def test_convert_bit_string_to_cycle_00010__not_gray():
 
 def test_find_average():
     """test find_stats in average mode"""
+    datalogger = MyDataLogger()
+    sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
-    LOCATIONS = 4
+    sdl.locations = 4
+    sdl.gray = False
+    sdl.formulation = 'original'
     filename = 'networks/four_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    cost_fn = cost_fn_fact(LOCATIONS, distance_array)
+    cost_fn = cost_fn_fact(sdl, distance_array)
     average, _, _ = find_stats(cost_fn, counts, SHOTS, verbose=False)
     expected_result = 21.916
     assert expected_result == average
 
 def test_find_lowest():
     """test find_stats in lowest mode"""
+    datalogger = MyDataLogger()
+    sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
-    LOCATIONS = 4
+    sdl.locations = 4
+    sdl.gray = False
+    sdl.formulation = 'original'
     filename = 'networks/four_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    cost_fn = cost_fn_fact(LOCATIONS, distance_array)
+    cost_fn = cost_fn_fact(sdl, distance_array)
     _ , lowest, _ = find_stats(cost_fn, counts, SHOTS, verbose=False)
     expected_result = 21.0
     assert expected_result == lowest
 
 def test_find_average_slice1():
     """test average slice functionality"""
+    datalogger = MyDataLogger()
+    sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 1000}
-    LOCATIONS = 5
+    sdl.locations = 5
+    sdl.gray = True
+    sdl.formulation = 'original'
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    GRAY = True
+    #GRAY = True
     AVERAGE_SLICE = 0.6
-    cost_fn = cost_fn_fact(LOCATIONS, 
-                           distance_array, 
-                           gray=GRAY, 
-                           )
+    cost_fn = cost_fn_fact(sdl, distance_array)
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
@@ -486,16 +497,16 @@ def test_find_average_slice1():
 
 def test_find_average_slice2():
     """test average slice functionality - ensure no change"""
+    datalogger = MyDataLogger()
+    sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 1000}
-    LOCATIONS = 5
+    sdl.locations = 5
+    sdl.gray = True
+    sdl.formulation = 'original'
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    GRAY = True
-    cost_fn = cost_fn_fact(LOCATIONS, 
-                           distance_array, 
-                           gray=GRAY, 
-                           )
+    cost_fn = cost_fn_fact(sdl, distance_array)
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
@@ -506,16 +517,16 @@ def test_find_average_slice2():
 
 def test_find_average_slice2b():
     """test average slice functionality - ensure no change"""
+    datalogger = MyDataLogger()
+    sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'00000': 1000}
-    LOCATIONS = 5
+    sdl.locations = 5
+    sdl.gray = True
+    sdl.formulation = 'original'
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    GRAY = True
-    cost_fn = cost_fn_fact(LOCATIONS, 
-                           distance_array, 
-                           gray=GRAY,
-                           )
+    cost_fn = cost_fn_fact(sdl, distance_array)
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
@@ -526,18 +537,18 @@ def test_find_average_slice2b():
 
 def test_find_average_slice3():
     """test average slice functionality - ensure no change"""
+    datalogger = MyDataLogger()
+    sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 500,
               '00000': 500}
-    LOCATIONS = 5
+    sdl.locations = 5
+    sdl.gray = True
+    sdl.formulation = 'original'
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    GRAY = True
     AVERAGE_SLICE = 0.4
-    cost_fn = cost_fn_fact(LOCATIONS, 
-                           distance_array, 
-                           gray=GRAY, 
-                           )
+    cost_fn = cost_fn_fact(sdl, distance_array)
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
@@ -549,18 +560,18 @@ def test_find_average_slice3():
 
 def test_find_average_slice4():
     """test average slice functionality - ensure no change"""
+    datalogger = MyDataLogger()
+    sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 500,
               '00000': 500}
-    LOCATIONS = 5
+    sdl.locations = 5
+    sdl.gray = True
+    sdl.formulation = 'original'
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    GRAY = True
     AVERAGE_SLICE = 0.6
-    cost_fn = cost_fn_fact(LOCATIONS, 
-                           distance_array, 
-                           gray=GRAY, 
-                           )
+    cost_fn = cost_fn_fact(sdl, distance_array)
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
@@ -571,18 +582,20 @@ def test_find_average_slice4():
     assert expected_result - average < 0.0001
 
 def test_find_average_slice5():
+    """test average slice functionality - ensure no change  """
+    datalogger = MyDataLogger()
+    sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 200, #Energy = 21
           '00000': 300, #Energy = 25
           '01101': 500} #Energy = 19
-    LOCATIONS = 5
+    sdl.locations = 5
+    sdl.gray = True
+    sdl.formulation = 'original'
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    GRAY = True
     AVERAGE_SLICE = 0.8
-    cost_fn = cost_fn_fact(LOCATIONS, 
-                           distance_array, 
-                           gray=GRAY, )
+    cost_fn = cost_fn_fact(sdl, distance_array)
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
@@ -592,19 +605,19 @@ def test_find_average_slice5():
     assert expected_result == average
 
 def test_find_average_slice6():
+    datalogger = MyDataLogger()
+    sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 200, #Energy = 21
           '00000': 300, #Energy = 25
           '01101': 500} #Energy = 19
-    LOCATIONS = 5
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
+    sdl.locations = 5
+    sdl.gray = True
+    sdl.formulation = 'original'
     SHOTS = 1000
-    GRAY = True
     AVERAGE_SLICE = 1
-    cost_fn = cost_fn_fact(LOCATIONS, 
-                           distance_array, 
-                           gray=GRAY, 
-                           )
+    cost_fn = cost_fn_fact(sdl, distance_array)
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
@@ -615,20 +628,23 @@ def test_find_average_slice6():
     assert expected_result == average
 
 def test_find_average_slice7():
+    """test average slice functionality - ensure no change  """
+    datalogger = MyDataLogger()
+    sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 200, #Energy = 21
           '00000': 300, #Energy = 25
 
           '01101': 500} #Energy = 19
-    LOCATIONS = 5
+    sdl.locations = 5
+    sdl.gray = True
+    sdl.formulation = 'original'
+    #LOCATIONS = 5
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    GRAY = True
+    #GRAY = True
     AVERAGE_SLICE = 0.2
-    cost_fn = cost_fn_fact(LOCATIONS, 
-                           distance_array, 
-                           gray=GRAY, 
-                           )
+    cost_fn = cost_fn_fact(sdl, distance_array)
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
