@@ -307,21 +307,26 @@ def find_total_distance(int_list: list,
         total_distance += distance
     return total_distance
 
-def cost_fn_fact(locs: int, 
-                 distance_array: np.array, 
-                 gray: bool=False, 
-                 method:str = 'original',
-                 ) -> Callable[[list], int]:
+#def cost_fn_fact(locs: int, 
+#                 distance_array: np.array, 
+#                 gray: bool=False, 
+#                 method:str = 'original',
+#                 ) -> Callable[[list], int]:
+def cost_fn_fact(sdl, distance_array: np.array, ) -> Callable[[list], int]:
     """ returns a function
 
     Parameters
     ----------
-    locs: int
-        The number of locations in the problem
+    sdl: SubDataLogger object containing key parameters:
+        sdl.locations: int
+            The number of locations in the problem
+        sdl.gray: bool
+            If True Gray codes are used
+        sdl.formulation: str
+            'original' => method from Goldsmith D, Day-Evans J.
+            'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
     distance_array: array
         Numpy symmetric array with distances between locations
-    gray: bool
-        If True Gray codes are used
     
     Returns
     -------
@@ -335,16 +340,16 @@ def cost_fn_fact(locs: int,
         if isinstance(bit_string_input, list):
             bit_string = bit_string_input
             full_list_of_locs = convert_bit_string_to_cycle(bit_string, 
-                                                            locs, 
-                                                            gray, 
-                                                            method
+                                                            sdl.locations, 
+                                                            sdl.gray, 
+                                                            sdl.formulation
                                                             )
             total_distance = find_total_distance(full_list_of_locs, 
-                                                 locs, 
+                                                 sdl.locations, 
                                                  distance_array
                                                  )
             valid = check_loc_list(full_list_of_locs,
-                                   locs
+                                   sdl.locations
                                    )
             if not valid:
                 raise Exception('Algorithm returned incorrect cycle')  
