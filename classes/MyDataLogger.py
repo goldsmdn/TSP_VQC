@@ -258,6 +258,7 @@ class MySubDataLogger(MyDataLogger):
 
     def update_quantum_constants_from_config(self):
         """Update constants needed for quantum from config file"""
+        self.quantum = True
         self.alpha = ALPHA
         self.big_a = BIG_A
         self.c = C
