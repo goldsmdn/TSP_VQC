@@ -20,6 +20,8 @@ jobs:
       - name: Install dependencies with uv
         run: |
           export PATH="$HOME/.local/bin:$PATH"
+          uv venv .venv
+          source .venv/bin/activate
           uv pip install numpy pytest graycode qiskit qiskit_aer torch \
             sphinx sphinx_rtd_theme sphinx-autodoc-typehints matplotlib ghp-import \
             qiskit_ibm_runtime pandas
