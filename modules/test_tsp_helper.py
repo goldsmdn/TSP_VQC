@@ -464,7 +464,8 @@ def test_find_average():
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     cost_fn = cost_fn_fact(sdl, distance_array)
-    average, _, _ = find_stats(cost_fn, counts, SHOTS, verbose=False)
+    #average, _, _ = find_stats(cost_fn, counts, SHOTS, verbose=False)
+    average, _, _ = find_stats(cost_fn, counts, SHOTS,)
     expected_result = 21.916
     assert expected_result == average
 
@@ -480,7 +481,7 @@ def test_find_lowest():
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     cost_fn = cost_fn_fact(sdl, distance_array)
-    _ , lowest, _ = find_stats(cost_fn, counts, SHOTS, verbose=False)
+    _ , lowest, _ = find_stats(cost_fn, counts, SHOTS,)
     expected_result = 21.0
     assert expected_result == lowest
 
@@ -501,7 +502,6 @@ def test_find_average_slice1():
                                  counts, 
                                  SHOTS, 
                                  AVERAGE_SLICE, 
-                                 verbose=False
                                  )
     expected_result = 21.0
     assert expected_result == average
@@ -521,7 +521,6 @@ def test_find_average_slice2():
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
-                                 verbose=False
                                  )
     expected_result = 21.0
     assert expected_result == average
@@ -541,7 +540,6 @@ def test_find_average_slice2b():
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
-                                 verbose=False
                                  )
     expected_result = 25.0
     assert expected_result == average
@@ -564,7 +562,6 @@ def test_find_average_slice3():
                                  counts, 
                                  SHOTS, 
                                  AVERAGE_SLICE, 
-                                 verbose=False
                                  )
     expected_result = 21
     assert expected_result == average
@@ -587,7 +584,6 @@ def test_find_average_slice4():
                                  counts, 
                                  SHOTS, 
                                  AVERAGE_SLICE, 
-                                 verbose=False
                                  )
     expected_result = 21.3333
     assert expected_result - average < 0.0001
@@ -633,7 +629,7 @@ def test_find_average_slice6():
                                  counts, 
                                  SHOTS, 
                                  AVERAGE_SLICE, 
-                                 verbose=False,
+                                 #verbose=False,
                                  )
     expected_result = 21.2
     assert expected_result == average
@@ -660,7 +656,7 @@ def test_find_average_slice7():
                                  counts, 
                                  SHOTS, 
                                  AVERAGE_SLICE, 
-                                 verbose=False,
+                                 #verbose=False,
                                  )
     expected_result = 19.0
     assert expected_result == average

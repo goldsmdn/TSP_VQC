@@ -9,8 +9,6 @@ RESULTS_DIR = 'results'
 RESULTS_FILE = 'results.csv'
 ENCODING = 'utf-8-sig'              # Encoding of csv file
 
-SIMULATE_NOISE = False              # Simulate noise in the quantum circuit
-
 #General control parameters - verbosity, cache size, etc.
 VERBOSE = False                     # controls how much is printed
 CACHE_MAX_SIZE = 50_000_000         # maximum size of the cache.
@@ -24,21 +22,21 @@ LOCATIONS = 4                       # number of locations to be visited
                                     # of distances found is included in the average.
 SHOTS = 1_024                       # shots used for each call of the quantum circuit
 
-ITERATIONS =  250                   # updates, or iterations
+ITERATIONS =  50                    # updates, or iterations
 PRINT_FREQUENCY = 10                # how often results are printed out
 GRAY = False                        # Use Gray codes
 HOT_START = False                   # Make a hot start
-GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
+GRADIENT_TYPE = 'SGD'               # controls the optimiser used
                                     # quantum - 'parameter_shift' - default
                                     # quantum - 'SPSA' is a stochastic gradient descent
                                     # ml - 'SGD' stochastical
                                     # ml - 'SGD+X' stochastical with Xavier initialization
                                     # ml - 'Adam' 
 DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation from paper
-NUM_LAYERS = 2                      #number of layers in the model
+NUM_LAYERS = 2                      # number of layers in the model
 
 #information needed in QML manual runs:
-MODE = 6                            # MODE = 1 - rxgate, rygate, cnot gates
+MODE = 8                            # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 2 - rxgate, XX gates -can be used with Hot Start
                                     # MODE = 3 - IQP based
                                     # MODE = 4 - rxgate
@@ -54,17 +52,14 @@ BIG_A = 25                          # A for SPSA
 C = np.pi/10                        # initial CK for SPSA
 ETA = 0.1                           # eta - learning rate for parameter shift
 GAMMA = 0.101                       # constant that determines how quickly the SPSA perturbation decays
-S = 0.5                             # parameter for parameter shift.  Default is 0.5                                   
-CHANGE_EACH_PARAMETER = False       # Iterate through each parameter in the circuit
-PLOT_PARAMETER_EVALUATION = False   # Plot the evaluation of each parameter         
+S = 0.5                             # parameter for parameter shift.  Default is 0.5 
+SIMULATE_NOISE = False              # Simulate noise in the quantum circuit
+
 ROTATIONS = 10                      # number of rotations sampled in parameter graphs
 
 #information needed in ML manual runs:
 STD_DEV = 0.05                      #standard deviation for warm start weight randomization
-#LR = 0.00002                       #Learning rate
 LR = 1e-3                           #Learning rate
-MOMENTUM = 0.8                      #momentum for optimizer
-#MOMENTUM = 0.9                     
-#WEIGHT_DECAY = 0.0006               #importance of L2 regularization in optimiser
-                                    #options: 'Adam', 'SGD', 'RMSprop'
-WEIGHT_DECAY = 0                                    
+MOMENTUM = 0.9                     
+WEIGHT_DECAY = 0.0006               #importance of L2 regularization in optimiser
+                                    #options: 'Adam', 'SGD', 'RMSprop'                                 

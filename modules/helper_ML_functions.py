@@ -2,7 +2,6 @@
 
 import torch.nn as nn
 import torch
-#from classes.MyDataLogger import MySubDataLogger
 
 def find_device() -> torch.device:
     """find out if we are using a GPU or CPU"""
