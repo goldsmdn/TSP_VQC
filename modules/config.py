@@ -25,7 +25,7 @@ SHOTS = 1_024                       # shots used for each call of the quantum ci
 ITERATIONS =  50                    # updates, or iterations
 PRINT_FREQUENCY = 10                # how often results are printed out
 GRAY = False                        # Use Gray codes
-HOT_START = False                   # Make a hot start
+HOT_START = True                    # Make a hot start
 GRADIENT_TYPE = 'SGD'               # controls the optimiser used
                                     # quantum - 'parameter_shift' - default
                                     # quantum - 'SPSA' is a stochastic gradient descent
