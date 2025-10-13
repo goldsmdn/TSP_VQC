@@ -595,7 +595,8 @@ def hot_start_list_to_string(sdl, hot_start_list: list) -> list:
     """invert the hot start integer list into a string
     
     Parameters:
-    ----------
+    -----------
+
     sdl : SubDataLogger object containing key parameters:
         sdl.locations: int 
             The number of location in the problem
@@ -943,7 +944,6 @@ def define_parameters(sdl) -> list:
 
     sdl: MySubDataLogger
         A sub data logger holding the parameters for the run with key fields:
-
         sdl.qubits: int
             The number of qubits in the circuit
         sdl.mode: int
@@ -969,6 +969,7 @@ def vqc_circuit(sdl, params: list) -> QuantumCircuit:
 
     Parameters
     ----------
+
     sdl: MySubDataLogger
         A sub data logger holding the parameters for the run with key fields:
         sdl.qubits: int
@@ -977,7 +978,6 @@ def vqc_circuit(sdl, params: list) -> QuantumCircuit:
             Controls setting the circuit up in different modes
         sdl.noise: bool
             Controls if noise is included in the circuit
-
     params: list
         A list of parameters (the texts)
 
