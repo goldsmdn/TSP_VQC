@@ -120,12 +120,6 @@ def test_gradient_4():
     qc.measure_all() 
     init_rots = [np.pi / 4, np.pi / 2]
     params = [a, b]
-    """actual_results = my_gradient(my_cost_function1, 
-                                 False,
-                                 qc, 
-                                 params, 
-                                 init_rots
-                                 )"""
     actual_results = my_gradient(sdl,
                         my_cost_function1,
                         qc,
