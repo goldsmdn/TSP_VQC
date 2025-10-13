@@ -3,6 +3,8 @@
 import torch.nn as nn
 import torch
 
+from modules.helper_functions_tsp import cost_fn_tensor
+
 def find_device() -> torch.device:
     """find out if we are using a GPU or CPU"""
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -111,4 +113,19 @@ def set_up_input_no_hot_start(sdl,
         unrepeated_input = torch.full((1,sdl.qubits), 0.5).float().to(device)
     my_input = unrepeated_input.repeat(sdl.shots, 1).requires_grad_(True)
     return(unrepeated_input, my_input)
+
+def set_up_input_hot_start(sdl,
+                           device: torch.device,
+                           bin_hot_start_list:list,
+                           print_results:bool=False,
+                          )-> torch.Tensor:    
+    """if ML and Hot Start set the initial input to the hot start data"""
+    bin_hot_start_list_tensor = torch.tensor([bin_hot_start_list])
+    unrepeated_input = bin_hot_start_list_tensor.float().to(device)
+    my_input = unrepeated_input.repeat(sdl.shots, 1).requires_grad_(True)
+    if print_results:
+        print(f'bin_hot_start_list_tensor = {bin_hot_start_list_tensor}')
+        print(f'The hot start distance is {sdl.hot_start_dist:.2f}, compared to a best distance of {sdl.best_dist:.2f}.')
+    return(unrepeated_input, my_input)
+
 
