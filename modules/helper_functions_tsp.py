@@ -457,7 +457,6 @@ def find_stats(cost_fn: Callable,
                counts: dict, 
                shots: int, 
                average_slice: float=1, 
-               verbose: bool=False
                )-> tuple:
     """finds the average energy of the relevant counts, and the lowest energy
     
@@ -473,8 +472,6 @@ def find_stats(cost_fn: Callable,
         average over this slice of the energy.  eg
         If average_slice = 1 then average over all energies.  
         If average_slice = 0.2 then average over the bottom 20% of energies
-    verbose: bool
-        determines if data is printed out
 
     Returns
     ----------
@@ -514,13 +511,6 @@ def find_stats(cost_fn: Callable,
             if energy < lowest_energy:
                 lowest_energy = energy
                 lowest_energy_bit_string = bit_list
-        if verbose:
-            print(f'The energy for string {key} is {energy} and the counts are {count}')
-            print(f'The lowest_distance is {lowest_energy}')
-            print(f'The lowest energy bit string is {lowest_energy_bit_string }')
-            if slicing:
-                print(f'Slicing in progress and unsorted energy_dict = {energy_dict}')
-
         total_counts += count
         total_energy += energy * count
 
@@ -531,8 +521,6 @@ def find_stats(cost_fn: Callable,
         accum, total_energy, total_counts = 0, 0, 0
         stop = shots * average_slice
         sorted_energy_dict = dict(sorted(energy_dict.items()))
-        if verbose:
-            print(f'The sorted energy dict is {sorted_energy_dict}')
         for energy, count in sorted_energy_dict.items():
             if accum < stop:
                 if accum + count < stop:
@@ -543,10 +531,6 @@ def find_stats(cost_fn: Callable,
                     total_energy += energy * (stop - accum)
             accum += count
     average_energy = total_energy / total_counts
-    if verbose:
-        print(f'Slicing = {slicing}. The total_counts_are {total_counts}')
-        print(f'Returning average_energy, lowest_energy, lowest_energy_bit_string')
-        print(f'{average_energy}, {lowest_energy}, {lowest_energy_bit_string}')
 
     return(average_energy, lowest_energy, lowest_energy_bit_string)
 
@@ -607,13 +591,12 @@ def binary_string_format(binary_string: str, bin_len: str) -> str:
 
     return(formatted_string)    
     
-
-#def hot_start_list_to_string(hot_start_list: list, locations: int, gray:bool, method='original') -> list:
 def hot_start_list_to_string(sdl, hot_start_list: list) -> list:
     """invert the hot start integer list into a string
     
     Parameters:
-    ----------
+    -----------
+
     sdl : SubDataLogger object containing key parameters:
         sdl.locations: int 
             The number of location in the problem
@@ -661,7 +644,6 @@ def hot_start_list_to_string(sdl, hot_start_list: list) -> list:
             result_list.append(int(total_binary_string[i]))
         return(result_list)
     elif sdl.formulation == 'new':
-        #dim = find_problem_size(sdl.locations, sdl,formulation='new')
         dim = find_problem_size(sdl)
         f = math.factorial(sdl.locations)
         y = 0
@@ -686,14 +668,12 @@ def validate_gradient_type(gradient_type):
     if gradient_type not in allowed_types:
         raise Exception (f'Gradient type {gradient_type} is not coded for')
 
-def update_parameters_using_gradient(#subdatalogger,
-                                     sdl,
+def update_parameters_using_gradient(sdl,
                                      params: list,
                                      rots: np.array,
                                      cost_fn: Callable,
                                      qc: QuantumCircuit,
                                      print_results: str=False,
-                                     verbose:str = False
                                      ):
     """updates parameters using SPSA or parameter shift gradients"""
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
@@ -704,29 +684,17 @@ def update_parameters_using_gradient(#subdatalogger,
     if sdl.gradient_type == 'SPSA':
         #define_parameters
         # A is <= 10% of the number of iterations normally, but here the number of iterations is lower.
-        
-        if verbose:
-            print(f'c= {sdl.c}')
-            print(f'Evaluating first gradient to find magnitude_g0')
         # order of magnitude of first gradients
-        abs_gradient = np.abs(my_gradient(cost_fn, 
-                                          sdl.noise,
+        abs_gradient = np.abs(my_gradient(sdl, 
+                                          cost_fn, 
                                           qc, 
                                           params, 
                                           rots, 
-                                          s=sdl.s, 
-                                          shots=sdl.shots, 
                                           average_slice=sdl.slice,
-                                          verbose=verbose,
-                                          gradient_type='SPSA', 
-                                          ck=sdl.c,
                                           )
-                              )
+                                )
         
         magnitude_g0 = abs_gradient.mean()
-        if verbose:
-            print(f'abs_gradient {abs_gradient}, magnitude_g0 {magnitude_g0}')
-            print(f'magnitude_g0, {magnitude_g0}')
  
         if magnitude_g0 == 0:
         # stop div by zero error
@@ -735,43 +703,29 @@ def update_parameters_using_gradient(#subdatalogger,
             a = sdl.eta*((sdl.big_a+1)**sdl.alpha)/magnitude_g0
 
     for i in range(0, sdl.iterations):
-        if verbose:
-            print(f'Iteration {i} of {sdl.iterations}')
         if detect_quantum_GPU_support:
             bc = qc.assign_parameters({params: rot for params, rot in zip(params, rots)})
         else:
             bc = bind_weights(params, rots, qc)
-        cost, lowest, lowest_energy_bit_string = cost_func_evaluate(cost_fn, 
-                                                                    sdl.noise,
+        cost, lowest, lowest_energy_bit_string = cost_func_evaluate(sdl,
+                                                                    cost_fn, 
                                                                     bc, 
-                                                                    shots=sdl.shots, 
                                                                     average_slice= sdl.slice, 
-                                                                    verbose=verbose,
                                                                     )
         #cost is the top-sliced energy
-        average, _ , _ = cost_func_evaluate(cost_fn, 
-                                            sdl.noise,
+        average, _ , _ = cost_func_evaluate(sdl,
+                                            cost_fn, 
                                             bc, 
-                                            shots = sdl.shots, 
                                             average_slice=1, 
-                                            verbose=verbose,
                                             )
         #average is the average energy with no top slicing
-        if verbose:
-            print(f'cost, lowest, lowest_energy_bit_string = {cost}, {lowest}, {lowest_energy_bit_string}')
         if i == 0:
             lowest_string_to_date = lowest_energy_bit_string
             lowest_to_date = lowest
         else:
-            if verbose:
-                print(f'lowest,  lowest_to_date {lowest}, {lowest_to_date}')
             if lowest < lowest_to_date:
-                if verbose:
-                    print('Lowest less than lowest to date')
                 lowest_to_date = lowest
                 lowest_string_to_date = lowest_energy_bit_string
-                if verbose:
-                    print(f'lowest,  lowest_to_date {lowest}, {lowest_to_date}')
         route_list = convert_bit_string_to_cycle(lowest_string_to_date, 
                                                  sdl.locations, 
                                                  sdl.gray, 
@@ -783,38 +737,26 @@ def update_parameters_using_gradient(#subdatalogger,
         average_list.append(average)
         parameter_list.append(rots)
         if sdl.gradient_type == 'parameter_shift':
-            gradient = my_gradient(cost_fn, 
-                                   sdl.noise,
+            gradient = my_gradient(sdl, 
+                                   cost_fn, 
                                    qc, 
                                    params, 
                                    rots, 
-                                   sdl.s, 
-                                   shots=sdl.shots,
                                    average_slice=sdl.slice,
-                                   verbose=verbose, 
-                                   gradient_type='parameter_shift',
                                    )
             
             rots = rots - sdl.eta * gradient
         elif sdl.gradient_type == 'SPSA':
             ak = a/((i+1+sdl.big_a)**(sdl.alpha))
             ck = sdl.c/((i+1)**(sdl.gamma))
-            gradient = my_gradient(cost_fn, 
-                                   sdl.noise,
+            gradient = my_gradient(sdl,
+                                   cost_fn, 
                                    qc, 
                                    params, 
                                    rots, 
-                                   sdl.s, 
-                                   sdl.shots,
                                    average_slice=sdl.slice,
-                                   verbose=verbose, 
-                                   gradient_type='SPSA',
                                    ck=ck,
                                    )
-            if verbose:
-                print(f'For iteration {i} a = {a}, A = {sdl.big_a}, ak = {ak}, ck = {ck}')
-                print(f'rots = {rots}')
-                print(f'gradient = {gradient}')
             rots = rots - ak * gradient
         else:
             raise Exception(f'Error found when calculating gradient. {sdl.gradient_type} is not an allowed gradient type')
@@ -826,23 +768,25 @@ def update_parameters_using_gradient(#subdatalogger,
                 print(f'The lowest cost from the sample is {lowest:.3f}')
                 print(f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date} ')
                 print(f'and route {route_list}')
-                if verbose:
-                    print(f'The gradient is {gradient}')
-                    print(f'The rotations are {rots}')
     return index_list, cost_list, lowest_list, gradient_list, average_list, parameter_list 
     
-def cost_func_evaluate(cost_fn: Callable, 
-                       noise,
-                       model, 
-                       shots: int=1024, 
-                       average_slice: float=1, 
-                       verbose:bool=False,
-                       quantum:bool= True,
-                       ) -> tuple:
+def cost_func_evaluate(sdl,
+                       cost_fn: Callable,
+                       model,
+                       average_slice: float=1,
+                       ) -> tuple:             
+                       
     """evaluate cost function on a quantum computer
     
     Parameters
     ----------
+    sdl: SubDataLogger object containing key parameters:
+        sdl.noise: bool
+            If True a noisy quantum computer is used
+        sdl.quantum: bool
+            If True a quantum computer is used.  If False a classical model is used
+        sdl.shots: int
+            The number of shots for which the quantum circuit is to be run  
     cost_fn: function
         A function of a bit string evaluating a distance for that bit string
     model : a model to evalulate an output bit string given weights eg
@@ -850,14 +794,10 @@ def cost_func_evaluate(cost_fn: Callable,
             A quantum circuit with bound weights for which the energy is to be found
         Classical Model
             A classical model with bound weights for which the energy is to be found
-    shots: int
-        The number of shots for which the quantum circuit is to be run
     average_slice: float
         average over this slice of the energy.  For example:
         If average_slice = 1 then average over all energies.  
         If average_slice = 0.2 then average over the bottom 20% of energies
-    verbose: bool
-        If true outputs more data for debugging
     
     Returns
     -------
@@ -868,10 +808,10 @@ def cost_func_evaluate(cost_fn: Callable,
     lowest_energy_bit_string: string
         A list of the bits for the lowest energy bit string
     """
-    if quantum:
-        if noise:
+    if sdl.quantum:
+        if sdl.noise:
             backend = FakeAuckland()
-            job = backend.run(model, shots=shots)     
+            job = backend.run(model, shots=sdl.shots)     
             counts = job.result().get_counts()
         else:
             if detect_quantum_GPU_support():
@@ -880,32 +820,51 @@ def cost_func_evaluate(cost_fn: Callable,
                 counts = results.get_counts(model)
             else:
                 sampler = SamplerV2()
-                job = sampler.run([model], shots=shots)
+                job = sampler.run([model], shots=sdl.shots)
                 results = job.result()
                 counts = results[0].data.meas.get_counts()
     else:
         raise Exception('Classical model not yet coded for')
-    if verbose:
-        print(f'The counts directory is {counts}')
-    cost, lowest, lowest_energy_bit_string = find_stats(cost_fn, counts, shots, average_slice, verbose)
+    cost, lowest, lowest_energy_bit_string = find_stats(cost_fn, counts, sdl.shots, average_slice, )
     return(cost, lowest, lowest_energy_bit_string)
 
-def my_gradient(cost_fn, 
-                noise,
+#def my_gradient(cost_fn, 
+#                noise,
+#                qc:QuantumCircuit, 
+#                params:list, 
+#                rots:np.array, 
+#                s:float=0.5, 
+#                shots:int=1024, 
+#                average_slice:float=1, 
+#                verbose:bool=False,
+#                gradient_type:str='parameter_shift',
+#                ck:float=1e-2, 
+#                ) -> list:
+def my_gradient(sdl,
+                cost_fn, 
                 qc:QuantumCircuit, 
                 params:list, 
                 rots:np.array, 
-                s:float=0.5, 
-                shots:int=1024, 
-                average_slice:float=1, 
-                verbose:bool=False,
-                gradient_type:str='parameter_shift',
-                ck:float=1e-2, 
-                ) -> list:
+                average_slice:float, 
+                ck:float=1e-2,
+                ) -> np.array:
     """calculate gradient for a quantum circuit with parameters and rotations
     
     Parameters
     ----------
+    sdl: SubDataLogger object containing key parameters, for example:
+        sdl.noise: bool
+            If True a noisy quantum computer is used
+        sdl.shots: int
+            The number of shots for which the quantum circuit is to be run  
+        sdl.s: float
+            Parameter shift parameter
+        sdl.gradient_type: str
+            controls the optimiser to be used.
+            if 'parameter shift'  uses analytical expression
+            if 'SPSA' uses a stochastical method
+        sdl.ck: float
+            SPSA parameter, small number controlling perturbations
     cost_fn: function
         A function of a bit string evaluating an energy (distance) for that bit string
     qc: QuantumCircuit
@@ -914,19 +873,9 @@ def my_gradient(cost_fn,
         A list of parameters (the texts)
     rots: list
         The exact values for the parameters, which are rotations of quantum gates
-    s: float
-        Determines the rotation for evaluating the gradient
-    shots: int
-        The number of shots for which the quantum circuit is to be run in each estimation of a parameter point
     average_slice: float
         Controls the amount of data to be included in the average.  
         For example, 0.2 means that the lowest 20% of distances found is included in the average.
-    verbose: bool
-        If True then more information is printed
-    gradient_type: str
-        controls the optimiser to be used.
-        if 'parameter shift'  uses analytical expression
-        if 'SPSA' uses a stochastical method
 
     Returns
     -------
@@ -934,46 +883,28 @@ def my_gradient(cost_fn,
         The gradient for each parameter
     """
     new_rots = copy.deepcopy(rots)  
-    if gradient_type == 'parameter_shift':
+    if sdl.gradient_type == 'parameter_shift':
         gradient_list = []
         for i, theta in enumerate(rots):
-            if verbose:
-                print(f'processing {i}th weight')
-                print(f'rot = {theta} i={i}')
-
-            new_rots[i] = theta + np.pi/(4*s)
-
-            if verbose:
-                print(f'New rots+ = {new_rots}')
+            new_rots[i] = theta + np.pi/(4*sdl.s)
             bc = bind_weights(params, new_rots, qc)
-            cost_plus, _, _ = cost_func_evaluate(cost_fn, 
-                                                 noise,
+            cost_plus, _, _ = cost_func_evaluate(sdl,
+                                                 cost_fn, 
                                                  bc, 
-                                                 shots, 
                                                  average_slice, 
-                                                 verbose,
                                                  )
             
-            new_rots[i] = theta - np.pi/(4*s)
-            if verbose:
-                print(f'New rots- = {new_rots}')
+            new_rots[i] = theta - np.pi/(4*sdl.s)
             bc = bind_weights(params, new_rots, qc)
-            cost_minus, _, _ = cost_func_evaluate(cost_fn, 
-                                                  noise,
+            cost_minus, _, _ = cost_func_evaluate(sdl,
+                                                  cost_fn, 
                                                   bc, 
-                                                  shots, 
                                                   average_slice, 
-                                                  verbose, 
                                                   )
-
-            delta = s * (cost_plus - cost_minus)
-
-            if verbose:
-                print(f'cost+ = {cost_plus} cost- = {cost_minus}, delta = {delta}')
+            delta = sdl.s * (cost_plus - cost_minus)
             gradient_list.append(delta)
         gradient_array = np.array(gradient_list)
-
-    elif gradient_type == 'SPSA':
+    elif sdl.gradient_type == 'SPSA':
         # number of parameters
         length = len(rots)
         # bernoulli-like distribution
@@ -982,44 +913,27 @@ def my_gradient(cost_fn,
         # simultaneous perturbations
         ck_deltak = ck * deltak
         new_rots = rots + ck_deltak
-        if verbose:
-            print(f'New rots+ = {new_rots}')
-           
         # gradient approximation]
-        if verbose:
-            print(f'params = {params}, new_rots = {new_rots}')
         bc = bind_weights(params, new_rots, qc)
-        cost_plus, _, _ = cost_func_evaluate(cost_fn, 
-                                             noise,
+        cost_plus, _, _ = cost_func_evaluate(sdl,
+                                             cost_fn, 
                                              bc, 
-                                             shots, 
                                              average_slice, 
-                                             verbose,
                                              )
 
         new_rots = rots - ck_deltak
-        if verbose:
-            print(f'New rots- = {new_rots}')
-
         bc = bind_weights(params, new_rots, qc)
-        cost_minus, _, _ = cost_func_evaluate(cost_fn, 
-                                              noise,
+        cost_minus, _, _ = cost_func_evaluate(sdl,
+                                              cost_fn, 
                                               bc, 
-                                              shots, 
                                               average_slice, 
-                                              verbose,
                                               )
 
         delta = cost_plus - cost_minus
         gradient_array = delta / (2 * ck_deltak)
         #need to return an array to match parameter shift
-        if verbose:
-            print(f'cost+ = {cost_plus} cost- = {cost_minus}, delta = {delta}') 
-            print(f'gradient_array = {gradient_array}') 
-            print(f'deltak = {deltak}')
-            print(f'ck_deltak = {ck_deltak}')
     else:
-        raise Exception(f'Gradient type {gradient_type} is not an allowed choice')
+        raise Exception(f'Gradient type {sdl.gradient_type} is not an allowed choice')
     return gradient_array   
     
 def define_parameters(sdl) -> list:
@@ -1030,7 +944,6 @@ def define_parameters(sdl) -> list:
 
     sdl: MySubDataLogger
         A sub data logger holding the parameters for the run with key fields:
-
         sdl.qubits: int
             The number of qubits in the circuit
         sdl.mode: int
@@ -1056,6 +969,7 @@ def vqc_circuit(sdl, params: list) -> QuantumCircuit:
 
     Parameters
     ----------
+
     sdl: MySubDataLogger
         A sub data logger holding the parameters for the run with key fields:
         sdl.qubits: int
@@ -1064,7 +978,6 @@ def vqc_circuit(sdl, params: list) -> QuantumCircuit:
             Controls setting the circuit up in different modes
         sdl.noise: bool
             Controls if noise is included in the circuit
-
     params: list
         A list of parameters (the texts)
 
@@ -1138,12 +1051,6 @@ def vqc_circuit(sdl, params: list) -> QuantumCircuit:
         qc= transpile(qc, backend)
     return qc
 
-#def create_initial_rotations(qubits: int, 
-#                             mode: int, 
-#                             layers:int=1,
-#                             bin_hot_start_list: list=False, 
-#                             hot_start: bool=False,
-#                             ) -> list:
 def create_initial_rotations(sdl, bin_hot_start_list: list=False,): 
     """initialise parameters with random weights
 
@@ -1266,3 +1173,37 @@ def detect_quantum_GPU_support()-> bool:
         return True
     else:
         return False
+    
+def calculate_hot_start_data(sdl, 
+                             distance_array: np.array, 
+                             cost_fn: Callable,
+                             print_results:bool=False,
+                             )-> tuple:
+    """calculate hot start data from a distance array
+    
+    Parameters
+    ----------
+    sdl : SubDataLogger object 
+        Containing key parameters
+    distance_array: array
+        Numpy symmetric array with distances between locations
+    print_results: bool
+        If true prints out the hot start data
+
+    Returns
+    -------
+    hot_start_list: list
+        A list of integers showing an estimate of the lowest cycle
+    hot_start_distance: float
+        The distance of the hot start cycle
+
+    """
+    hot_start_list = hot_start(sdl, distance_array, )
+    bin_hot_start_list =  hot_start_list_to_string(sdl, hot_start_list)
+    hot_start_distance = cost_fn(bin_hot_start_list)
+    if print_results:
+        print(f'The hot start location list is {hot_start_list}')
+        print(f'This is equivalent to a binary list: {bin_hot_start_list}')
+        print(f'The hot start distance is {hot_start_distance}, compared to a best distance of {sdl.best_dist}.')
+    return bin_hot_start_list, hot_start_distance
+

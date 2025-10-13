@@ -25,6 +25,13 @@ def my_cost_function1(bit_string_list:list) -> int:
 
 def test_gradient_1():
     """Test a circuit with one parameter"""
+    datalogger = MyDataLogger()
+    sdl = MySubDataLogger(runid = datalogger.runid)
+    sdl.quantum = True
+    sdl.noise = False
+    sdl.s = 0.5
+    sdl.shots = 1024
+    sdl.gradient_type = 'parameter_shift'
     a = Parameter('a')
     q = QuantumRegister(1)
     qc = QuantumCircuit(q)
@@ -32,18 +39,25 @@ def test_gradient_1():
     qc.measure_all()
     init_rots = [0]
     params = [a]
-    actual_results = my_gradient(my_cost_function1, 
-                                 False,
-                                 qc, 
-                                 params, 
-                                 init_rots
+    actual_results = my_gradient(sdl,
+                                 my_cost_function1,
+                                 qc,
+                                 params,
+                                 init_rots,
+                                 average_slice = 1,
                                  )
-    print(actual_results)
     expected_results = np.array([0])
     assert actual_results == py.approx(expected_results, abs=0.1)
 
 def test_gradient_2():
     """Test a circuit with one parameter"""
+    datalogger = MyDataLogger()
+    sdl = MySubDataLogger(runid = datalogger.runid)
+    sdl.quantum = True
+    sdl.noise = False
+    sdl.s = 0.5
+    sdl.shots = 1024
+    sdl.gradient_type = 'parameter_shift'
     a = Parameter('a')
     q = QuantumRegister(1)
     qc = QuantumCircuit(q)
@@ -51,17 +65,25 @@ def test_gradient_2():
     qc.measure_all()
     init_rots = [np.pi]
     params = [a]
-    actual_results = my_gradient(my_cost_function1, 
-                                 False,
-                                 qc, 
-                                 params, 
-                                 init_rots
+    actual_results = my_gradient(sdl,
+                                my_cost_function1,
+                                qc,
+                                params,
+                                init_rots,
+                                average_slice = 1,
                                  )
     expected_results = np.array([0])
     assert actual_results == py.approx(expected_results, abs=0.1)
 
 def test_gradient_3():
     """Test a circuit with one parameter"""
+    datalogger = MyDataLogger()
+    sdl = MySubDataLogger(runid = datalogger.runid)
+    sdl.quantum = True
+    sdl.noise = False
+    sdl.s = 0.5
+    sdl.shots = 1024
+    sdl.gradient_type = 'parameter_shift'
     a = Parameter('a')
     q = QuantumRegister(1)
     qc = QuantumCircuit(q)
@@ -69,17 +91,25 @@ def test_gradient_3():
     qc.measure_all()
     init_rots = [np.pi/2]
     params = [a]
-    actual_results = my_gradient(my_cost_function1, 
-                                 False,
-                                 qc, 
-                                 params, 
-                                 init_rots
-                                 )
+    actual_results = my_gradient(sdl,
+                            my_cost_function1,
+                            qc,
+                            params,
+                            init_rots,
+                            average_slice = 1,
+                            )
     expected_results = np.array([0.5])
     assert actual_results == py.approx(expected_results, abs=0.1)
 
 def test_gradient_4():
     """Test a circuit with two parameters and compare to qiskit results"""
+    datalogger = MyDataLogger()
+    sdl = MySubDataLogger(runid = datalogger.runid)
+    sdl.quantum = True
+    sdl.noise = False
+    sdl.s = 0.5
+    sdl.shots = 1024
+    sdl.gradient_type = 'parameter_shift'
     a = Parameter('a')
     b = Parameter('b')
     q = QuantumRegister(1)
@@ -90,12 +120,19 @@ def test_gradient_4():
     qc.measure_all() 
     init_rots = [np.pi / 4, np.pi / 2]
     params = [a, b]
-    actual_results = my_gradient(my_cost_function1, 
+    """actual_results = my_gradient(my_cost_function1, 
                                  False,
                                  qc, 
                                  params, 
                                  init_rots
-                                 )
+                                 )"""
+    actual_results = my_gradient(sdl,
+                        my_cost_function1,
+                        qc,
+                        params,
+                        init_rots,
+                        average_slice = 1,
+                        )
     expected_results = np.array([-0.353, 0.0]) #qiskit results
     assert actual_results == py.approx(expected_results, abs=0.1)
 
@@ -103,7 +140,9 @@ def test_simple_circuit():
     """test a simple circuit with known output"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
+    sdl.quantum = True
     sdl.qubits = 5
+    sdl.shots = 1024
     params = []
     sdl.mode = 5
     sdl.locations = 5
@@ -112,15 +151,14 @@ def test_simple_circuit():
     file = 'five_d.txt'
     filename = Path(NETWORK_DIR).joinpath(file)
     distance_array = np.genfromtxt(filename)
-    shots = 1024
     cost_fn = cost_fn_fact(sdl, distance_array,)
     
     qc = vqc_circuit(sdl, params) 
 
-    actual_result, _ , _ = cost_func_evaluate(cost_fn, 
-                                              False,
+    actual_result, _ , _ = cost_func_evaluate(sdl,
+                                              cost_fn, 
                                               qc, 
-                                              shots
+                                              average_slice=1,
                                               )
     expected_result = 21.0
     assert actual_result == expected_result

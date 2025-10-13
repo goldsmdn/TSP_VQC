@@ -2,7 +2,8 @@
 
 import torch.nn as nn
 import torch
-#from classes.MyDataLogger import MySubDataLogger
+
+from modules.helper_functions_tsp import cost_fn_tensor
 
 def find_device() -> torch.device:
     """find out if we are using a GPU or CPU"""
@@ -26,23 +27,37 @@ def evaluate_model(model:nn.Module, shots:int)-> dict:
             counts[string] = 1
     return(counts)
 
-def get_ready_to_train(model:nn.Module,
+"""def get_ready_to_train(model:nn.Module,
                        optimizer:str, 
                        lr:float, 
                        weight_decay:float,
                        **kwargs,
-                       )-> tuple:
+                       )-> tuple:"""
+def get_ready_to_train(sdl,
+                       model:nn.Module,
+                       )-> tuple:   
     """Prepare for training by setting up the target, criterion, and optimizer"""
     target = torch.tensor(0.0, requires_grad=True)
     criterion = nn.L1Loss()
-    if optimizer in ['Adam', 'Adam+X',]:
-        optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(kwargs['momentum'], 0.999))
-    elif optimizer in ['SGD', 'SGD+X',]:
-        optimizer = torch.optim.SGD(model.parameters(), momentum=kwargs['momentum'], lr=lr, weight_decay=weight_decay)
-    elif optimizer == 'RMSprop':
-        optimizer = torch.optim.RMSprop(model.parameters(), lr=lr, weight_decay=weight_decay)
+    if sdl.gradient_type in ['Adam', 'Adam+X',]:
+        optimizer = torch.optim.Adam(model.parameters(), 
+                                     lr=sdl.lr,
+                                     weight_decay=sdl.weight_decay, 
+                                     betas=(sdl.momentum, 0.999)
+                                     )
+    elif sdl.gradient_type in ['SGD', 'SGD+X',]:
+        optimizer = torch.optim.SGD(model.parameters(), 
+                                    momentum=sdl.momentum, 
+                                    lr=sdl.lr, 
+                                    weight_decay=sdl.weight_decay,
+                                    )
+    elif sdl.gradient_type == 'RMSprop':
+        optimizer = torch.optim.RMSprop(model.parameters(), 
+                                        lr=sdl.lr, 
+                                        weight_decay=sdl.weight_decay,
+                                        )
     else:
-        raise ValueError(f'Optimizer {optimizer} not recognized')
+        raise ValueError(f'Optimizer {sdl.sdl.gradient_type} not recognized')
     return(target, criterion, optimizer)
 
 def train_model(num_epochs: int,
@@ -98,4 +113,19 @@ def set_up_input_no_hot_start(sdl,
         unrepeated_input = torch.full((1,sdl.qubits), 0.5).float().to(device)
     my_input = unrepeated_input.repeat(sdl.shots, 1).requires_grad_(True)
     return(unrepeated_input, my_input)
+
+def set_up_input_hot_start(sdl,
+                           device: torch.device,
+                           bin_hot_start_list:list,
+                           print_results:bool=False,
+                          )-> torch.Tensor:    
+    """if ML and Hot Start set the initial input to the hot start data"""
+    bin_hot_start_list_tensor = torch.tensor([bin_hot_start_list])
+    unrepeated_input = bin_hot_start_list_tensor.float().to(device)
+    my_input = unrepeated_input.repeat(sdl.shots, 1).requires_grad_(True)
+    if print_results:
+        print(f'bin_hot_start_list_tensor = {bin_hot_start_list_tensor}')
+        print(f'The hot start distance is {sdl.hot_start_dist:.2f}, compared to a best distance of {sdl.best_dist:.2f}.')
+    return(unrepeated_input, my_input)
+
 
