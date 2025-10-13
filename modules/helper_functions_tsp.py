@@ -1266,3 +1266,37 @@ def detect_quantum_GPU_support()-> bool:
         return True
     else:
         return False
+    
+def calculate_hot_start_data(sdl, 
+                             distance_array: np.array, 
+                             cost_fn: Callable,
+                             print_results:bool=False,
+                             )-> tuple:
+    """calculate hot start data from a distance array
+    
+    Parameters
+    ----------
+    sdl : SubDataLogger object 
+        Containing key parameters
+    distance_array: array
+        Numpy symmetric array with distances between locations
+    print_results: bool
+        If true prints out the hot start data
+
+    Returns
+    -------
+    hot_start_list: list
+        A list of integers showing an estimate of the lowest cycle
+    hot_start_distance: float
+        The distance of the hot start cycle
+
+    """
+    hot_start_list = hot_start(sdl, distance_array, )
+    bin_hot_start_list =  hot_start_list_to_string(sdl, hot_start_list)
+    hot_start_distance = cost_fn(bin_hot_start_list)
+    if print_results:
+        print(f'The hot start location list is {hot_start_list}')
+        print(f'This is equivalent to a binary list: {bin_hot_start_list}')
+        print(f'The hot start distance is {hot_start_distance}, compared to a best distance of {sdl.best_dist}.')
+    return bin_hot_start_list, hot_start_distance
+
