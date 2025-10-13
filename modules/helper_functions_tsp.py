@@ -1138,12 +1138,13 @@ def vqc_circuit(sdl, params: list) -> QuantumCircuit:
         qc= transpile(qc, backend)
     return qc
 
-def create_initial_rotations(qubits: int, 
-                             mode: int, 
-                             layers:int=1,
-                             bin_hot_start_list: list=False, 
-                             hot_start: bool=False,
-                             ) -> list:
+#def create_initial_rotations(qubits: int, 
+#                             mode: int, 
+#                             layers:int=1,
+#                             bin_hot_start_list: list=False, 
+#                             hot_start: bool=False,
+#                             ) -> list:
+def create_initial_rotations(sdl, bin_hot_start_list: list=False,): 
     """initialise parameters with random weights
 
     Parameters
@@ -1162,20 +1163,20 @@ def create_initial_rotations(qubits: int,
     
     """
     
-    if mode in [1, 2, 3, 6,]:
-        param_num = 2 * qubits * layers
-    elif mode == 4:
-        param_num = qubits * layers
+    if sdl.mode in [1, 2, 3, 6,]:
+        param_num = 2 * sdl.qubits * sdl.layers
+    elif sdl.mode == 4:
+        param_num = sdl.qubits * sdl.layers
     else:
-        raise Exception(f'Mode {mode} is not yet coded')
-    if hot_start:
+        raise Exception(f'Mode {sdl.mode} is not yet coded')
+    if sdl.hot_start:
         #if mode in [1]:
-        if layers in [1]:
+        if sdl.layers in [1]:
             raise Exception('Cannot use a hot start for mode {mode}')
         init_rots = [0 for i in range(param_num)]
         for i, item in enumerate(bin_hot_start_list):
             if item == 1:
-                init_rots[qubits-i-1] = np.pi 
+                init_rots[sdl.qubits-i-1] = np.pi 
                 #need to reverse order because of qiskit convention
     else:
         init_rots= [random.random() * 2 * math.pi for i in range(param_num)]
