@@ -65,10 +65,12 @@ class MySine(nn.Module):
     """return a sine function symmetric about 0.5"""
     def __init__(self):
         super(MySine, self).__init__()  # Initialize parent class
+        self.register_buffer("pi", torch.tensor(math.pi))
 
     def forward(self, x):
-        rads = ((x - 0.5) * torch.tensor(math.pi))
-        return 0.5 * (1 + torch.sin(rads)) 
+        #rads = ((x - 0.5) * torch.tensor(math.pi))
+        #return 0.5 * (1 + torch.sin(rads)) 
+        return 0.5 * (1 + torch.sin((x - 0.5) * self.pi))
     
 class Sample_Binary(nn.Module):
     """return probability in forward, linear backwards"""
@@ -93,14 +95,6 @@ class BinaryToCost(nn.Module):
 
 class MyModel(nn.Module):
     """A simple feedforward neural network model for TSP"""
-    #def __init__(self, bits:int, 
-    #             layers:int, 
-    #             std_dev:float, 
-    #             cost_fn:Callable[[list], int],
-    #             hot_start:bool = False,
-    #             mode:int = 8,
-    #             optimizer:str = 'SGD'
-    #             ):
     def __init__(self, sdl, cost_fn:Callable[[list], int]):
         """initialize the model"""
         super(MyModel, self).__init__()
@@ -117,27 +111,7 @@ class MyModel(nn.Module):
             self.activation = nn.Sigmoid()
         else:
             raise Exception(f'Mode {self.mode} is not supported')
-        
-        #build the layers
         self._build_layers()
-
-        #for i in range(1, self.layers + 1):
-        #    # iterate through the layers and create them
-        #    fc = nn.Linear(in_features=bits, out_features=bits)
-        #    if not self.hot_start:
-        #        # Xavier initialization
-        #        nn.init.xavier_uniform_(fc.weight)
-        #        if fc.bias is not None:
-        #            nn.init.zeros_(fc.bias)
-        #    setattr(self, f'fc{i}', fc)
-        #    setattr(self, f'act{i}', self.activation)
-
-        #self.sample = Sample_Binary()
-        #self.cost = BinaryToCost(self.cost_fn)
-        #if self.hot_start:
-        # if hot_start is true, generate weights and biases
-        #otherwise, assigned above
-        #    self.generate_weights_and_biases()
 
     def _init_weights(self, fc, first_layer:bool=False):
         """Helper: initialize weights depending on hot_start mode"""
@@ -156,7 +130,6 @@ class MyModel(nn.Module):
                             # First layer: uniform(-1/num_inputs, 1/num_inputs)
                             fc.weight.uniform_(-1 / self.bits, 1 / self.bits)
                             if fc.bias is not None:
-                                #fc.bias.uniform_(-1 / self.bits, 1 / self.bits)
                                 fc.bias.zero_()
                         else:
                             # Hidden layers: uniform(-sqrt(6 / num_inputs)/ω, sqrt(6 / num_inputs)/ω)
@@ -170,17 +143,9 @@ class MyModel(nn.Module):
                         raise Exception('Activation function {self.activation} not supported for SGD+X')
 
             else:
-                # In place Custom: identity + Gaussian noise
-                #weights_zeros = torch.zeros(self.bits, self.bits)
-                #new_weights = torch.eye(self.bits) + torch.normal(mean=weights_zeros, std=self.std_dev)
-                #bias_zeros = torch.zeros(self.bits)
-                #new_bias = torch.normal(mean=bias_zeros, std=self.std_dev)
-
-                #fc.weight = nn.Parameter(new_weights.clone())
-                #fc.bias = nn.Parameter(new_bias.clone())
-                    fc.weight.copy_(torch.eye(self.bits))
-                    fc.weight.add_(torch.normal(mean=0.0, std=self.std_dev, size=fc.weight.shape))
-                    fc.bias.copy_(torch.normal(mean=0.0, std=self.std_dev, size=fc.bias.shape))
+                fc.weight.copy_(torch.eye(self.bits))
+                fc.weight.add_(torch.normal(mean=0.0, std=self.std_dev, size=fc.weight.shape))
+                fc.bias.copy_(torch.normal(mean=0.0, std=self.std_dev, size=fc.bias.shape))
 
     def _build_layers(self):
         """Create layers fc1..fcN and act1..actN."""
@@ -204,17 +169,3 @@ class MyModel(nn.Module):
         x = self.sample(x)
         x = self.cost(x)
         return(x)
-    
-    #def generate_weights_and_biases(self):
-    #    """generate random weights and biases"""
-    #    weights_zeros = torch.zeros(self.bits, self.bits)
-    #    new_weights = torch.eye(self.bits) + torch.normal(mean=weights_zeros, 
-    #                                       std=self.std_dev)
-    #    bias_zeros = torch.zeros(self.bits)
-    #    new_bias = torch.normal(mean=bias_zeros, std=self.std_dev)
-#
-    #    for i in range(1, self.layers + 1):
-     #       # iterate through the layers and assign weights and biases
-     #       fc = getattr(self, f'fc{i}')
-     #       fc.weight = torch.nn.Parameter(new_weights.clone())
-     #       fc.bias = torch.nn.Parameter(new_bias.clone())  
