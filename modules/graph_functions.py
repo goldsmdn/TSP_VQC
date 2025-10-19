@@ -6,6 +6,7 @@ import torch
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import pandas as pd
+import seaborn as sns
 
 from modules.config import GRAPH_DIR
 

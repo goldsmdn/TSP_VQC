@@ -55,9 +55,9 @@ def find_quality(df, factor=1, round=None):
     return df
 
 def select_key_fields_qml(df):
-    df = df[['locations', 'slice','iteration_found', 'best_dist_found', 'best_dist', 'quality', 'error','mode',]]
+    df = df[['locations', 'slice','iteration_found', 'best_dist_found', 'best_dist', 'quality', 'error','mode','monte_carlo', 'layers', 'elapsed']]
     return df
 
 def select_key_fields_ml(df):
-    df = df[['locations', 'iteration_found', 'best_dist_found', 'best_dist', 'quality', 'error','mode', 'layers', 'elapsed']]
+    df = df[['locations', 'iteration_found', 'best_dist_found', 'best_dist', 'quality', 'error','mode', 'layers', 'elapsed', 'monte_carlo']]
     return df
