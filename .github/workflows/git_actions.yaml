@@ -23,7 +23,7 @@ jobs:
           source .venv/bin/activate
           uv pip install numpy pytest graycode qiskit qiskit_aer torch \
             sphinx sphinx_rtd_theme sphinx-autodoc-typehints matplotlib ghp-import \
-            qiskit_ibm_runtime pandas
+            qiskit_ibm_runtime pandas seaborn
 
       - name: Test with pytest
         run: |
