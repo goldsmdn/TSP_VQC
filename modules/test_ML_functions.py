@@ -16,7 +16,7 @@ from modules.helper_functions_tsp import (load_dict_from_json,
 from modules.config import NETWORK_DIR, DATA_SOURCES
 
 def test_estimate_gradient():
-    """checks gradient estimation against pre-worked example"""
+    """Checks gradient estimation against pre-worked example"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     sdl.locations = 5
@@ -37,7 +37,7 @@ def test_estimate_gradient():
     assert torch.allclose(actual_result, expected_result, atol=1e-4)
 
 def test_estimate_gradient_2():
-    """checks gradient estimation against pre-worked example for 2*5 input"""
+    """Checks gradient estimation against pre-worked example for 2*5 input"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     sdl.locations = 5
@@ -60,7 +60,7 @@ def test_estimate_gradient_2():
     assert torch.allclose(actual_result, expected_result, atol=1e-4)
 
 def test_estimate_gradient_3():
-    """checks gradient estimation against a second pre-worked example for 2*5 input"""
+    """Checks gradient estimation against a second pre-worked example for 2*5 input"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     sdl.locations = 5
