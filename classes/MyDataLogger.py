@@ -255,6 +255,7 @@ class MySubDataLogger(MyDataLogger):
         self.gradient_type = GRADIENT_TYPE
         self.formulation = DECODING_FORMULATION
         self.layers= NUM_LAYERS
+        self.cache_max_size = CACHE_MAX_SIZE
 
     def update_quantum_constants_from_config(self):
         """Update constants needed for quantum from config file"""
@@ -265,7 +266,6 @@ class MySubDataLogger(MyDataLogger):
         self.eta = ETA
         self.gamma = GAMMA
         self.s = S
-        self.cache_max_size = CACHE_MAX_SIZE
         self.noise = SIMULATE_NOISE
 
     def update_ml_constants_from_config(self):
