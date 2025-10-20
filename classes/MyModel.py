@@ -62,7 +62,7 @@ class CostFunction(torch.autograd.Function):
         return ctx.grad, grad_cost_fn
     
 class MySine(nn.Module):
-    """return a sine function symmetric about 0.5"""
+    """Returns a sine function symmetric about 0.5"""
     def __init__(self):
         super(MySine, self).__init__()  # Initialize parent class
         self.register_buffer("pi", torch.tensor(math.pi))
@@ -73,7 +73,7 @@ class MySine(nn.Module):
         return 0.5 * (1 + torch.sin((x - 0.5) * self.pi))
     
 class Sample_Binary(nn.Module):
-    """return probability in forward, linear backwards"""
+    """Return probability in forward, linear backwards"""
     def __init__(self):
         super(Sample_Binary, self).__init__()  # Initialize parent class
 
@@ -83,7 +83,7 @@ class Sample_Binary(nn.Module):
         return x + (output - x).detach()
 
 class BinaryToCost(nn.Module):
-    """convert a bit string to a cost in forwards, estimate gradient backwards"""
+    """Convert a bit string to a cost in forwards, estimate gradient backwards"""
     def __init__(self, cost_fn:Callable[[list], int]):
         super(BinaryToCost, self).__init__() # Intialize parent class
         self.cost_fn = cost_fn
@@ -96,7 +96,7 @@ class BinaryToCost(nn.Module):
 class MyModel(nn.Module):
     """A simple feedforward neural network model for TSP"""
     def __init__(self, sdl, cost_fn:Callable[[list], int]):
-        """initialize the model"""
+        """Initialize the model"""
         super(MyModel, self).__init__()
         self.bits = sdl.qubits
         self.layers = sdl.layers
@@ -159,7 +159,7 @@ class MyModel(nn.Module):
         self.cost = BinaryToCost(self.cost_fn)
 
     def forward(self, x):
-        """define the forward pass"""
+        """Define the forward pass"""
         for i in range(1, self.layers + 1):
             #iterate through the layers and create a forward pass
             fc = getattr(self, f'fc{i}')

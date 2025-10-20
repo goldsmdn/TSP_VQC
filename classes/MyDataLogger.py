@@ -137,7 +137,7 @@ class MySubDataLogger(MyDataLogger):
         print(f'SubDataLogger instantiated.  Run ID = {self.runid} - {self.subid}')
 
     def calculate_parameter_numbers(self) -> int:
-        """calculate the number of parameters in a variational quantum circuit"""
+        """Calculate the number of parameters in a variational quantum circuit"""
 
         if self.mode in [1, 2, 3, 6,]:
             num_params = 2 * self.qubits * self.layers
@@ -280,7 +280,7 @@ class MySubDataLogger(MyDataLogger):
     def update_cache_statistics(self, 
                                 cost_fn: Callable,
                                 ):
-        """update cache statistics"""
+        """Update cache statistics"""
         if hasattr(cost_fn, 'report_cache_stats'):
             items, hits, misses = cost_fn.report_cache_stats()
             self.cache_items = items
@@ -329,7 +329,7 @@ class MySubDataLogger(MyDataLogger):
                 print(f"An error occurred while saving the data to {file_path}: {e}")
 
     def save_plot(self):
-        """plot results"""
+        """Plot results"""
         title = f'Evolution of loss for Run ID {self.runid} - {self.subid}' 
 
         print(f'Graph for Run ID: {self.runid}-{self.subid} being saved to {self.graph_filename}')
