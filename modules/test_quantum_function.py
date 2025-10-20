@@ -131,7 +131,7 @@ def test_gradient_4():
     assert actual_results == py.approx(expected_results, abs=0.1)
 
 def test_simple_circuit():
-    """test a simple circuit with known output"""
+    """Test a simple circuit with known output"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     sdl.quantum = True
@@ -158,7 +158,7 @@ def test_simple_circuit():
     assert actual_result == expected_result
 
 def test_calculate_parameter_numbers_2_1():
-    """test parameter numbers with input 2,1"""
+    """Test parameter numbers with input 2,1"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     sdl.qubits = 4

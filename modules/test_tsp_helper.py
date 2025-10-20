@@ -199,7 +199,7 @@ def test_list_1000_gray():
     assert result == expected_result
 
 def test_check_loc_list_valid1():
-    """Check check location list with a valid solution"""
+    """Test validation of location list with a valid solution"""
     locs = 4
     loc_list = [0,1,2]
     result = check_loc_list(loc_list, locs)
@@ -207,7 +207,7 @@ def test_check_loc_list_valid1():
     assert expected_result == result
 
 def test_check_loc_list_valid2():
-    """Check check location list with a valid solution"""
+    """Test validation of location list with a valid solution"""
     locs = 5
     loc_list = [0,1,2,3,4]
     result = check_loc_list(loc_list, locs)
@@ -215,7 +215,7 @@ def test_check_loc_list_valid2():
     assert  expected_result == result
      
 def test_check_loc_list_invalid1():
-    """Check check location list with an invalid solution"""
+    """Test validation of location list with an invalid solution"""
     locs = 4
     loc_list = [0,1,1]
     result = check_loc_list(loc_list, locs)
@@ -223,7 +223,7 @@ def test_check_loc_list_invalid1():
     assert expected_result == result
 
 def test_check_loc_list_invalid2():
-    """Check check location list with an integer out of range"""
+    """Test validation of location list with an integer out of range"""
     locs = 5
     loc_list = [0, 5, 4, 7, 3]
     result = check_loc_list(loc_list, locs)
@@ -231,7 +231,7 @@ def test_check_loc_list_invalid2():
     assert expected_result == result
 
 def test_check_loc_list_invalid3():
-    """Check check location list with an integer out of range at end"""
+    """Test validation of location list with an integer out of range at end"""
     locs = 5
     loc_list = [0, 5, 4, 3, 7]
     result = check_loc_list(loc_list, locs)
@@ -239,7 +239,7 @@ def test_check_loc_list_invalid3():
     assert expected_result == result
 
 def test_check_loc_list_invalid4():
-    """Check check location list with an integer just out of range at end"""
+    """Test validation of location list with an integer just out of range at end"""
     locs = 5
     loc_list = [0, 1, 4, 3, 5]
     result = check_loc_list(loc_list, locs)
@@ -273,7 +273,7 @@ def test_find_total_distance():
     assert expected_result == result
 
 def test_find_problem_size_4():
-    """check problem size for 4 locations"""
+    """Check problem size for 4 locations"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     sdl.locations = 4
@@ -283,7 +283,7 @@ def test_find_problem_size_4():
     assert expected_result == result
 
 def test_find_problem_size_4_new():
-    """check problem size for 4 locations"""
+    """Check problem size for 4 locations"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     sdl.locations = 4
@@ -293,7 +293,7 @@ def test_find_problem_size_4_new():
     assert expected_result == result
 
 def test_find_problem_size_5_new():
-    """check problem size for 5 locations"""
+    """Check problem size for 5 locations"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     sdl.locations = 5
@@ -303,7 +303,7 @@ def test_find_problem_size_5_new():
     assert expected_result == result
 
 def test_find_problem_size_26():
-    """check problem size for 26 locations"""
+    """Check problem size for 26 locations"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     sdl.locations = 26
@@ -313,7 +313,7 @@ def test_find_problem_size_26():
     assert expected_result == result
 
 def test_convert_bit_string_to_cycle_000():
-    """example for 4 locations"""
+    """Example for 4 locations"""
     locs = 4
     bit_string = [0, 0, 0]
     expected_result = [0, 1, 2, 3]
@@ -321,7 +321,7 @@ def test_convert_bit_string_to_cycle_000():
     assert expected_result == result
 
 def test_convert_bit_string_to_cycle_001():
-    """example for 4 locations"""
+    """Example for 4 locations"""
     locs = 4
     bit_string = [0, 0, 1]
     expected_result = [0, 1, 3, 2]
@@ -329,7 +329,7 @@ def test_convert_bit_string_to_cycle_001():
     assert expected_result == result
 
 def test_convert_bit_string_to_cycle_010():
-    """example for 4 locations"""
+    """Example for 4 locations"""
     locs = 4
     bit_string = [0, 1, 0]
     expected_result = [0, 2, 1, 3]
@@ -337,7 +337,7 @@ def test_convert_bit_string_to_cycle_010():
     assert expected_result == result
 
 def test_convert_bit_string_to_cycle_011():
-    """example for 4 locations"""
+    """Example for 4 locations"""
     locs = 4
     bit_string = [0, 1, 1]
     expected_result = [0, 2, 3, 1]
@@ -345,7 +345,7 @@ def test_convert_bit_string_to_cycle_011():
     assert expected_result == result
 
 def test_convert_bit_string_to_cycle_100():
-    """example for 4 locations"""
+    """Example for 4 locations"""
     locs = 4
     bit_string = [1, 0, 0]
     expected_result = [0, 3, 1, 2]
@@ -353,7 +353,7 @@ def test_convert_bit_string_to_cycle_100():
     assert expected_result == result
 
 def test_convert_bit_string_to_cycle_101():
-    """example for 4 locations"""
+    """Example for 4 locations"""
     locs = 4
     bit_string = [1, 0, 1]
     expected_result = [0, 3, 2, 1]
@@ -361,7 +361,7 @@ def test_convert_bit_string_to_cycle_101():
     assert expected_result == result
 
 def test_convert_bit_string_to_cycle_110():
-    """example for 4 locations"""
+    """Example for 4 locations"""
     locs = 4
     bit_string = [1, 1, 0]
     expected_result = [0, 1, 2, 3]
@@ -369,7 +369,7 @@ def test_convert_bit_string_to_cycle_110():
     assert expected_result == result
 
 def test_convert_bit_string_to_cycle_111():
-    """example for 4 locations"""
+    """Example for 4 locations"""
     locs = 4
     bit_string = [1, 1, 1]
     expected_result = [0, 1, 3, 2]
@@ -377,7 +377,7 @@ def test_convert_bit_string_to_cycle_111():
     assert expected_result == result
 
 def test_convert_bit_string_to_cycle_111_gray():
-    """example for 4 locations"""
+    """Example for 4 locations"""
     locs = 4
     gray = True
     bit_string = [1, 1, 1]
@@ -386,7 +386,7 @@ def test_convert_bit_string_to_cycle_111_gray():
     assert expected_result == result
 
 def test_convert_bit_string_to_cycle_3():
-    """example for 5 locations"""
+    """Example for 5 locations"""
     locs = 5
     bit_string = [1, 1, 1, 1, 1] 
     expected_result = [0, 4, 1, 3, 2]
@@ -394,7 +394,7 @@ def test_convert_bit_string_to_cycle_3():
     assert expected_result == result
 
 def test_convert_bit_string_to_cycle_4():
-    """example for 5 locations"""
+    """Example for 5 locations"""
     locs = 5
     bit_string = [1, 0, 1, 1, 1] 
     expected_result = [0, 3, 1, 4, 2]
@@ -402,7 +402,7 @@ def test_convert_bit_string_to_cycle_4():
     assert expected_result == result
 
 def test_convert_bit_string_to_cycle_15_gray():
-    """example for 15 locations with Gray code"""
+    """Example for 15 locations with Gray code"""
     locs = 15
     gray = True
     expected_result = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
@@ -423,7 +423,7 @@ def test_convert_bit_string_to_cycle_15_gray():
     assert expected_result == result   
 
 def test_convert_bit_string_to_cycle_15():
-    """example for 15 locations without Gray code"""
+    """Example for 15 locations without Gray code"""
     locs = 15
     gray = False
     expected_result = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
@@ -444,7 +444,7 @@ def test_convert_bit_string_to_cycle_15():
     assert expected_result == result 
   
 def test_convert_bit_string_to_cycle_00010__not_gray():
-    """example for 4 locations"""
+    """Example for 4 locations"""
     locs = 4
     gray = False
     bit_string = [0, 0, 0, 1, 0]
@@ -453,7 +453,7 @@ def test_convert_bit_string_to_cycle_00010__not_gray():
     assert expected_result == result
 
 def test_find_average():
-    """test find_stats in average mode"""
+    """Test find_stats in average mode"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
@@ -464,13 +464,12 @@ def test_find_average():
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     cost_fn = cost_fn_fact(sdl, distance_array)
-    #average, _, _ = find_stats(cost_fn, counts, SHOTS, verbose=False)
     average, _, _ = find_stats(cost_fn, counts, SHOTS,)
     expected_result = 21.916
     assert expected_result == average
 
 def test_find_lowest():
-    """test find_stats in lowest mode"""
+    """Test find_stats in lowest mode"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
@@ -486,7 +485,7 @@ def test_find_lowest():
     assert expected_result == lowest
 
 def test_find_average_slice1():
-    """test average slice functionality"""
+    """Test average slice functionality"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 1000}
@@ -507,7 +506,7 @@ def test_find_average_slice1():
     assert expected_result == average
 
 def test_find_average_slice2():
-    """test average slice functionality - ensure no change"""
+    """Test average slice functionality - ensure no change"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 1000}
@@ -526,7 +525,7 @@ def test_find_average_slice2():
     assert expected_result == average
 
 def test_find_average_slice2b():
-    """test average slice functionality - ensure no change"""
+    """Test average slice functionality - ensure no change"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'00000': 1000}
@@ -545,7 +544,7 @@ def test_find_average_slice2b():
     assert expected_result == average
 
 def test_find_average_slice3():
-    """test average slice functionality - ensure no change"""
+    """Test average slice functionality - ensure no change"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 500,
@@ -567,7 +566,7 @@ def test_find_average_slice3():
     assert expected_result == average
 
 def test_find_average_slice4():
-    """test average slice functionality - ensure no change"""
+    """Test average slice functionality - ensure no change"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 500,
@@ -589,7 +588,7 @@ def test_find_average_slice4():
     assert expected_result - average < 0.0001
 
 def test_find_average_slice5():
-    """test average slice functionality - ensure no change  """
+    """Test average slice functionality - ensure no change  """
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 200, #Energy = 21
@@ -612,6 +611,7 @@ def test_find_average_slice5():
     assert expected_result == average
 
 def test_find_average_slice6():
+    """Test finding average slice"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 200, #Energy = 21
@@ -629,13 +629,12 @@ def test_find_average_slice6():
                                  counts, 
                                  SHOTS, 
                                  AVERAGE_SLICE, 
-                                 #verbose=False,
                                  )
     expected_result = 21.2
     assert expected_result == average
 
 def test_find_average_slice7():
-    """test average slice functionality - ensure no change  """
+    """Test average slice functionality - ensure no change  """
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 200, #Energy = 21
@@ -645,24 +644,21 @@ def test_find_average_slice7():
     sdl.locations = 5
     sdl.gray = True
     sdl.formulation = 'original'
-    #LOCATIONS = 5
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    #GRAY = True
     AVERAGE_SLICE = 0.2
     cost_fn = cost_fn_fact(sdl, distance_array)
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
                                  AVERAGE_SLICE, 
-                                 #verbose=False,
                                  )
     expected_result = 19.0
     assert expected_result == average
 
 def test_hot_start_4():
-    """hot start list with four locations"""
+    """Hot start list with four locations"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     sdl.locations = 4
@@ -673,7 +669,7 @@ def test_hot_start_4():
     assert expected_result == actual_result
 
 def test_hot_start_5_list():
-    """hot start list with five locations"""
+    """Hot start list with five locations"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     sdl.locations = 5
@@ -684,7 +680,7 @@ def test_hot_start_5_list():
     assert expected_result == actual_result
 
 def test_hot_start_5_distance():
-    """hot start distance with five locations"""
+    """Hot start distance with five locations"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     sdl.locations = 5
@@ -696,7 +692,7 @@ def test_hot_start_5_distance():
     assert expected_result == actual_result
 
 def test_hot_start_list_to_string_101():
-    """hot start list with four locations in descending order"""
+    """Hot start list with four locations in descending order"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     sdl.locations = 4
@@ -708,7 +704,7 @@ def test_hot_start_list_to_string_101():
     assert expected_result == actual_result
 
 def test_hot_start_list_to_string_101_gray():
-    """hot start list with four locations in descending order with Gray code"""
+    """Hot start list with four locations in descending order with Gray code"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     sdl.locations = 4
@@ -720,7 +716,7 @@ def test_hot_start_list_to_string_101_gray():
     assert expected_result == actual_result
 
 def test_hot_start_list_to_string_15_locs_no_gray():
-    """hot start list with fifteen locations in descending order without Gray code"""
+    """Hot start list with fifteen locations in descending order without Gray code"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     sdl.locations = 15
@@ -742,14 +738,12 @@ def test_hot_start_list_to_string_15_locs_no_gray():
     assert expected_result == actual_result
 
 def test_hot_start_list_to_string_15_locs_gray():
-    """hot start list with fifteen locations in descending order with Gray code"""
+    """Hot start list with fifteen locations in descending order with Gray code"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     sdl.locations = 15
     sdl.formulation ='original'
     sdl.gray = True
-    #LOCATIONS = 15
-    #GRAY = True
     hot_start_list = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
     actual_result = hot_start_list_to_string(sdl, hot_start_list, )
     expected_result = [1, 0, 1, 1, \
@@ -766,7 +760,7 @@ def test_hot_start_list_to_string_15_locs_gray():
     assert expected_result == actual_result
 
 def test_bit_string_list_to_bit_string():
-    """test LRC cache conversion of list to bit string"""
+    """Test LRC cache conversion of list to bit string"""
     bit_string_list = [0, 1, 0, 1, 0, 1]
     expected_result = '010101'
     obj = LRUCacheUnhashable()
@@ -774,7 +768,7 @@ def test_bit_string_list_to_bit_string():
     assert expected_result == actual_result
 
 def test_binary_string_conversion():
-    """test conversion of binary string to integer and back without gray code"""
+    """Test conversion of binary string to integer and back without gray code"""
     length = 5
     gray = False
     expected_result = [i for i in range(2**length)]
@@ -786,7 +780,7 @@ def test_binary_string_conversion():
     assert expected_result == actual_result
 
 def test_binary_string_conversion_gray():
-    """test conversion of binary string to integer and back with gray code"""
+    """Test conversion of binary string to integer and back with gray code"""
     length = 5
     gray = True
     expected_result = [i for i in range(2**length)]
@@ -798,15 +792,13 @@ def test_binary_string_conversion_gray():
     assert expected_result == actual_result
 
 def test_bit_string_cycle_conversion_orig():
-    """test conversion of integers to binary lists without Gray code"""
+    """Test conversion of integers to binary lists without Gray code"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     sdl.locations = 4
     sdl.formulation = 'new'
     sdl.gray = False
     f = math.factorial(sdl.locations)
-    #method = 'new'
-    #gray = False
     dim = find_problem_size(sdl)
     expected_result = []
     actual_result = []
@@ -821,16 +813,13 @@ def test_bit_string_cycle_conversion_orig():
     assert expected_result == actual_result
 
 def test_bit_string_cycle_conversion_orig2():
-    """test conversion of integers to binary lists with Gray code"""
+    """Test conversion of integers to binary lists with Gray code"""
     datalogger = MyDataLogger()
     sdl = MySubDataLogger(runid = datalogger.runid)
     sdl.locations = 4
     sdl.formulation = 'new'
     sdl.gray = True
-    #locs = 4
     f = math.factorial(sdl.locations)
-   # method = 'new'
-    #gray = True
     dim = find_problem_size(sdl)
     expected_result = []
     actual_result = []
@@ -845,14 +834,14 @@ def test_bit_string_cycle_conversion_orig2():
 
 
 def test_lowest_list1():
-    """test run stats with two low items"""
+    """Test run stats with two low items"""
     test_list = [100, 90, 80, 80]
     expected_result = (80, 2)
     actual_result = find_run_stats(test_list)
     assert expected_result == actual_result
 
 def test_lowest_list2():
-    """test run stats with for identical items"""
+    """Test run stats with for identical items"""
     test_list = [100, 100, 100, 100]
     expected_result = (100, 0)
     actual_result = find_run_stats(test_list)

@@ -85,7 +85,7 @@ def read_file_name(locations: int,
         raise Exception(f'File type {file_type} is not coded for')
     return(filename)       
 
-def validate_distance_array(array :np.array, locs: int):
+def validate_distance_array(array :np.ndarray, locs: int):
     """Validates the distance array and raises an Exception if the 
     array is not valid.  Checks the array is the correct shape, and
     is symmetric
@@ -111,7 +111,7 @@ def validate_distance_array(array :np.array, locs: int):
 
 def find_distance(loc1: int, 
                   loc2: int, 
-                  distance_array: np.array,
+                  distance_array: np.ndarray,
                   verbose: bool=False,
                   ) -> float:
     """Finds the distance between locations using the distance matrix
@@ -122,7 +122,7 @@ def find_distance(loc1: int,
         First location
     loc2 : int
         Second location
-    distance_array : np.array
+    distance_array : np.ndarray
         An array containing the distances between locations
     verbose : bool
         If True then more information is printed
@@ -130,7 +130,7 @@ def find_distance(loc1: int,
     Returns
     ----------
     distance : Float
-        The distance between two postal codes
+        The distance between two locations
     """
     
     distance = distance_array[loc1][loc2]
@@ -145,14 +145,13 @@ def find_bin_length(i: int) -> int:
     bin_len = math.ceil((math.log2(i)))
     return(bin_len) 
 
-#def find_problem_size(locations:int, method='original') -> tuple:
 def find_problem_size(sdl) -> int:
     """Finds the number of binary variables needed
     
     Parameters
     ----------
-    sdl: subdate logger containing fields
-        sdl.locations : int
+    sdl: sub data logger containing fields
+        sdl.locations : int 
             Number of locations
         sdl.formulation:
             'original' => method from Goldsmith D, Day-Evans J.
@@ -182,6 +181,8 @@ def convert_binary_list_to_integer(binary_list: list, gray:bool=False)->int:
     ----------
     binary_list : list
         List of binary numbers
+    gray : bool
+        Determines whether gray code is used.
 
     Returns
     ----------
@@ -221,7 +222,7 @@ def convert_integer_to_binary_list(integer: int, length: int, gray:bool=False)->
     return(result)
 
 def check_loc_list(loc_list:list, locs:int) -> bool:
-    """checks that the location list is a valid cycle with no repetition of nodes.
+    """Checks that the location list is a valid cycle with no repetition of nodes.
     
     Parameters
     ----------
@@ -248,7 +249,7 @@ def check_loc_list(loc_list:list, locs:int) -> bool:
     return(valid)
     
 def augment_loc_list(loc_list:list, locs:int)-> list:
-    """completes the cycle by adding the missing location to the end of the cycle.
+    """Completes the cycle by adding the missing location to the end of the cycle.
     
     Parameters
     ----------
@@ -273,9 +274,9 @@ def augment_loc_list(loc_list:list, locs:int)-> list:
 
 def find_total_distance(int_list: list, 
                         locs: int, 
-                        distance_array :np.array
+                        distance_array :np.ndarray
                         )-> float:
-    """finds the total distance for a valid formatted bit string representing a cycle.
+    """Finds the total distance for a valid formatted bit string representing a cycle.
     
     Parameters
     ----------
@@ -307,8 +308,8 @@ def find_total_distance(int_list: list,
         total_distance += distance
     return total_distance
 
-def cost_fn_fact(sdl, distance_array: np.array, ) -> Callable[[list], int]:
-    """ returns a function
+def cost_fn_fact(sdl, distance_array: np.ndarray, ) -> Callable[[list], int]:
+    """ Returns a cost function inside a decorator,
 
     Parameters
     ----------
@@ -331,7 +332,7 @@ def cost_fn_fact(sdl, distance_array: np.array, ) -> Callable[[list], int]:
     """
     @LRUCacheUnhashable
     def cost_fn(bit_string_input: list) -> float:
-        """returns the value of the objective function for a bit_string"""
+        """Returns the value of the objective function for a bit_string"""
         if isinstance(bit_string_input, list):
             bit_string = bit_string_input
             full_list_of_locs = convert_bit_string_to_cycle(bit_string, 
@@ -356,7 +357,7 @@ def cost_fn_fact(sdl, distance_array: np.array, ) -> Callable[[list], int]:
 def cost_fn_tensor(input: torch.tensor, 
                    cost_fn: Callable)-> torch.Tensor:
 
-    """ find the distance for each bit string input using cost_fn
+    """ Find the distance for each bit string input using cost_fn
 
     Parameters
     ----------
@@ -390,7 +391,7 @@ def convert_bit_string_to_cycle(bit_string: list,
                                 locs: int, 
                                 gray: bool=False, 
                                 method: str='original') -> list:
-    """converts a bit string to a cycle.
+    """Converts a bit string to a cycle.
     
     Parameters
     ----------
@@ -457,8 +458,8 @@ def find_stats(cost_fn: Callable,
                counts: dict, 
                shots: int, 
                average_slice: float=1, 
-               )-> tuple:
-    """finds the average energy of the relevant counts, and the lowest energy
+               )-> tuple[float, float, list[int]]:
+    """Finds the average energy of the relevant counts, and the lowest energy
     
     Parameters
     ----------
@@ -534,9 +535,8 @@ def find_stats(cost_fn: Callable,
 
     return(average_energy, lowest_energy, lowest_energy_bit_string)
 
-#def hot_start(distance_array: np.array, locs: int) -> list:
-def hot_start(sdl, distance_array: np.array) -> list:
-    """finds a route from a distance array where the distance to the next point is the shortest available
+def hot_start(sdl, distance_array: np.ndarray) -> list:
+    """Finds a route from a distance array where the distance to the next point is the shortest available
     
     Parameters
     ----------
@@ -572,7 +572,7 @@ def hot_start(sdl, distance_array: np.array) -> list:
     return(end_cycle_list)
 
 def binary_string_format(binary_string: str, bin_len: str) -> str:
-    """format a binary string to remove the 0b prefix
+    """Format a binary string to remove the 0b prefix
     
     Parameters
     ----------
@@ -592,7 +592,7 @@ def binary_string_format(binary_string: str, bin_len: str) -> str:
     return(formatted_string)    
     
 def hot_start_list_to_string(sdl, hot_start_list: list) -> list:
-    """invert the hot start integer list into a string
+    """Invert the hot start integer list into a string
     
     Parameters:
     -----------
@@ -663,19 +663,19 @@ def hot_start_list_to_string(sdl, hot_start_list: list) -> list:
         raise Exception(f'Unknown method {sdl.formulation}')
 
 def validate_gradient_type(gradient_type):
-    """check that the gradient type is valid"""
+    """Check that the gradient type is valid"""
     allowed_types = ['parameter_shift', 'SPSA']
     if gradient_type not in allowed_types:
         raise Exception (f'Gradient type {gradient_type} is not coded for')
 
 def update_parameters_using_gradient(sdl,
                                      params: list,
-                                     rots: np.array,
+                                     rots: np.ndarray,
                                      cost_fn: Callable,
                                      qc: QuantumCircuit,
                                      print_results: str=False,
                                      ):
-    """updates parameters using SPSA or parameter shift gradients"""
+    """Updates parameters using SPSA or parameter shift gradients"""
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
     parameter_list, average_list = [], []
 
@@ -774,9 +774,9 @@ def cost_func_evaluate(sdl,
                        cost_fn: Callable,
                        model,
                        average_slice: float=1,
-                       ) -> tuple:             
+                       ) -> tuple[float, float, list[int]]:             
                        
-    """evaluate cost function on a quantum computer
+    """Evaluate cost function on a quantum computer
     
     Parameters
     ----------
@@ -828,27 +828,15 @@ def cost_func_evaluate(sdl,
     cost, lowest, lowest_energy_bit_string = find_stats(cost_fn, counts, sdl.shots, average_slice, )
     return(cost, lowest, lowest_energy_bit_string)
 
-#def my_gradient(cost_fn, 
-#                noise,
-#                qc:QuantumCircuit, 
-#                params:list, 
-#                rots:np.array, 
-#                s:float=0.5, 
-#                shots:int=1024, 
-#                average_slice:float=1, 
-#                verbose:bool=False,
-#                gradient_type:str='parameter_shift',
-#                ck:float=1e-2, 
-#                ) -> list:
 def my_gradient(sdl,
                 cost_fn, 
                 qc:QuantumCircuit, 
                 params:list, 
-                rots:np.array, 
+                rots:np.ndarray, 
                 average_slice:float, 
                 ck:float=1e-2,
-                ) -> np.array:
-    """calculate gradient for a quantum circuit with parameters and rotations
+                ) -> np.ndarray:
+    """Calculate gradient for a quantum circuit with parameters and rotations
     
     Parameters
     ----------
@@ -937,17 +925,14 @@ def my_gradient(sdl,
     return gradient_array   
     
 def define_parameters(sdl) -> list:
-    """set up parameters and initialise text
+    """Set up parameters and initialise text
     
     Parameters
     ----------
-
     sdl: MySubDataLogger
-        A sub data logger holding the parameters for the run with key fields:
-        sdl.qubits: int
-            The number of qubits in the circuit
-        sdl.mode: int
-            Controls setting the circuit up in different modes
+        A sub data logger holding the parameters for the run with key fields: 
+        sdl.qubits: int - The number of qubits in the circuit
+        sdl.mode: int - Controls setting the circuit up in different modes
 
     Returns
     -------
@@ -965,19 +950,15 @@ def define_parameters(sdl) -> list:
         raise Exception(f'Mode {sdl.mode} has not been coded for')
     
 def vqc_circuit(sdl, params: list) -> QuantumCircuit:
-    """set up a variational quantum circuit
+    """Set up a variational quantum circuit
 
     Parameters
     ----------
-
     sdl: MySubDataLogger
         A sub data logger holding the parameters for the run with key fields:
-        sdl.qubits: int
-            The number of qubits in the circuit
-        sdl.mode: int
-            Controls setting the circuit up in different modes
-        sdl.noise: bool
-            Controls if noise is included in the circuit
+        sdl.qubits: int - The number of qubits in the circuit
+        sdl.mode: int - Controls setting the circuit up in different modes
+        sdl.noise: bool- Controls if noise is included in the circuit
     params: list
         A list of parameters (the texts)
 
@@ -985,7 +966,6 @@ def vqc_circuit(sdl, params: list) -> QuantumCircuit:
     -------
     qc: Quantum Circuit
         A quantum circuit without bound weights
-    
     """
     
     qc = QuantumCircuit(sdl.qubits)
@@ -1051,17 +1031,20 @@ def vqc_circuit(sdl, params: list) -> QuantumCircuit:
         qc= transpile(qc, backend)
     return qc
 
-def create_initial_rotations(sdl, bin_hot_start_list: list=False,): 
-    """initialise parameters with random weights
+def create_initial_rotations(sdl, bin_hot_start_list: list=False,)-> np.ndarray: 
+    """Initialise parameters with random weights
 
     Parameters
     ----------
-    qubits: int
-        The number of qubits in the circuit
-    mode: int
-        Controls setting the circuit up in different modes
-    hot_start: bool
-        If true hot start values are used
+    sdl : Subdata logger with fields:
+        sdl.qubits : int
+            The number of qubits in the circuit
+        sdl.mode : int
+            Controls setting the circuit up in different modes
+        sdl.hot_start : bool
+            If true hot start values are used
+    bin_hot_start_list : list
+        Binary list containing the hot start values
 
     Returns
     -------
@@ -1077,7 +1060,6 @@ def create_initial_rotations(sdl, bin_hot_start_list: list=False,):
     else:
         raise Exception(f'Mode {sdl.mode} is not yet coded')
     if sdl.hot_start:
-        #if mode in [1]:
         if sdl.layers in [1]:
             raise Exception('Cannot use a hot start for mode {mode}')
         init_rots = [0 for i in range(param_num)]
@@ -1092,7 +1074,7 @@ def create_initial_rotations(sdl, bin_hot_start_list: list=False,):
 from typing import Callable
 
 def bind_weights(params:list, rots:list, qc:QuantumCircuit) -> QuantumCircuit:
-    """bind parameters to rotations and return a bound quantum circuit
+    """Bind parameters to rotations and return a bound quantum circuit
 
     Parameters
     ----------
@@ -1115,13 +1097,11 @@ def bind_weights(params:list, rots:list, qc:QuantumCircuit) -> QuantumCircuit:
     bc = qc.assign_parameters(binding_dict)
     return(bc)
 
-def find_run_stats(lowest_list:list)-> tuple:
-    """finds the lowest energy and the iteration at which it was found
+def find_run_stats(lowest_list:list)-> tuple[float, int]:
+    """Finds the lowest energy and the iteration at which it was found
     
     Parameters
     ----------
-    index_list: list
-        A list of integers showing the iteration number
     lowest_list: list
         A list of floats showing the lowest energy found at that iteration
 
@@ -1142,8 +1122,9 @@ def find_run_stats(lowest_list:list)-> tuple:
             iteration = i
     return lowest_energy, iteration
 
-def find_distances_array(locations:int, print_comments:bool=False)-> tuple:
-    """finds the array of distances between locations and the best distance"""
+def find_distances_array(locations:int, 
+                         print_comments:bool=False)-> tuple[np.ndarray, float]:
+    """Finds the array of distances between locations and the best distance"""
     sources_filename = Path(NETWORK_DIR).joinpath(DATA_SOURCES)
     data_source_dict = load_dict_from_json(sources_filename)
     filename = read_file_name(str(locations), data_source_dict)
@@ -1157,7 +1138,7 @@ def find_distances_array(locations:int, print_comments:bool=False)-> tuple:
     return distance_array, best_dist
 
 def format_boolean(string_input: str)->bool:
-    """convert a string to a boolean value"""
+    """Convert a string to a boolean value"""
     if string_input == 'TRUE':
         output = True
     elif string_input == 'FALSE':
@@ -1167,7 +1148,7 @@ def format_boolean(string_input: str)->bool:
     return output 
 
 def detect_quantum_GPU_support()-> bool:
-    """detect if a GPU is available for quantum simulations"""
+    """Detect if a GPU is available for quantum simulations"""
     devices = AerSimulator().available_devices()
     if 'GPU' in devices:
         return True
@@ -1175,11 +1156,11 @@ def detect_quantum_GPU_support()-> bool:
         return False
     
 def calculate_hot_start_data(sdl, 
-                             distance_array: np.array, 
+                             distance_array: np.ndarray, 
                              cost_fn: Callable,
                              print_results:bool=False,
-                             )-> tuple:
-    """calculate hot start data from a distance array
+                             )-> tuple[list, float]:
+    """Calculate hot start data from a distance array
     
     Parameters
     ----------
@@ -1187,6 +1168,8 @@ def calculate_hot_start_data(sdl,
         Containing key parameters
     distance_array: array
         Numpy symmetric array with distances between locations
+    cost_fn : function  
+        A function that returns a distance from a binary string
     print_results: bool
         If true prints out the hot start data
 
@@ -1206,4 +1189,3 @@ def calculate_hot_start_data(sdl,
         print(f'This is equivalent to a binary list: {bin_hot_start_list}')
         print(f'The hot start distance is {hot_start_distance}, compared to a best distance of {sdl.best_dist}.')
     return bin_hot_start_list, hot_start_distance
-

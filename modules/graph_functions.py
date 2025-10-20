@@ -6,6 +6,7 @@ import torch
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import pandas as pd
+import seaborn as sns
 
 from modules.config import GRAPH_DIR
 
@@ -19,7 +20,7 @@ def parameter_graph(filename: str,
                     gradient_list: list, 
                     legend:list,
                     ):
-    """plots a graph of the parameter evolution"""
+    """Plots a graph of the parameter evolution by iteration."""
     p = plt.plot(index_list, gradient_list)
     plt.grid(axis='x')
     plt.legend(p, legend)
@@ -31,7 +32,7 @@ def parameter_graph(filename: str,
     plt.show()
 
 def find_size(cost_list: list)-> tuple:
-    """find the number of subplots"""
+    """Find the number of subplots"""
     if cost_list:
         length = len(cost_list)
     else:
@@ -40,7 +41,6 @@ def find_size(cost_list: list)-> tuple:
         rows = 1    
         columns = 1
     elif length % 2 != 0:
-        #raise Exception(f'For this plot the number of lists must be even, but the number of lists - {length} is odd')
         rows = length
         columns = 1
     else:
@@ -48,22 +48,22 @@ def find_size(cost_list: list)-> tuple:
         columns = 2
     return(length, rows, columns)
 
-def find_graph_statistics(av_list:np.array, 
+def find_graph_statistics(av_list:np.ndarray, 
                           best:float)-> tuple:
-    """helper function for graph plotting"""
+    """Helper function for graph plotting to find good values for ymin and ymax"""
     maximum = float(np.max(av_list))
     ymin, ymax = int(best*.9), int(maximum*1.1) 
     return(ymin, ymax)
 
-def find_best_coords(x_list:np.array, 
+def find_best_coords(x_list:np.ndarray, 
                      best:float)->tuple:
-    """helper function for graph plotting"""
+    """Helper function for graph plotting to find coordinates for best known value line"""
     x1 =  [0, x_list[-1]]
     y1 =  [best, best]
     return(x1, y1)
 
 def find_i_j(count:int, rows:int)->tuple:
-    """find indices for subplots"""        
+    """Find indices for subplots"""        
     if count < rows:
         i, j = count, 0
     else:
@@ -82,7 +82,7 @@ def cost_graph_multi(filename: str,
                      x_label: str='Epoch',
                      figsize: tuple=(8,8),
                      ):
-    """plots a graph of the cost function for multiple lists"""
+    """Plots a graph of the cost function for multiple lists"""
     plt.style.use('seaborn-v0_8-colorblind')
     length, rows, columns = find_size(parameter_list)
     fig, axs = plt.subplots(rows, columns, figsize=figsize, squeeze=False)
@@ -114,6 +114,7 @@ def plot_shortest_routes(points: list,
                          route1:list, 
                          route2:list = None
                          ):
+    """Plot the shortest route found and optionally a hot start route."""
     x = points[:, 0]
     y = points[:, 1]
     plt.scatter(x, y, marker='o')
@@ -153,6 +154,7 @@ def plot_shortest_routes(points: list,
     plt.show()
 
 def plot_sine_activation():    
+    """Plot the Sine Activation Function for the classical ML model."""
     title = 'Sine_Activation_Function'
     filepath = Path(GRAPH_DIR).joinpath(title + '.png')
     # create custom dataset
@@ -168,8 +170,21 @@ def plot_sine_activation():
     plt.savefig(filepath)
     plt.show()
 
-def plot_3d_graph_models(grouped_means, input, input2 = 'layers'):
-    """plot a 3D bar graph of the given input data grouped by layers and locations""" 
+def plot_3d_graph_models(grouped_means: pd.DataFrame, 
+                         input: str,
+                         input2: str = 'layers'
+                         ):
+    """Plot a 3D bar graph of the given input data grouped by layers and locations
+
+    Parameters
+    ---------- 
+    grouped_means : pd.DataFrame
+        DataFrame containing the grouped means data.
+    input : str
+        The column name for the z-axis values.
+    input2 : str, optional
+        The column name for the y-axis values (default is 'layers').
+    """ 
     fig = plt.figure(figsize=(10, 7))
     ax = fig.add_subplot(111, projection='3d')
 
@@ -218,8 +233,22 @@ def plot_3d_graph_models(grouped_means, input, input2 = 'layers'):
     plt.savefig(filepath)
     plt.show()
 
-def plot_3d_graph_slice(grouped_means, input, show_sem=False):
-    """plot a 3D bar graph of the given input data grouped by locations and slice."""   
+def plot_3d_graph_slice(grouped_means: pd.DataFrame, 
+                        input: str, 
+                        show_sem:bool=False
+                        ):
+    """Plot a 3D bar graph of the given input data grouped by locations and slice.
+
+    Parameters
+    ---------- 
+    grouped_means : pd.DataFrame
+        DataFrame containing the grouped means data.
+    input : str
+        The column name for the z-axis values.
+    show_sem : bool, optional
+        Whether to show standard error of the mean (SEM) as error bars (default is False
+    """   
+
     fig = plt.figure(figsize=(10, 7))
     ax = fig.add_subplot(111, projection='3d')
 

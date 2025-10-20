@@ -20,12 +20,12 @@ LOCATIONS = 4                       # number of locations to be visited
                                     #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
                                     # For example, 0.2 means that the best 20% 
                                     # of distances found is included in the average.
-SHOTS = 1_024                       # shots used for each call of the quantum circuit
+SHOTS = 1_024                        # shots used for each call of the quantum circuit
 
 ITERATIONS =  50                    # updates, or iterations
 PRINT_FREQUENCY = 10                # how often results are printed out
 GRAY = False                        # Use Gray codes
-HOT_START = True                    # Make a hot start
+HOT_START = False                   # Make a hot start
 GRADIENT_TYPE = 'SGD'               # controls the optimiser used
                                     # quantum - 'parameter_shift' - default
                                     # quantum - 'SPSA' is a stochastic gradient descent

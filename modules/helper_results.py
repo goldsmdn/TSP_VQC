@@ -7,13 +7,13 @@ from modules.config import (RESULTS_DIR,
 from pathlib import Path
 
 def read_data():
-    """read data from csv file into pandas dataframe"""
+    """Read data from csv file into pandas dataframe"""
     results_path = Path(RESULTS_DIR).joinpath(RESULTS_FILE)
     df = pd.read_csv(results_path)
     return df
 
 def filter_results_general(df):
-    """based on standard parameters"""    
+    """Filter the results table based on standard parameters"""    
     df = df[(df['formulation'] == 'original')]
     df = df[(df['hot_start'] == False)]
     df = df[(df['gray'] == False)]
@@ -22,7 +22,7 @@ def filter_results_general(df):
     return df
 
 def filter_results_qml(df):
-    """based on standard parameters"""    
+    """Filter the results table for the VQA model based on standard parameters"""    
     df = df[(df['quantum'] == True)]
     df = filter_results_general(df)
     df = df[(df['gradient_type'] == 'SPSA')]
@@ -36,7 +36,7 @@ def filter_results_qml(df):
     return df
 
 def filter_results_ml(df):
-    """based on standard parameters"""    
+    """Filter the results tables for the ML model based on standard parameters"""    
     df = df[(df['quantum'] == False)]
     df = filter_results_general(df)
     df = df[(df['shots'] == 64)]
@@ -47,6 +47,7 @@ def filter_results_ml(df):
     return df
 
 def find_quality(df, factor=1, round=None):
+    """Find the quantum and error metrics"""
     df['quality'] =  factor* df['best_dist'] / df['best_dist_found'] 
     df['error'] = 1 * factor - df['quality']
     if round:
@@ -55,9 +56,11 @@ def find_quality(df, factor=1, round=None):
     return df
 
 def select_key_fields_qml(df):
-    df = df[['locations', 'slice','iteration_found', 'best_dist_found', 'best_dist', 'quality', 'error','mode',]]
+    """Restrict data set to key fields for VQA model"""
+    df = df[['locations', 'slice','iteration_found', 'best_dist_found', 'best_dist', 'quality', 'error','mode','monte_carlo', 'layers', 'elapsed']]
     return df
 
 def select_key_fields_ml(df):
-    df = df[['locations', 'iteration_found', 'best_dist_found', 'best_dist', 'quality', 'error','mode', 'layers', 'elapsed']]
+    """Restrict data set to key fields for ML model"""
+    df = df[['locations', 'iteration_found', 'best_dist_found', 'best_dist', 'quality', 'error','mode', 'layers', 'elapsed', 'monte_carlo']]
     return df

@@ -24,7 +24,7 @@ class LRUCacheUnhashable:
     def __call__(self, 
                  bit_string_list: list[int],
                  ) -> float:
-        """call wrapper and return result"""
+        """Call wrapper and return result"""
         key = self.list_to_bit_string(bit_string_list)
         if key in self.cache:
             self.cache_hits += 1
@@ -48,7 +48,7 @@ class LRUCacheUnhashable:
 
     @staticmethod
     def list_to_bit_string(bit_string_input: list[int]) -> str:
-        """convert list in format [0,1] to bit string eg '01'"""
+        """Convert list in format [0,1] to bit string eg '01'"""
         if isinstance(bit_string_input, list):
             bit_string_list = bit_string_input
         else:
@@ -56,11 +56,11 @@ class LRUCacheUnhashable:
         return ''.join(map(str, bit_string_list))
 
     def print_cache(self):
-        """print cache"""
+        """Print cache"""
         print(f'cache = {self.cache}')
 
     def print_cache_stats(self):
-        """print cache stats"""
+        """Print cache stats"""
         print(f'Items in cache = {len(self.cache)}')
         print(f'cache_hit = {self.cache_hits}')
         print(f'cache_miss = {self.cache_misses}')
@@ -71,13 +71,13 @@ class LRUCacheUnhashable:
             print(f'cache_hit_rate = {self.cache_hit_rate:.3f}')
 
     def report_cache_stats(self):
-        """reports cache stats"""
+        """Reports cache stats"""
         items = len(self.cache)
         hits = self.cache_hits
         misses = self.cache_misses
         return items, hits, misses
 
     def clear_cache(self):
-        """clear cache"""
+        """Clear cache"""
         self.cache = OrderedDict()
         self.cache_hits, self.cache_misses = 0, 0

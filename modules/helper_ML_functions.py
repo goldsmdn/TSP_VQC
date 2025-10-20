@@ -3,15 +3,13 @@
 import torch.nn as nn
 import torch
 
-from modules.helper_functions_tsp import cost_fn_tensor
-
 def find_device() -> torch.device:
-    """find out if we are using a GPU or CPU"""
+    """Find out if we are using a GPU or CPU"""
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     return(device)
 
 def evaluate_model(model:nn.Module, shots:int)-> dict:
-    """store the bits strings from the model in a dictionary"""
+    """Store the bits strings from the model in a dictionary"""
     bits = model.find_bits()
     device = find_device()
     input = torch.zeros(shots, bits).to(device)
@@ -27,12 +25,6 @@ def evaluate_model(model:nn.Module, shots:int)-> dict:
             counts[string] = 1
     return(counts)
 
-"""def get_ready_to_train(model:nn.Module,
-                       optimizer:str, 
-                       lr:float, 
-                       weight_decay:float,
-                       **kwargs,
-                       )-> tuple:"""
 def get_ready_to_train(sdl,
                        model:nn.Module,
                        )-> tuple:   
@@ -104,7 +96,7 @@ def train_model(num_epochs: int,
 def set_up_input_no_hot_start(sdl,
                               device: torch.device,
                               )-> torch.Tensor:    
-    """if ML and no Hot Start set the initial input to zero OR 0.5, depending on the mode"""
+    """If ML and no Hot Start set the initial input to zero OR 0.5, depending on the mode"""
     if sdl.mode in [8, 18]:
         #input is all zeros
         unrepeated_input = torch.full((1,sdl.qubits), 0).float().to(device)
@@ -119,7 +111,7 @@ def set_up_input_hot_start(sdl,
                            bin_hot_start_list:list,
                            print_results:bool=False,
                           )-> torch.Tensor:    
-    """if ML and Hot Start set the initial input to the hot start data"""
+    """If ML and Hot Start set the initial input to the hot start data"""
     bin_hot_start_list_tensor = torch.tensor([bin_hot_start_list])
     unrepeated_input = bin_hot_start_list_tensor.float().to(device)
     my_input = unrepeated_input.repeat(sdl.shots, 1).requires_grad_(True)
@@ -127,5 +119,3 @@ def set_up_input_hot_start(sdl,
         print(f'bin_hot_start_list_tensor = {bin_hot_start_list_tensor}')
         print(f'The hot start distance is {sdl.hot_start_dist:.2f}, compared to a best distance of {sdl.best_dist:.2f}.')
     return(unrepeated_input, my_input)
-
-
