@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from modules.config import GRAPH_DIR
+from modules.config import GRAPH_DIR, PLOT_TITLE
 
 SPACE = ' '
 CMAP = 'Set3'
@@ -156,7 +156,6 @@ def plot_shortest_routes(points: list,
 def plot_sine_activation():    
     """Plot the Sine Activation Function for the classical ML model."""
     title = 'Sine_Activation_Function'
-    #filepath = Path(GRAPH_DIR).joinpath(title + '.png')
     filepath = Path(GRAPH_DIR).joinpath(title + '.pdf')
     # create custom dataset
     x = torch.linspace(0, 1, 100)
@@ -172,7 +171,6 @@ def plot_sine_activation():
     plt.tight_layout()
     plt.savefig(filepath, bbox_inches='tight')
 
-    #plt.savefig(filepath)
     plt.show()
 
 def plot_3d_graph_models(grouped_means: pd.DataFrame, 
@@ -233,9 +231,12 @@ def plot_3d_graph_models(grouped_means: pd.DataFrame,
     plt.grid(color = 'green', linestyle = '--', linewidth = 0.5)
     formatted_input = input.replace('_', SPACE).lower()
     title = f'3D bar graph of {formatted_input} by {input2} and locations'
-    plt.title(title)
-    filepath = Path(GRAPH_DIR).joinpath(title)
-    plt.savefig(filepath)
+    if PLOT_TITLE:
+        plt.title(title)
+    filepath = Path(GRAPH_DIR).joinpath(f'{title}.pdf')
+
+    plt.tight_layout()
+    plt.savefig(filepath, bbox_inches='tight')
     plt.show()
 
 def plot_3d_graph_slice(grouped_means: pd.DataFrame, 
@@ -325,9 +326,12 @@ def plot_3d_graph_slice(grouped_means: pd.DataFrame,
 
     formatted_input = input.replace('_', SPACE).lower()
     title = f'3D bar graph of {formatted_input} by location and slice'
-    plt.title(title)
-    filepath = Path(GRAPH_DIR).joinpath(title)
-    plt.savefig(filepath)
+    if PLOT_TITLE:
+        plt.title(title)
+    filepath = Path(GRAPH_DIR).joinpath(f'{title}.pdf')
+
+    plt.savefig(filepath, bbox_inches='tight')
+
     plt.show()
 
 def plot_heatmap(input: pd.DataFrame,
