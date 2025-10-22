@@ -156,7 +156,8 @@ def plot_shortest_routes(points: list,
 def plot_sine_activation():    
     """Plot the Sine Activation Function for the classical ML model."""
     title = 'Sine_Activation_Function'
-    filepath = Path(GRAPH_DIR).joinpath(title + '.png')
+    #filepath = Path(GRAPH_DIR).joinpath(title + '.png')
+    filepath = Path(GRAPH_DIR).joinpath(title + '.pdf')
     # create custom dataset
     x = torch.linspace(0, 1, 100)
     k = MySine()
@@ -167,7 +168,11 @@ def plot_sine_activation():
     plt.title(title)
     plt.xlabel('x')
     plt.ylabel('y')
-    plt.savefig(filepath)
+
+    plt.tight_layout()
+    plt.savefig(filepath, bbox_inches='tight')
+
+    #plt.savefig(filepath)
     plt.show()
 
 def plot_3d_graph_models(grouped_means: pd.DataFrame, 
