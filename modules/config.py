@@ -12,6 +12,7 @@ ENCODING = 'utf-8-sig'              # Encoding of csv file
 #General control parameters - verbosity, cache size, etc.
 VERBOSE = False                     # controls how much is printed
 CACHE_MAX_SIZE = 50_000_000         # maximum size of the cache.
+PLOT_TITLE = False                  # Plot titles with graphs.  Not needed for publication.
 
 # configuration information used in ALL manual runs
 
