@@ -162,6 +162,4 @@ cython_debug/
 #.idea/
 
 #local graph and results files
-results/
-graphs/
 never_push/
