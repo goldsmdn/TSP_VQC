@@ -12,6 +12,7 @@ ENCODING = 'utf-8-sig'              # Encoding of csv file
 #General control parameters - verbosity, cache size, etc.
 VERBOSE = False                     # controls how much is printed
 CACHE_MAX_SIZE = 50_000_000         # maximum size of the cache.
+PLOT_TITLE = False                  # Plot titles with graphs.  Not needed for publication.
 
 # configuration information used in ALL manual runs
 
@@ -20,10 +21,10 @@ LOCATIONS = 4                       # number of locations to be visited
                                     #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
                                     # For example, 0.2 means that the best 20% 
                                     # of distances found is included in the average.
-SHOTS = 1_024                        # shots used for each call of the quantum circuit
+SHOTS = 1_024                       # shots used for each call of the quantum circuit
 
-ITERATIONS =  50                    # updates, or iterations
-PRINT_FREQUENCY = 10                # how often results are printed out
+ITERATIONS =  10                    # updates, or iterations
+PRINT_FREQUENCY = 15                # how often results are printed out
 GRAY = False                        # Use Gray codes
 HOT_START = False                   # Make a hot start
 GRADIENT_TYPE = 'SGD'               # controls the optimiser used
