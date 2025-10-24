@@ -1,7 +1,3 @@
-﻿quantum,locations,slice,shots,mode,iterations,gray,hot_start,gradient_type,formulation,layers,std_dev,lr,weight_decay,momentum,alpha,big_a,c,eta,gamma,s,noise
-FALSE,4,1,1024,8,10,FALSE,TRUE,SGD,original,4,0.05,0.00005,0.0006,0.8,,,,,,,
-FALSE,4,1,1024,8,10,FALSE,FALSE,SGD,original,4,0.05,0.00005,0.0006,0.8,,,,,,,
-FALSE,4,1,1024,8,10,FALSE,TRUE,SGD,new,4,0.05,0,0.0006,0.8,,,,,,,
-FALSE,4,1,1024,8,10,FALSE,FALSE,SGD,new,4,0.05,0,0.0006,0.8,,,,,,,
-TRUE,4,1,1024,2,50,TRUE,TRUE,SPSA,new,2,,,,,0.602,50,0.314,0.01,0.101,0.5,FALSE
-TRUE,4,1,1024,2,50,FALSE,FALSE,SPSA,new,2,,,,,0.602,50,0.314,0.01,0.101,0.5,TRUE
+version https://git-lfs.github.com/spec/v1
+oid sha256:fc1cf2c7a4010697efd03731b544577423506a4df3cd0a50bdd949688c318093
+size 618
