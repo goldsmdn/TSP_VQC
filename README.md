@@ -1,5 +1,5 @@
 # TSP_VQC
-This note book provides the code to solve the Travelling Salesman problem (TSP) with a Variational Quantum Circuit, and a quantum inspired classical machine learning model.  The work is described in more detail in an ['article'](https://www.overleaf.com/project/67fd29849d97c8adf9efcd7b)  
+This note book provides the code to solve the Travelling Salesman problem (TSP) with a Variational Quantum Circuit, and a quantum inspired classical machine learning model.  The work is described in more detail in an [article](https://www.overleaf.com/project/67fd29849d97c8adf9efcd7b)  
 
 ## Getting started 
 
@@ -11,7 +11,7 @@ git clone https://github.com/goldsmdn/TSP_VQC
 ``` 
 ### Install uv
 
-Please see the ['installation instructions'](https://docs.astral.sh/uv/getting-started/installation/)
+Please see the [installation instructions](https://docs.astral.sh/uv/getting-started/installation/)
 
 ### Set up dependencies using uv
 Use the following command run from the TSP_VQC directory
@@ -25,7 +25,7 @@ uv pip install ipykernel notebook
 ```
 
 ## Running the notebooks
-To run one of the notebooks, for example `manual_runs_ML.ipynb` by entering
+To run one of the notebooks, for example `manual_runs_ML.ipynb` enter
 
 ```
 jupyter notebook manual_runs_ML.ipynb
