@@ -21,7 +21,7 @@ source .venv/Scripts/activate
 uv pip install numpy pytest graycode qiskit qiskit_aer torch
 uv pip install sphinx sphinx_rtd_theme sphinx-autodoc-typehints matplotlib
 uv pip install qiskit_ibm_runtime pandas seaborn
-uv pip install ipykernel notebook
+uv pip install ipykernel notebook pylatexenc
 ```
 
 ## Running the notebooks
