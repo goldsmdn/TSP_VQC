@@ -91,8 +91,6 @@ The following object orientated code is provided:
 - [`MyDataLogger.py`](/classes/MyDataLogger.py): handles logging of data results including updating `results.txt`, and sub-run specific data summaries and graphs.  This module is object orientated, with objects for a parent `run-id` and child `sub-id`.
 - [`MyModel.py`](classes/MyModel.py): responsbile for classical machine learing PyTorch modules
 
- 
-
 ## Contributing
 Contributions to the repository are very welcome.  Please raise an issue if you have any problems, and feel free to contact me.
 
