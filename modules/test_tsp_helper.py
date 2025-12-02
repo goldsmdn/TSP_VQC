@@ -27,7 +27,7 @@ from classes.LRUCacheUnhashable import LRUCacheUnhashable
 from modules.config import NETWORK_DIR
 
 def test_wrong_shape():
-    """Checks that the correct error message is thrown for an array of the wrong shape"""
+    """Checks that the correct error message is thrown for an array of the wrong shape """
     file = 'wrong_shape.txt'
     filename = Path(NETWORK_DIR).joinpath(file)
     locs = 5
