@@ -1,5 +1,7 @@
 # TSP_VQC
-This note book provides the code to solve the Travelling Salesman problem (TSP) with a Variational Quantum Circuit, and a quantum inspired classical machine learning model.  The work is described in more detail in an [article](https://www.overleaf.com/project/67fd29849d97c8adf9efcd7b) 
+This note book provides the code to solve the Travelling Salesman problem (TSP) with a Variational Quantum Circuit, and a quantum inspired classical machine learning model.  Full documentation can be found in the [Read_the_Docs](https://goldsmdn.github.io/TSP_VQC/)
+
+The work is described in more detail in an [article](https://www.overleaf.com/project/67fd29849d97c8adf9efcd7b) 
 
 Note:  Circuit 6 in this repo is re-numbered as Circuit 5 in the article.
 
