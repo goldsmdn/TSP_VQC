@@ -34,7 +34,7 @@ GRADIENT_TYPE = 'SGD'               # controls the optimiser used
                                     # ml - 'SGD+X' stochastical with Xavier initialization
                                     # ml - 'Adam' 
 DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation from paper
-NUM_LAYERS = 2                      # number of layers in the model
+NUM_LAYERS = 1                      # number of layers in the model
 
 #information needed in QML manual runs:
 MODE = 8                            # MODE = 1 - rxgate, rygate, cnot gates

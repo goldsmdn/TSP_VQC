@@ -1,5 +1,7 @@
 # TSP_VQC
-This note book provides the code to solve the Travelling Salesman problem (TSP) with a Variational Quantum Circuit, and a quantum inspired classical machine learning model.  The work is described in more detail in an [article](https://www.overleaf.com/project/67fd29849d97c8adf9efcd7b)  
+This note book provides the code to solve the Travelling Salesman problem (TSP) with a Variational Quantum Circuit, and a quantum inspired classical machine learning model.  The work is described in more detail in an [article](https://www.overleaf.com/project/67fd29849d97c8adf9efcd7b) 
+
+Note:  Circuit 6 in this repo is re-numbered as Circuit 5 in the article.
 
 ## Getting started 
 
@@ -21,7 +23,8 @@ source .venv/Scripts/activate
 uv pip install numpy pytest graycode qiskit qiskit_aer torch
 uv pip install sphinx sphinx_rtd_theme sphinx-autodoc-typehints matplotlib
 uv pip install qiskit_ibm_runtime pandas seaborn
-uv pip install ipykernel notebook
+uv pip install ipykernel notebook pylatexenc
+uv pip install torchviz graphviz
 ```
 
 ## Running the notebooks
