@@ -28,7 +28,8 @@ from modules.config import (RESULTS_DIR,
                             LR, 
                             MOMENTUM,
                             WEIGHT_DECAY,
-                            SIMULATE_NOISE
+                            SIMULATE_NOISE,
+                            MPS,
                             )
 
 from modules.graph_functions import cost_graph_multi
@@ -127,6 +128,7 @@ class MySubDataLogger(MyDataLogger):
     noise:bool = None
     #monte carlo
     monte_carlo: bool = False
+    mps: bool = None
 
     def __post_init__(self):
         """This method is called after __init__"""
@@ -165,6 +167,10 @@ class MySubDataLogger(MyDataLogger):
                 raise Exception(f'mode = {self.mode} is not permitted for quantum')
             if self.mode == 4 and self.layers> 1:
                 raise Exception(f'mode = {self.mode} is only for 1 layer')
+            if self.mps is not True and self.mps is not False:
+                raise Exception(f'Input field mps is not boolean')  
+            if self.mps is True and self.noise is True:
+                raise Exception(f'MPS simulator cannot be used with noise simulation')
         else:
             if self.gradient_type not in ['SGD', 'SGD+X', 'Adam', 'Adam+X', 'RMSprop',]:
                 raise Exception(f'Only certain gradient type are allowed for non quantum, not {self.gradient_type}')
@@ -173,6 +179,8 @@ class MySubDataLogger(MyDataLogger):
             if self.gradient_type in ['SGD+X', 'Adam+X']:
                 if self.hot_start:
                     raise Exception(f'Hot start is not allowed with SGD+X')
+            if self.mps is True:
+                raise Exception(f'MPS simulator is only for quantum runs')
     
     def save_results_to_csv(self):
         """Save the results to a CSV file"""
@@ -243,6 +251,7 @@ class MySubDataLogger(MyDataLogger):
             self.eta = float(data_dict['eta'])
             self.s = float(data_dict['s'])
             self.noise = format_boolean(data_dict['noise'])
+            self.mps = format_boolean(data_dict['mps'])
         
     def update_general_constants_from_config(self):
         """Update general constants from the config file"""
@@ -267,6 +276,7 @@ class MySubDataLogger(MyDataLogger):
         self.gamma = GAMMA
         self.s = S
         self.noise = SIMULATE_NOISE
+        self.mps = MPS
 
     def update_ml_constants_from_config(self):
         """Update constants needed for ML from config file"""

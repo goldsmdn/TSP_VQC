@@ -813,6 +813,10 @@ def cost_func_evaluate(sdl,
             backend = FakeAuckland()
             job = backend.run(model, shots=sdl.shots)     
             counts = job.result().get_counts()
+        elif sdl.mps:
+            simulator = AerSimulator(method='matrix_product_state')
+            results = simulator.run(model).result()
+            counts = results.get_counts(model)
         else:
             if detect_quantum_GPU_support():
                 simulator = AerSimulator(method='statevector', device='GPU')
