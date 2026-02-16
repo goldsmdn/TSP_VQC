@@ -1,0 +1,1163 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>modules.test_tsp_helper &mdash; Travelling Salesman Problem 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Travelling Salesman Problem
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">modules package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../classes.html">classes package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Travelling Salesman Problem</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">modules.test_tsp_helper</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for modules.test_tsp_helper</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pytest</span><span class="w"> </span><span class="kn">import</span> <span class="n">raises</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">classes.MyDataLogger</span><span class="w"> </span><span class="kn">import</span> <span class="n">MyDataLogger</span><span class="p">,</span> <span class="n">MySubDataLogger</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">modules.helper_functions_tsp</span><span class="w"> </span><span class="kn">import</span><span class="p">(</span><span class="n">validate_distance_array</span><span class="p">,</span> 
+                                         <span class="n">find_distance</span><span class="p">,</span> 
+                                         <span class="n">convert_binary_list_to_integer</span><span class="p">,</span> 
+                                         <span class="n">check_loc_list</span><span class="p">,</span> 
+                                         <span class="n">augment_loc_list</span><span class="p">,</span> 
+                                         <span class="n">find_total_distance</span><span class="p">,</span> 
+                                         <span class="n">find_problem_size</span><span class="p">,</span>
+                                         <span class="n">convert_bit_string_to_cycle</span><span class="p">,</span> 
+                                         <span class="n">find_stats</span><span class="p">,</span> 
+                                         <span class="n">cost_fn_fact</span><span class="p">,</span> 
+                                         <span class="n">hot_start</span><span class="p">,</span>
+                                         <span class="n">hot_start_list_to_string</span><span class="p">,</span> 
+                                         <span class="n">convert_integer_to_binary_list</span><span class="p">,</span>
+                                         <span class="n">convert_binary_list_to_integer</span><span class="p">,</span> 
+                                         <span class="n">find_run_stats</span><span class="p">,</span>
+                                         <span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">classes.LRUCacheUnhashable</span><span class="w"> </span><span class="kn">import</span> <span class="n">LRUCacheUnhashable</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">modules.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">NETWORK_DIR</span>
+
+<div class="viewcode-block" id="test_wrong_shape">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_wrong_shape">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_wrong_shape</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks that the correct error message is thrown for an array of the wrong shape &quot;&quot;&quot;</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;wrong_shape.txt&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">NETWORK_DIR</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">raises</span><span class="p">(</span><span class="ne">Exception</span><span class="p">,</span> <span class="n">match</span> <span class="o">=</span> <span class="s1">&#39;The distance array is not two dimensional&#39;</span><span class="p">):</span>
+        <span class="n">validate_distance_array</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="test_four_rows">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_four_rows">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_four_rows</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks that the correct error message is thrown for an array with 4 rows and 5 columns&quot;&quot;&quot;</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;four_rows.txt&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">NETWORK_DIR</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">raises</span><span class="p">(</span><span class="ne">Exception</span><span class="p">,</span> <span class="n">match</span> <span class="o">=</span> <span class="s1">&#39;The shape of the array does not match 5 locations&#39;</span><span class="p">):</span>
+        <span class="n">validate_distance_array</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="test_six_locs">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_six_locs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_six_locs</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks that the correct error message is thrown for an 5 * 5 array when there are 6 locations&quot;&quot;&quot;</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;five_d.txt&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">NETWORK_DIR</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">6</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">raises</span><span class="p">(</span><span class="ne">Exception</span><span class="p">,</span> <span class="n">match</span> <span class="o">=</span> <span class="s1">&#39;The shape of the array does not match 6 locations&#39;</span><span class="p">):</span>
+        <span class="n">validate_distance_array</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="test_four_cols">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_four_cols">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_four_cols</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks that the correct error message is thrown for an array with 5 rows and 4 columns&quot;&quot;&quot;</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;four_cols.txt&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">NETWORK_DIR</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">raises</span><span class="p">(</span><span class="ne">Exception</span><span class="p">,</span> <span class="n">match</span> <span class="o">=</span> <span class="s1">&#39;The shape of the array does not match 5 locations&#39;</span><span class="p">):</span>
+        <span class="n">validate_distance_array</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="test_unsymmetric">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_unsymmetric">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_unsymmetric</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks that the correct error message is thrown for an unsymmetric array&quot;&quot;&quot;</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;fri26_bad.txt&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">NETWORK_DIR</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">26</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">raises</span><span class="p">(</span><span class="ne">Exception</span><span class="p">,</span> <span class="n">match</span> <span class="o">=</span> <span class="s1">&#39;The array is not symmetrical&#39;</span><span class="p">):</span>
+        <span class="n">validate_distance_array</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="test_distance_1">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_distance_1">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_distance_1</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check distance read for an array element&quot;&quot;&quot;</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;four_d.txt&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">NETWORK_DIR</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="n">loc1</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">loc2</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">expected_distance</span> <span class="o">=</span> <span class="mf">3.5</span>
+    <span class="n">distance_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">distance</span> <span class="o">=</span> <span class="n">find_distance</span><span class="p">(</span><span class="n">loc1</span><span class="p">,</span> <span class="n">loc2</span><span class="p">,</span> <span class="n">distance_array</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_distance</span> <span class="o">==</span> <span class="n">distance</span></div>
+
+
+<div class="viewcode-block" id="test_distance_2">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_distance_2">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_distance_2</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check distance read for a diagonal element&quot;&quot;&quot;</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;fri26_bad.txt&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">NETWORK_DIR</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="n">loc1</span> <span class="o">=</span> <span class="mi">25</span>
+    <span class="n">loc2</span> <span class="o">=</span> <span class="mi">25</span>
+    <span class="n">expected_distance</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">distance_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">distance</span> <span class="o">=</span> <span class="n">find_distance</span><span class="p">(</span><span class="n">loc1</span><span class="p">,</span> <span class="n">loc2</span><span class="p">,</span> <span class="n">distance_array</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_distance</span> <span class="o">==</span> <span class="n">distance</span></div>
+
+
+<div class="viewcode-block" id="test_distance_3">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_distance_3">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_distance_3</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check distance read for end of row&quot;&quot;&quot;</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;four_d.txt&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">NETWORK_DIR</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="n">loc1</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">loc2</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">expected_distance</span> <span class="o">=</span> <span class="mi">9</span>
+    <span class="n">distance_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">distance</span> <span class="o">=</span> <span class="n">find_distance</span><span class="p">(</span><span class="n">loc1</span><span class="p">,</span> <span class="n">loc2</span><span class="p">,</span> <span class="n">distance_array</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_distance</span> <span class="o">==</span> <span class="n">distance</span></div>
+
+
+<div class="viewcode-block" id="test_distance_4">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_distance_4">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_distance_4</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check distance read for end of column&quot;&quot;&quot;</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;four_d.txt&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">NETWORK_DIR</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="n">loc1</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">loc2</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">expected_distance</span> <span class="o">=</span> <span class="mi">9</span>
+    <span class="n">distance_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">distance</span> <span class="o">=</span> <span class="n">find_distance</span><span class="p">(</span><span class="n">loc1</span><span class="p">,</span> <span class="n">loc2</span><span class="p">,</span> <span class="n">distance_array</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">distance</span> <span class="o">==</span> <span class="n">expected_distance</span> </div>
+
+
+<div class="viewcode-block" id="test_list_00">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_list_00">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_list_00</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check conversion of list [0,0]&quot;&quot;&quot;</span>
+    <span class="n">binary_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_binary_list_to_integer</span><span class="p">(</span><span class="n">binary_list</span> <span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="n">expected_result</span></div>
+
+
+<div class="viewcode-block" id="test_list_00_gray">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_list_00_gray">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_list_00_gray</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check conversion of list [0,0] with gray codes&quot;&quot;&quot;</span>
+    <span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">binary_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_binary_list_to_integer</span><span class="p">(</span><span class="n">binary_list</span><span class="p">,</span> <span class="n">gray</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="n">expected_result</span></div>
+
+
+<div class="viewcode-block" id="test_list_01">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_list_01">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_list_01</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check conversion of list [0,1]&quot;&quot;&quot;</span>
+    <span class="n">binary_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_binary_list_to_integer</span><span class="p">(</span><span class="n">binary_list</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="n">expected_result</span></div>
+
+
+<div class="viewcode-block" id="test_list_01_gray">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_list_01_gray">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_list_01_gray</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check conversion of list [0,1] with gray codes&quot;&quot;&quot;</span>
+    <span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">binary_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_binary_list_to_integer</span><span class="p">(</span><span class="n">binary_list</span><span class="p">,</span> <span class="n">gray</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="n">expected_result</span></div>
+
+
+<div class="viewcode-block" id="test_list_10">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_list_10">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_list_10</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check conversion of list [1,0]&quot;&quot;&quot;</span>
+    <span class="n">binary_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_binary_list_to_integer</span><span class="p">(</span><span class="n">binary_list</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="n">expected_result</span></div>
+
+
+<div class="viewcode-block" id="test_list_10_gray">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_list_10_gray">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_list_10_gray</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check conversion of list [1,0] with gray codes&quot;&quot;&quot;</span>
+    <span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">binary_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_binary_list_to_integer</span><span class="p">(</span><span class="n">binary_list</span><span class="p">,</span> <span class="n">gray</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="n">expected_result</span></div>
+
+
+<div class="viewcode-block" id="test_list_11">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_list_11">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_list_11</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check conversion of list [1,1]&quot;&quot;&quot;</span>
+    <span class="n">binary_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_binary_list_to_integer</span><span class="p">(</span><span class="n">binary_list</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="n">expected_result</span></div>
+
+
+<div class="viewcode-block" id="test_list_11_gray">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_list_11_gray">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_list_11_gray</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check conversion of list [1,1]&quot;&quot;&quot;</span>
+    <span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">binary_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_binary_list_to_integer</span><span class="p">(</span><span class="n">binary_list</span><span class="p">,</span> <span class="n">gray</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="n">expected_result</span></div>
+
+
+<div class="viewcode-block" id="test_list_1110">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_list_1110">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_list_1110</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check conversion of list [1,1,1,0]&quot;&quot;&quot;</span>
+    <span class="n">binary_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mi">14</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_binary_list_to_integer</span><span class="p">(</span><span class="n">binary_list</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="n">expected_result</span></div>
+
+
+<div class="viewcode-block" id="test_list_1110_gray">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_list_1110_gray">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_list_1110_gray</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check conversion of list [1,1,1,0] with gray codes&quot;&quot;&quot;</span>
+    <span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">binary_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mi">11</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_binary_list_to_integer</span><span class="p">(</span><span class="n">binary_list</span><span class="p">,</span> <span class="n">gray</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="n">expected_result</span></div>
+
+
+<div class="viewcode-block" id="test_list_1000_gray">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_list_1000_gray">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_list_1000_gray</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check conversion of list [1,0,0,0] with gray codes&quot;&quot;&quot;</span>
+    <span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">binary_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mi">15</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_binary_list_to_integer</span><span class="p">(</span><span class="n">binary_list</span><span class="p">,</span> <span class="n">gray</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="n">expected_result</span></div>
+
+
+<div class="viewcode-block" id="test_check_loc_list_valid1">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_check_loc_list_valid1">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_check_loc_list_valid1</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test validation of location list with a valid solution&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">loc_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">check_loc_list</span><span class="p">(</span><span class="n">loc_list</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_check_loc_list_valid2">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_check_loc_list_valid2">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_check_loc_list_valid2</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test validation of location list with a valid solution&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">loc_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">check_loc_list</span><span class="p">(</span><span class="n">loc_list</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">assert</span>  <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+     
+<div class="viewcode-block" id="test_check_loc_list_invalid1">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_check_loc_list_invalid1">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_check_loc_list_invalid1</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test validation of location list with an invalid solution&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">loc_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">check_loc_list</span><span class="p">(</span><span class="n">loc_list</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_check_loc_list_invalid2">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_check_loc_list_invalid2">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_check_loc_list_invalid2</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test validation of location list with an integer out of range&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">loc_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">check_loc_list</span><span class="p">(</span><span class="n">loc_list</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_check_loc_list_invalid3">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_check_loc_list_invalid3">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_check_loc_list_invalid3</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test validation of location list with an integer out of range at end&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">loc_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">check_loc_list</span><span class="p">(</span><span class="n">loc_list</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_check_loc_list_invalid4">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_check_loc_list_invalid4">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_check_loc_list_invalid4</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test validation of location list with an integer just out of range at end&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">loc_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">check_loc_list</span><span class="p">(</span><span class="n">loc_list</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_augment_loc_list1">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_augment_loc_list1">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_augment_loc_list1</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check adding location to the end of a simple list&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">loc_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">augment_loc_list</span><span class="p">(</span><span class="n">loc_list</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_augment_loc_list2">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_augment_loc_list2">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_augment_loc_list2</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check adding location to the end of a jumbled list&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">loc_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">augment_loc_list</span><span class="p">(</span><span class="n">loc_list</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_find_total_distance">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_find_total_distance">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_find_total_distance</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check total distance calculation for a simple circuit&quot;&quot;&quot;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;networks/four_d.txt&#39;</span>
+    <span class="n">distance_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">int_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mf">21.0</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">find_total_distance</span><span class="p">(</span><span class="n">int_list</span><span class="p">,</span> <span class="n">locs</span><span class="p">,</span> <span class="n">distance_array</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_find_problem_size_4">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_find_problem_size_4">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_find_problem_size_4</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check problem size for 4 locations&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="s1">&#39;original&#39;</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">find_problem_size</span><span class="p">(</span><span class="n">sdl</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_find_problem_size_4_new">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_find_problem_size_4_new">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_find_problem_size_4_new</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check problem size for 4 locations&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="s1">&#39;new&#39;</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">find_problem_size</span><span class="p">(</span><span class="n">sdl</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_find_problem_size_5_new">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_find_problem_size_5_new">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_find_problem_size_5_new</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check problem size for 5 locations&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="s1">&#39;new&#39;</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mi">7</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">find_problem_size</span><span class="p">(</span><span class="n">sdl</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_find_problem_size_26">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_find_problem_size_26">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_find_problem_size_26</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check problem size for 26 locations&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">26</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="s1">&#39;original&#39;</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mi">94</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">find_problem_size</span><span class="p">(</span><span class="n">sdl</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_convert_bit_string_to_cycle_000">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_convert_bit_string_to_cycle_000">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_convert_bit_string_to_cycle_000</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Example for 4 locations&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">bit_string</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_bit_string_to_cycle</span><span class="p">(</span><span class="n">bit_string</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_convert_bit_string_to_cycle_001">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_convert_bit_string_to_cycle_001">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_convert_bit_string_to_cycle_001</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Example for 4 locations&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">bit_string</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_bit_string_to_cycle</span><span class="p">(</span><span class="n">bit_string</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_convert_bit_string_to_cycle_010">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_convert_bit_string_to_cycle_010">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_convert_bit_string_to_cycle_010</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Example for 4 locations&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">bit_string</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_bit_string_to_cycle</span><span class="p">(</span><span class="n">bit_string</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_convert_bit_string_to_cycle_011">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_convert_bit_string_to_cycle_011">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_convert_bit_string_to_cycle_011</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Example for 4 locations&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">bit_string</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_bit_string_to_cycle</span><span class="p">(</span><span class="n">bit_string</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_convert_bit_string_to_cycle_100">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_convert_bit_string_to_cycle_100">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_convert_bit_string_to_cycle_100</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Example for 4 locations&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">bit_string</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_bit_string_to_cycle</span><span class="p">(</span><span class="n">bit_string</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_convert_bit_string_to_cycle_101">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_convert_bit_string_to_cycle_101">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_convert_bit_string_to_cycle_101</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Example for 4 locations&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">bit_string</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_bit_string_to_cycle</span><span class="p">(</span><span class="n">bit_string</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_convert_bit_string_to_cycle_110">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_convert_bit_string_to_cycle_110">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_convert_bit_string_to_cycle_110</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Example for 4 locations&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">bit_string</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_bit_string_to_cycle</span><span class="p">(</span><span class="n">bit_string</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_convert_bit_string_to_cycle_111">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_convert_bit_string_to_cycle_111">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_convert_bit_string_to_cycle_111</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Example for 4 locations&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">bit_string</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_bit_string_to_cycle</span><span class="p">(</span><span class="n">bit_string</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_convert_bit_string_to_cycle_111_gray">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_convert_bit_string_to_cycle_111_gray">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_convert_bit_string_to_cycle_111_gray</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Example for 4 locations&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">bit_string</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_bit_string_to_cycle</span><span class="p">(</span><span class="n">bit_string</span><span class="p">,</span> <span class="n">locs</span><span class="p">,</span> <span class="n">gray</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_convert_bit_string_to_cycle_3">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_convert_bit_string_to_cycle_3">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_convert_bit_string_to_cycle_3</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Example for 5 locations&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">bit_string</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> 
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_bit_string_to_cycle</span><span class="p">(</span><span class="n">bit_string</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_convert_bit_string_to_cycle_4">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_convert_bit_string_to_cycle_4">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_convert_bit_string_to_cycle_4</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Example for 5 locations&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">bit_string</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> 
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_bit_string_to_cycle</span><span class="p">(</span><span class="n">bit_string</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_convert_bit_string_to_cycle_15_gray">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_convert_bit_string_to_cycle_15_gray">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_convert_bit_string_to_cycle_15_gray</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Example for 15 locations with Gray code&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">15</span>
+    <span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    
+    <span class="n">bit_string</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                  <span class="mi">1</span> <span class="p">,</span><span class="mi">0</span> <span class="p">,</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                  <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                  <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                  <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                  <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                  <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                  <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                  <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                  <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                  <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_bit_string_to_cycle</span><span class="p">(</span><span class="n">bit_string</span><span class="p">,</span> <span class="n">locs</span><span class="p">,</span> <span class="n">gray</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span>   </div>
+
+
+<div class="viewcode-block" id="test_convert_bit_string_to_cycle_15">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_convert_bit_string_to_cycle_15">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_convert_bit_string_to_cycle_15</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Example for 15 locations without Gray code&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">15</span>
+    <span class="n">gray</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">bit_string</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                  <span class="mi">1</span> <span class="p">,</span><span class="mi">1</span> <span class="p">,</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                  <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                  <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                  <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                  <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                  <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                  <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                  <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                  <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                  <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_bit_string_to_cycle</span><span class="p">(</span><span class="n">bit_string</span><span class="p">,</span> <span class="n">locs</span><span class="p">,</span> <span class="n">gray</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span> </div>
+
+  
+<div class="viewcode-block" id="test_convert_bit_string_to_cycle_00010__not_gray">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_convert_bit_string_to_cycle_00010__not_gray">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_convert_bit_string_to_cycle_00010__not_gray</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Example for 4 locations&quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">gray</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">bit_string</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">convert_bit_string_to_cycle</span><span class="p">(</span><span class="n">bit_string</span><span class="p">,</span> <span class="n">locs</span><span class="p">,</span> <span class="n">gray</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;new&#39;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_find_average">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_find_average">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_find_average</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test find_stats in average mode&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;100&#39;</span><span class="p">:</span> <span class="mi">145</span><span class="p">,</span> <span class="s1">&#39;111&#39;</span><span class="p">:</span> <span class="mi">131</span><span class="p">,</span> <span class="s1">&#39;101&#39;</span><span class="p">:</span> <span class="mi">183</span><span class="p">,</span> <span class="s1">&#39;001&#39;</span><span class="p">:</span> <span class="mi">65</span><span class="p">,</span> <span class="s1">&#39;010&#39;</span><span class="p">:</span> <span class="mi">84</span><span class="p">,</span> <span class="s1">&#39;011&#39;</span><span class="p">:</span> <span class="mi">304</span><span class="p">,</span> <span class="s1">&#39;000&#39;</span><span class="p">:</span> <span class="mi">59</span><span class="p">,</span> <span class="s1">&#39;110&#39;</span><span class="p">:</span> <span class="mi">29</span><span class="p">}</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">gray</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="s1">&#39;original&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;networks/four_d.txt&#39;</span>
+    <span class="n">distance_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">SHOTS</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">cost_fn</span> <span class="o">=</span> <span class="n">cost_fn_fact</span><span class="p">(</span><span class="n">sdl</span><span class="p">,</span> <span class="n">distance_array</span><span class="p">)</span>
+    <span class="n">average</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">find_stats</span><span class="p">(</span><span class="n">cost_fn</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">SHOTS</span><span class="p">,)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mf">21.916</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">average</span></div>
+
+
+<div class="viewcode-block" id="test_find_lowest">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_find_lowest">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_find_lowest</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test find_stats in lowest mode&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;100&#39;</span><span class="p">:</span> <span class="mi">145</span><span class="p">,</span> <span class="s1">&#39;111&#39;</span><span class="p">:</span> <span class="mi">131</span><span class="p">,</span> <span class="s1">&#39;101&#39;</span><span class="p">:</span> <span class="mi">183</span><span class="p">,</span> <span class="s1">&#39;001&#39;</span><span class="p">:</span> <span class="mi">65</span><span class="p">,</span> <span class="s1">&#39;010&#39;</span><span class="p">:</span> <span class="mi">84</span><span class="p">,</span> <span class="s1">&#39;011&#39;</span><span class="p">:</span> <span class="mi">304</span><span class="p">,</span> <span class="s1">&#39;000&#39;</span><span class="p">:</span> <span class="mi">59</span><span class="p">,</span> <span class="s1">&#39;110&#39;</span><span class="p">:</span> <span class="mi">29</span><span class="p">}</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">gray</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="s1">&#39;original&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;networks/four_d.txt&#39;</span>
+    <span class="n">distance_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">SHOTS</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">cost_fn</span> <span class="o">=</span> <span class="n">cost_fn_fact</span><span class="p">(</span><span class="n">sdl</span><span class="p">,</span> <span class="n">distance_array</span><span class="p">)</span>
+    <span class="n">_</span> <span class="p">,</span> <span class="n">lowest</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">find_stats</span><span class="p">(</span><span class="n">cost_fn</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">SHOTS</span><span class="p">,)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mf">21.0</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">lowest</span></div>
+
+
+<div class="viewcode-block" id="test_find_average_slice1">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_find_average_slice1">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_find_average_slice1</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test average slice functionality&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;11010&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">}</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="s1">&#39;original&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;networks/five_d.txt&#39;</span>
+    <span class="n">distance_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">SHOTS</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">AVERAGE_SLICE</span> <span class="o">=</span> <span class="mf">0.6</span>
+    <span class="n">cost_fn</span> <span class="o">=</span> <span class="n">cost_fn_fact</span><span class="p">(</span><span class="n">sdl</span><span class="p">,</span> <span class="n">distance_array</span><span class="p">)</span>
+    <span class="n">average</span> <span class="p">,</span> <span class="n">_</span> <span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">find_stats</span><span class="p">(</span><span class="n">cost_fn</span><span class="p">,</span> 
+                                 <span class="n">counts</span><span class="p">,</span> 
+                                 <span class="n">SHOTS</span><span class="p">,</span> 
+                                 <span class="n">AVERAGE_SLICE</span><span class="p">,</span> 
+                                 <span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mf">21.0</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">average</span></div>
+
+
+<div class="viewcode-block" id="test_find_average_slice2">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_find_average_slice2">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_find_average_slice2</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test average slice functionality - ensure no change&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;11010&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">}</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="s1">&#39;original&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;networks/five_d.txt&#39;</span>
+    <span class="n">distance_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">SHOTS</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">cost_fn</span> <span class="o">=</span> <span class="n">cost_fn_fact</span><span class="p">(</span><span class="n">sdl</span><span class="p">,</span> <span class="n">distance_array</span><span class="p">)</span>
+    <span class="n">average</span> <span class="p">,</span> <span class="n">_</span> <span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">find_stats</span><span class="p">(</span><span class="n">cost_fn</span><span class="p">,</span> 
+                                 <span class="n">counts</span><span class="p">,</span> 
+                                 <span class="n">SHOTS</span><span class="p">,</span> 
+                                 <span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mf">21.0</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">average</span></div>
+
+
+<div class="viewcode-block" id="test_find_average_slice2b">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_find_average_slice2b">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_find_average_slice2b</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test average slice functionality - ensure no change&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;00000&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">}</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="s1">&#39;original&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;networks/five_d.txt&#39;</span>
+    <span class="n">distance_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">SHOTS</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">cost_fn</span> <span class="o">=</span> <span class="n">cost_fn_fact</span><span class="p">(</span><span class="n">sdl</span><span class="p">,</span> <span class="n">distance_array</span><span class="p">)</span>
+    <span class="n">average</span> <span class="p">,</span> <span class="n">_</span> <span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">find_stats</span><span class="p">(</span><span class="n">cost_fn</span><span class="p">,</span> 
+                                 <span class="n">counts</span><span class="p">,</span> 
+                                 <span class="n">SHOTS</span><span class="p">,</span> 
+                                 <span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mf">25.0</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">average</span></div>
+
+
+<div class="viewcode-block" id="test_find_average_slice3">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_find_average_slice3">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_find_average_slice3</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test average slice functionality - ensure no change&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;11010&#39;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
+              <span class="s1">&#39;00000&#39;</span><span class="p">:</span> <span class="mi">500</span><span class="p">}</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="s1">&#39;original&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;networks/five_d.txt&#39;</span>
+    <span class="n">distance_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">SHOTS</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">AVERAGE_SLICE</span> <span class="o">=</span> <span class="mf">0.4</span>
+    <span class="n">cost_fn</span> <span class="o">=</span> <span class="n">cost_fn_fact</span><span class="p">(</span><span class="n">sdl</span><span class="p">,</span> <span class="n">distance_array</span><span class="p">)</span>
+    <span class="n">average</span> <span class="p">,</span> <span class="n">_</span> <span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">find_stats</span><span class="p">(</span><span class="n">cost_fn</span><span class="p">,</span> 
+                                 <span class="n">counts</span><span class="p">,</span> 
+                                 <span class="n">SHOTS</span><span class="p">,</span> 
+                                 <span class="n">AVERAGE_SLICE</span><span class="p">,</span> 
+                                 <span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mi">21</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">average</span></div>
+
+
+<div class="viewcode-block" id="test_find_average_slice4">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_find_average_slice4">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_find_average_slice4</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test average slice functionality - ensure no change&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;11010&#39;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
+              <span class="s1">&#39;00000&#39;</span><span class="p">:</span> <span class="mi">500</span><span class="p">}</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="s1">&#39;original&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;networks/five_d.txt&#39;</span>
+    <span class="n">distance_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">SHOTS</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">AVERAGE_SLICE</span> <span class="o">=</span> <span class="mf">0.6</span>
+    <span class="n">cost_fn</span> <span class="o">=</span> <span class="n">cost_fn_fact</span><span class="p">(</span><span class="n">sdl</span><span class="p">,</span> <span class="n">distance_array</span><span class="p">)</span>
+    <span class="n">average</span> <span class="p">,</span> <span class="n">_</span> <span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">find_stats</span><span class="p">(</span><span class="n">cost_fn</span><span class="p">,</span> 
+                                 <span class="n">counts</span><span class="p">,</span> 
+                                 <span class="n">SHOTS</span><span class="p">,</span> 
+                                 <span class="n">AVERAGE_SLICE</span><span class="p">,</span> 
+                                 <span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mf">21.3333</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">-</span> <span class="n">average</span> <span class="o">&lt;</span> <span class="mf">0.0001</span></div>
+
+
+<div class="viewcode-block" id="test_find_average_slice5">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_find_average_slice5">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_find_average_slice5</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test average slice functionality - ensure no change  &quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;11010&#39;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span> <span class="c1">#Energy = 21</span>
+          <span class="s1">&#39;00000&#39;</span><span class="p">:</span> <span class="mi">300</span><span class="p">,</span> <span class="c1">#Energy = 25</span>
+          <span class="s1">&#39;01101&#39;</span><span class="p">:</span> <span class="mi">500</span><span class="p">}</span> <span class="c1">#Energy = 19</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="s1">&#39;original&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;networks/five_d.txt&#39;</span>
+    <span class="n">distance_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">SHOTS</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">AVERAGE_SLICE</span> <span class="o">=</span> <span class="mf">0.8</span>
+    <span class="n">cost_fn</span> <span class="o">=</span> <span class="n">cost_fn_fact</span><span class="p">(</span><span class="n">sdl</span><span class="p">,</span> <span class="n">distance_array</span><span class="p">)</span>
+    <span class="n">average</span> <span class="p">,</span> <span class="n">_</span> <span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">find_stats</span><span class="p">(</span><span class="n">cost_fn</span><span class="p">,</span> 
+                                 <span class="n">counts</span><span class="p">,</span> 
+                                 <span class="n">SHOTS</span><span class="p">,</span> 
+                                 <span class="n">AVERAGE_SLICE</span><span class="p">,</span>
+                                 <span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mf">20.25</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">average</span></div>
+
+
+<div class="viewcode-block" id="test_find_average_slice6">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_find_average_slice6">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_find_average_slice6</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test finding average slice&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;11010&#39;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span> <span class="c1">#Energy = 21</span>
+          <span class="s1">&#39;00000&#39;</span><span class="p">:</span> <span class="mi">300</span><span class="p">,</span> <span class="c1">#Energy = 25</span>
+          <span class="s1">&#39;01101&#39;</span><span class="p">:</span> <span class="mi">500</span><span class="p">}</span> <span class="c1">#Energy = 19</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;networks/five_d.txt&#39;</span>
+    <span class="n">distance_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="s1">&#39;original&#39;</span>
+    <span class="n">SHOTS</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">AVERAGE_SLICE</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">cost_fn</span> <span class="o">=</span> <span class="n">cost_fn_fact</span><span class="p">(</span><span class="n">sdl</span><span class="p">,</span> <span class="n">distance_array</span><span class="p">)</span>
+    <span class="n">average</span> <span class="p">,</span> <span class="n">_</span> <span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">find_stats</span><span class="p">(</span><span class="n">cost_fn</span><span class="p">,</span> 
+                                 <span class="n">counts</span><span class="p">,</span> 
+                                 <span class="n">SHOTS</span><span class="p">,</span> 
+                                 <span class="n">AVERAGE_SLICE</span><span class="p">,</span> 
+                                 <span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mf">21.2</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">average</span></div>
+
+
+<div class="viewcode-block" id="test_find_average_slice7">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_find_average_slice7">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_find_average_slice7</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test average slice functionality - ensure no change  &quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;11010&#39;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span> <span class="c1">#Energy = 21</span>
+          <span class="s1">&#39;00000&#39;</span><span class="p">:</span> <span class="mi">300</span><span class="p">,</span> <span class="c1">#Energy = 25</span>
+
+          <span class="s1">&#39;01101&#39;</span><span class="p">:</span> <span class="mi">500</span><span class="p">}</span> <span class="c1">#Energy = 19</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="s1">&#39;original&#39;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;networks/five_d.txt&#39;</span>
+    <span class="n">distance_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">SHOTS</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">AVERAGE_SLICE</span> <span class="o">=</span> <span class="mf">0.2</span>
+    <span class="n">cost_fn</span> <span class="o">=</span> <span class="n">cost_fn_fact</span><span class="p">(</span><span class="n">sdl</span><span class="p">,</span> <span class="n">distance_array</span><span class="p">)</span>
+    <span class="n">average</span> <span class="p">,</span> <span class="n">_</span> <span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">find_stats</span><span class="p">(</span><span class="n">cost_fn</span><span class="p">,</span> 
+                                 <span class="n">counts</span><span class="p">,</span> 
+                                 <span class="n">SHOTS</span><span class="p">,</span> 
+                                 <span class="n">AVERAGE_SLICE</span><span class="p">,</span> 
+                                 <span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mf">19.0</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">average</span></div>
+
+
+<div class="viewcode-block" id="test_hot_start_4">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_hot_start_4">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_hot_start_4</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Hot start list with four locations&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;networks/four_d.txt&#39;</span>
+    <span class="n">distance_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">actual_result</span> <span class="o">=</span> <span class="n">hot_start</span><span class="p">(</span><span class="n">sdl</span><span class="p">,</span> <span class="n">distance_array</span><span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">actual_result</span></div>
+
+
+<div class="viewcode-block" id="test_hot_start_5_list">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_hot_start_5_list">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_hot_start_5_list</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Hot start list with five locations&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;networks/five_d.txt&#39;</span>
+    <span class="n">distance_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">actual_result</span> <span class="o">=</span> <span class="n">hot_start</span><span class="p">(</span><span class="n">sdl</span><span class="p">,</span> <span class="n">distance_array</span><span class="p">,</span> <span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">actual_result</span></div>
+
+
+<div class="viewcode-block" id="test_hot_start_5_distance">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_hot_start_5_distance">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_hot_start_5_distance</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Hot start distance with five locations&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;networks/five_d.txt&#39;</span>
+    <span class="n">distance_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="nb">list</span> <span class="o">=</span> <span class="n">hot_start</span><span class="p">(</span><span class="n">sdl</span><span class="p">,</span> <span class="n">distance_array</span><span class="p">,)</span>
+    <span class="n">actual_result</span> <span class="o">=</span> <span class="n">find_total_distance</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span><span class="p">,</span> <span class="n">distance_array</span><span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="mi">21</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">actual_result</span></div>
+
+
+<div class="viewcode-block" id="test_hot_start_list_to_string_101">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_hot_start_list_to_string_101">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_hot_start_list_to_string_101</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Hot start list with four locations in descending order&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">gray</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="s1">&#39;original&#39;</span>
+    <span class="n">hot_start_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">actual_result</span> <span class="o">=</span> <span class="n">hot_start_list_to_string</span><span class="p">(</span><span class="n">sdl</span><span class="p">,</span> <span class="n">hot_start_list</span><span class="p">,)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">actual_result</span></div>
+
+
+<div class="viewcode-block" id="test_hot_start_list_to_string_101_gray">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_hot_start_list_to_string_101_gray">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_hot_start_list_to_string_101_gray</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Hot start list with four locations in descending order with Gray code&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="s1">&#39;original&#39;</span>
+    <span class="n">hot_start_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">actual_result</span> <span class="o">=</span> <span class="n">hot_start_list_to_string</span><span class="p">(</span><span class="n">sdl</span><span class="p">,</span> <span class="n">hot_start_list</span><span class="p">,)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">actual_result</span></div>
+
+
+<div class="viewcode-block" id="test_hot_start_list_to_string_15_locs_no_gray">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_hot_start_list_to_string_15_locs_no_gray">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_hot_start_list_to_string_15_locs_no_gray</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Hot start list with fifteen locations in descending order without Gray code&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">15</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span><span class="s1">&#39;original&#39;</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">gray</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">hot_start_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">actual_result</span> <span class="o">=</span> <span class="n">hot_start_list_to_string</span><span class="p">(</span><span class="n">sdl</span><span class="p">,</span> <span class="n">hot_start_list</span><span class="p">,</span> <span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                       <span class="mi">1</span> <span class="p">,</span><span class="mi">1</span> <span class="p">,</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                       <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                       <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                       <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                       <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                       <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                       <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                       <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                       <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                       <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">actual_result</span></div>
+
+
+<div class="viewcode-block" id="test_hot_start_list_to_string_15_locs_gray">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_hot_start_list_to_string_15_locs_gray">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_hot_start_list_to_string_15_locs_gray</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Hot start list with fifteen locations in descending order with Gray code&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">15</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span><span class="s1">&#39;original&#39;</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">hot_start_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">actual_result</span> <span class="o">=</span> <span class="n">hot_start_list_to_string</span><span class="p">(</span><span class="n">sdl</span><span class="p">,</span> <span class="n">hot_start_list</span><span class="p">,</span> <span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                       <span class="mi">1</span> <span class="p">,</span><span class="mi">0</span> <span class="p">,</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                       <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                       <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                       <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                       <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                       <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                       <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                       <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> \
+                       <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> \
+                       <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">actual_result</span></div>
+
+
+<div class="viewcode-block" id="test_bit_string_list_to_bit_string">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_bit_string_list_to_bit_string">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_bit_string_list_to_bit_string</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test LRC cache conversion of list to bit string&quot;&quot;&quot;</span>
+    <span class="n">bit_string_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="s1">&#39;010101&#39;</span>
+    <span class="n">obj</span> <span class="o">=</span> <span class="n">LRUCacheUnhashable</span><span class="p">()</span>
+    <span class="n">actual_result</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">list_to_bit_string</span><span class="p">(</span><span class="n">bit_string_list</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">actual_result</span></div>
+
+
+<div class="viewcode-block" id="test_binary_string_conversion">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_binary_string_conversion">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_binary_string_conversion</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test conversion of binary string to integer and back without gray code&quot;&quot;&quot;</span>
+    <span class="n">length</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">gray</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">length</span><span class="p">)]</span>
+    <span class="n">actual_result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">expected_result</span><span class="p">:</span>
+        <span class="n">binary_list</span> <span class="o">=</span> <span class="n">convert_integer_to_binary_list</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">gray</span><span class="p">)</span>
+        <span class="n">integer</span> <span class="o">=</span> <span class="n">convert_binary_list_to_integer</span><span class="p">(</span><span class="n">binary_list</span><span class="p">,</span> <span class="n">gray</span><span class="p">)</span>
+        <span class="n">actual_result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">integer</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">actual_result</span></div>
+
+
+<div class="viewcode-block" id="test_binary_string_conversion_gray">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_binary_string_conversion_gray">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_binary_string_conversion_gray</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test conversion of binary string to integer and back with gray code&quot;&quot;&quot;</span>
+    <span class="n">length</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">length</span><span class="p">)]</span>
+    <span class="n">actual_result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">expected_result</span><span class="p">:</span>
+        <span class="n">binary_list</span> <span class="o">=</span> <span class="n">convert_integer_to_binary_list</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">gray</span><span class="p">)</span>
+        <span class="n">integer</span> <span class="o">=</span> <span class="n">convert_binary_list_to_integer</span><span class="p">(</span><span class="n">binary_list</span><span class="p">,</span> <span class="n">gray</span><span class="p">)</span>
+        <span class="n">actual_result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">integer</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">actual_result</span></div>
+
+
+<div class="viewcode-block" id="test_bit_string_cycle_conversion_orig">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_bit_string_cycle_conversion_orig">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_bit_string_cycle_conversion_orig</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test conversion of integers to binary lists without Gray code&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="s1">&#39;new&#39;</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">gray</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">factorial</span><span class="p">(</span><span class="n">sdl</span><span class="o">.</span><span class="n">locations</span><span class="p">)</span>
+    <span class="n">dim</span> <span class="o">=</span> <span class="n">find_problem_size</span><span class="p">(</span><span class="n">sdl</span><span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">actual_result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+        <span class="n">binary_list</span> <span class="o">=</span> <span class="n">convert_integer_to_binary_list</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">gray</span><span class="o">=</span><span class="n">sdl</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
+        <span class="n">expected_result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">binary_list</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">binary_list</span> <span class="ow">in</span> <span class="n">expected_result</span><span class="p">:</span>
+        <span class="n">cycle</span> <span class="o">=</span> <span class="n">convert_bit_string_to_cycle</span><span class="p">(</span><span class="n">binary_list</span><span class="p">,</span> <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span><span class="p">,</span> <span class="n">gray</span><span class="o">=</span><span class="n">sdl</span><span class="o">.</span><span class="n">gray</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span><span class="p">)</span>
+        <span class="n">new_binary_list</span> <span class="o">=</span> <span class="n">hot_start_list_to_string</span><span class="p">(</span><span class="n">sdl</span><span class="p">,</span> <span class="n">cycle</span><span class="p">,)</span>
+        <span class="n">actual_result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_binary_list</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">actual_result</span></div>
+
+
+<div class="viewcode-block" id="test_bit_string_cycle_conversion_orig2">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_bit_string_cycle_conversion_orig2">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_bit_string_cycle_conversion_orig2</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test conversion of integers to binary lists with Gray code&quot;&quot;&quot;</span>
+    <span class="n">datalogger</span> <span class="o">=</span> <span class="n">MyDataLogger</span><span class="p">()</span>
+    <span class="n">sdl</span> <span class="o">=</span> <span class="n">MySubDataLogger</span><span class="p">(</span><span class="n">runid</span> <span class="o">=</span> <span class="n">datalogger</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="s1">&#39;new&#39;</span>
+    <span class="n">sdl</span><span class="o">.</span><span class="n">gray</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">factorial</span><span class="p">(</span><span class="n">sdl</span><span class="o">.</span><span class="n">locations</span><span class="p">)</span>
+    <span class="n">dim</span> <span class="o">=</span> <span class="n">find_problem_size</span><span class="p">(</span><span class="n">sdl</span><span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">actual_result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+        <span class="n">binary_list</span> <span class="o">=</span> <span class="n">convert_integer_to_binary_list</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">gray</span><span class="o">=</span><span class="n">sdl</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
+        <span class="n">expected_result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">binary_list</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">binary_list</span> <span class="ow">in</span> <span class="n">expected_result</span><span class="p">:</span>
+        <span class="n">cycle</span> <span class="o">=</span> <span class="n">convert_bit_string_to_cycle</span><span class="p">(</span><span class="n">binary_list</span><span class="p">,</span> <span class="n">sdl</span><span class="o">.</span><span class="n">locations</span><span class="p">,</span> <span class="n">gray</span><span class="o">=</span><span class="n">sdl</span><span class="o">.</span><span class="n">gray</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">sdl</span><span class="o">.</span><span class="n">formulation</span><span class="p">)</span>
+        <span class="n">new_binary_list</span> <span class="o">=</span> <span class="n">hot_start_list_to_string</span><span class="p">(</span><span class="n">sdl</span><span class="p">,</span> <span class="n">cycle</span><span class="p">,</span> <span class="p">)</span>
+        <span class="n">actual_result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_binary_list</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">actual_result</span></div>
+
+
+
+<div class="viewcode-block" id="test_lowest_list1">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_lowest_list1">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_lowest_list1</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test run stats with two low items&quot;&quot;&quot;</span>
+    <span class="n">test_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">80</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">actual_result</span> <span class="o">=</span> <span class="n">find_run_stats</span><span class="p">(</span><span class="n">test_list</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">actual_result</span></div>
+
+
+<div class="viewcode-block" id="test_lowest_list2">
+<a class="viewcode-back" href="../../modules.html#modules.test_tsp_helper.test_lowest_list2">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_lowest_list2</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test run stats with for identical items&quot;&quot;&quot;</span>
+    <span class="n">test_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">]</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">actual_result</span> <span class="o">=</span> <span class="n">find_run_stats</span><span class="p">(</span><span class="n">test_list</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_result</span> <span class="o">==</span> <span class="n">actual_result</span> </div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Daniel Goldsmitih.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,835 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>classes package &mdash; Travelling Salesman Problem 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="modules package" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Travelling Salesman Problem
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="modules.html">modules package</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">classes package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-classes.LRUCacheUnhashable">classes.LRUCacheUnhashable module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#classes.LRUCacheUnhashable.LRUCacheUnhashable"><code class="docutils literal notranslate"><span class="pre">LRUCacheUnhashable</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#classes.LRUCacheUnhashable.LRUCacheUnhashable.clear_cache"><code class="docutils literal notranslate"><span class="pre">LRUCacheUnhashable.clear_cache()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.LRUCacheUnhashable.LRUCacheUnhashable.list_to_bit_string"><code class="docutils literal notranslate"><span class="pre">LRUCacheUnhashable.list_to_bit_string()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.LRUCacheUnhashable.LRUCacheUnhashable.print_cache"><code class="docutils literal notranslate"><span class="pre">LRUCacheUnhashable.print_cache()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.LRUCacheUnhashable.LRUCacheUnhashable.print_cache_stats"><code class="docutils literal notranslate"><span class="pre">LRUCacheUnhashable.print_cache_stats()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.LRUCacheUnhashable.LRUCacheUnhashable.report_cache_stats"><code class="docutils literal notranslate"><span class="pre">LRUCacheUnhashable.report_cache_stats()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-classes.MyDataLogger">classes.MyDataLogger module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#classes.MyDataLogger.MyDataLogger"><code class="docutils literal notranslate"><span class="pre">MyDataLogger</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MyDataLogger.create_sub_graph_path"><code class="docutils literal notranslate"><span class="pre">MyDataLogger.create_sub_graph_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MyDataLogger.create_sub_results_path"><code class="docutils literal notranslate"><span class="pre">MyDataLogger.create_sub_results_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MyDataLogger.find_summary_results_filename"><code class="docutils literal notranslate"><span class="pre">MyDataLogger.find_summary_results_filename()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MyDataLogger.graph_sub_path"><code class="docutils literal notranslate"><span class="pre">MyDataLogger.graph_sub_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MyDataLogger.results_sub_path"><code class="docutils literal notranslate"><span class="pre">MyDataLogger.results_sub_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MyDataLogger.runid"><code class="docutils literal notranslate"><span class="pre">MyDataLogger.runid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MyDataLogger.summary_results_filename"><code class="docutils literal notranslate"><span class="pre">MyDataLogger.summary_results_filename</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.alpha"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.alpha</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.average_list"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.average_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.average_list_all"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.average_list_all</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.best_dist"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.best_dist</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.best_dist_found"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.best_dist_found</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.big_a"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.big_a</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.c"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.c</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.cache_hits"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.cache_hits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.cache_items"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.cache_items</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.cache_max_size"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.cache_max_size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.cache_misses"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.cache_misses</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.calculate_parameter_numbers"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.calculate_parameter_numbers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.detailed_results_filename"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.detailed_results_filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.elapsed"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.elapsed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.eta"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.eta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.find_detailed_results_filename"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.find_detailed_results_filename()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.find_graph_filename"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.find_graph_filename()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.formulation"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.formulation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.gamma"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.gamma</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.gradient_type"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.gradient_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.graph_filename"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.graph_filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.gray"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.gray</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.hot_start"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.hot_start</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.hot_start_dist"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.hot_start_dist</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.index_list"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.index_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.iteration_found"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.iteration_found</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.iterations"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.iterations</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.layers"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.layers</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.locations"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.locations</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.lowest_list"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.lowest_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.lowest_list_all"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.lowest_list_all</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.lr"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.lr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.mode"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.mode</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.momentum"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.momentum</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.monte_carlo"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.monte_carlo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.mps"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.mps</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.noise"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.noise</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.quantum"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.quantum</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.qubits"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.qubits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.s"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.s</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.save_detailed_results"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.save_detailed_results()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.save_plot"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.save_plot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.save_results_to_csv"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.save_results_to_csv()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.shots"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.shots</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.slice"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.slice</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.sliced_cost_list_all"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.sliced_cost_list_all</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.sliced_list"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.sliced_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.std_dev"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.std_dev</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.subid"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.subid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.update_cache_statistics"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.update_cache_statistics()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.update_constants_from_dict"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.update_constants_from_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.update_general_constants_from_config"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.update_general_constants_from_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.update_ml_constants_from_config"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.update_ml_constants_from_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.update_quantum_constants_from_config"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.update_quantum_constants_from_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.validate_input"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.validate_input()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyDataLogger.MySubDataLogger.weight_decay"><code class="docutils literal notranslate"><span class="pre">MySubDataLogger.weight_decay</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-classes.MyModel">classes.MyModel module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#classes.MyModel.BinaryToCost"><code class="docutils literal notranslate"><span class="pre">BinaryToCost</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyModel.BinaryToCost.forward"><code class="docutils literal notranslate"><span class="pre">BinaryToCost.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#classes.MyModel.CostFunction"><code class="docutils literal notranslate"><span class="pre">CostFunction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyModel.CostFunction.backward"><code class="docutils literal notranslate"><span class="pre">CostFunction.backward()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyModel.CostFunction.forward"><code class="docutils literal notranslate"><span class="pre">CostFunction.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#classes.MyModel.MyModel"><code class="docutils literal notranslate"><span class="pre">MyModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyModel.MyModel.forward"><code class="docutils literal notranslate"><span class="pre">MyModel.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#classes.MyModel.MySine"><code class="docutils literal notranslate"><span class="pre">MySine</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyModel.MySine.forward"><code class="docutils literal notranslate"><span class="pre">MySine.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#classes.MyModel.Sample_Binary"><code class="docutils literal notranslate"><span class="pre">Sample_Binary</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#classes.MyModel.Sample_Binary.forward"><code class="docutils literal notranslate"><span class="pre">Sample_Binary.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#classes.MyModel.estimate_cost_fn_gradient"><code class="docutils literal notranslate"><span class="pre">estimate_cost_fn_gradient()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-classes">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Travelling Salesman Problem</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">classes package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/classes.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="classes-package">
+<h1>classes package<a class="headerlink" href="#classes-package" title="Link to this heading"></a></h1>
+<section id="module-classes.LRUCacheUnhashable">
+<span id="classes-lrucacheunhashable-module"></span><h2>classes.LRUCacheUnhashable module<a class="headerlink" href="#module-classes.LRUCacheUnhashable" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="classes.LRUCacheUnhashable.LRUCacheUnhashable">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">classes.LRUCacheUnhashable.</span></span><span class="sig-name descname"><span class="pre">LRUCacheUnhashable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orig_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50000000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/LRUCacheUnhashable.html#LRUCacheUnhashable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.LRUCacheUnhashable.LRUCacheUnhashable" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A decorator class that caches results for functions with unhashable arguments.
+Uses an OrderedDict to implement a simple LRU eviction policy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>orig_func</strong> (<em>Callable</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>maxsize</strong> (<em>int</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.LRUCacheUnhashable.LRUCacheUnhashable.clear_cache">
+<span class="sig-name descname"><span class="pre">clear_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/LRUCacheUnhashable.html#LRUCacheUnhashable.clear_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.LRUCacheUnhashable.LRUCacheUnhashable.clear_cache" title="Link to this definition"></a></dt>
+<dd><p>Clear cache</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.LRUCacheUnhashable.LRUCacheUnhashable.list_to_bit_string">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">list_to_bit_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bit_string_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/classes/LRUCacheUnhashable.html#LRUCacheUnhashable.list_to_bit_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.LRUCacheUnhashable.LRUCacheUnhashable.list_to_bit_string" title="Link to this definition"></a></dt>
+<dd><p>Convert list in format [0,1] to bit string eg ‘01’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bit_string_input</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.LRUCacheUnhashable.LRUCacheUnhashable.print_cache">
+<span class="sig-name descname"><span class="pre">print_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/LRUCacheUnhashable.html#LRUCacheUnhashable.print_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.LRUCacheUnhashable.LRUCacheUnhashable.print_cache" title="Link to this definition"></a></dt>
+<dd><p>Print cache</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.LRUCacheUnhashable.LRUCacheUnhashable.print_cache_stats">
+<span class="sig-name descname"><span class="pre">print_cache_stats</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/LRUCacheUnhashable.html#LRUCacheUnhashable.print_cache_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.LRUCacheUnhashable.LRUCacheUnhashable.print_cache_stats" title="Link to this definition"></a></dt>
+<dd><p>Print cache stats</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.LRUCacheUnhashable.LRUCacheUnhashable.report_cache_stats">
+<span class="sig-name descname"><span class="pre">report_cache_stats</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/LRUCacheUnhashable.html#LRUCacheUnhashable.report_cache_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.LRUCacheUnhashable.LRUCacheUnhashable.report_cache_stats" title="Link to this definition"></a></dt>
+<dd><p>Reports cache stats</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-classes.MyDataLogger">
+<span id="classes-mydatalogger-module"></span><h2>classes.MyDataLogger module<a class="headerlink" href="#module-classes.MyDataLogger" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MyDataLogger">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">classes.MyDataLogger.</span></span><span class="sig-name descname"><span class="pre">MyDataLogger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'20260216-20-06-46'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_sub_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_sub_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary_results_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyDataLogger.html#MyDataLogger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyDataLogger.MyDataLogger" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Parent - header information for a group of data runs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>runid</strong> (<em>str</em>)</p></li>
+<li><p><strong>graph_sub_path</strong> (<em>Path</em>)</p></li>
+<li><p><strong>results_sub_path</strong> (<em>Path</em>)</p></li>
+<li><p><strong>summary_results_filename</strong> (<em>Path</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MyDataLogger.create_sub_graph_path">
+<span class="sig-name descname"><span class="pre">create_sub_graph_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyDataLogger.html#MyDataLogger.create_sub_graph_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyDataLogger.MyDataLogger.create_sub_graph_path" title="Link to this definition"></a></dt>
+<dd><p>Create a folder for graphs</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MyDataLogger.create_sub_results_path">
+<span class="sig-name descname"><span class="pre">create_sub_results_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyDataLogger.html#MyDataLogger.create_sub_results_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyDataLogger.MyDataLogger.create_sub_results_path" title="Link to this definition"></a></dt>
+<dd><p>Create a folder for results</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MyDataLogger.find_summary_results_filename">
+<span class="sig-name descname"><span class="pre">find_summary_results_filename</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyDataLogger.html#MyDataLogger.find_summary_results_filename"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyDataLogger.MyDataLogger.find_summary_results_filename" title="Link to this definition"></a></dt>
+<dd><p>Create the filepath for the summary results</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MyDataLogger.graph_sub_path">
+<span class="sig-name descname"><span class="pre">graph_sub_path</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MyDataLogger.graph_sub_path" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MyDataLogger.results_sub_path">
+<span class="sig-name descname"><span class="pre">results_sub_path</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MyDataLogger.results_sub_path" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MyDataLogger.runid">
+<span class="sig-name descname"><span class="pre">runid</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'20260216-20-06-46'</span></span><a class="headerlink" href="#classes.MyDataLogger.MyDataLogger.runid" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MyDataLogger.summary_results_filename">
+<span class="sig-name descname"><span class="pre">summary_results_filename</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MyDataLogger.summary_results_filename" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">classes.MyDataLogger.</span></span><span class="sig-name descname"><span class="pre">MySubDataLogger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'20260216-20-06-46'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_sub_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_sub_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary_results_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detailed_results_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shots</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gray</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hot_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradient_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formulation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std_dev</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">momentum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">big_a</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elapsed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hot_start_dist</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">best_dist_found</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">best_dist</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration_found</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_max_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_items</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_hits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_misses</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">average_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lowest_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sliced_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">average_list_all</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lowest_list_all</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sliced_cost_list_all</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monte_carlo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyDataLogger.html#MySubDataLogger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#classes.MyDataLogger.MyDataLogger" title="classes.MyDataLogger.MyDataLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">MyDataLogger</span></code></a></p>
+<p>Child details of each data run</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>runid</strong> (<em>str</em>)</p></li>
+<li><p><strong>graph_sub_path</strong> (<em>Path</em>)</p></li>
+<li><p><strong>results_sub_path</strong> (<em>Path</em>)</p></li>
+<li><p><strong>summary_results_filename</strong> (<em>Path</em>)</p></li>
+<li><p><strong>subid</strong> (<em>str</em>)</p></li>
+<li><p><strong>detailed_results_filename</strong> (<em>Path</em>)</p></li>
+<li><p><strong>graph_filename</strong> (<em>Path</em>)</p></li>
+<li><p><strong>quantum</strong> (<em>bool</em>)</p></li>
+<li><p><strong>locations</strong> (<em>int</em>)</p></li>
+<li><p><strong>slice</strong> (<em>float</em>)</p></li>
+<li><p><strong>shots</strong> (<em>int</em>)</p></li>
+<li><p><strong>mode</strong> (<em>str</em>)</p></li>
+<li><p><strong>iterations</strong> (<em>int</em>)</p></li>
+<li><p><strong>gray</strong> (<em>bool</em>)</p></li>
+<li><p><strong>hot_start</strong> (<em>bool</em>)</p></li>
+<li><p><strong>gradient_type</strong> (<em>str</em>)</p></li>
+<li><p><strong>formulation</strong> (<em>str</em>)</p></li>
+<li><p><strong>layers</strong> (<em>int</em>)</p></li>
+<li><p><strong>std_dev</strong> (<em>float</em>)</p></li>
+<li><p><strong>lr</strong> (<em>float</em>)</p></li>
+<li><p><strong>weight_decay</strong> (<em>float</em>)</p></li>
+<li><p><strong>momentum</strong> (<em>float</em>)</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>)</p></li>
+<li><p><strong>big_a</strong> (<em>float</em>)</p></li>
+<li><p><strong>c</strong> (<em>float</em>)</p></li>
+<li><p><strong>eta</strong> (<em>float</em>)</p></li>
+<li><p><strong>gamma</strong> (<em>float</em>)</p></li>
+<li><p><strong>s</strong> (<em>float</em>)</p></li>
+<li><p><strong>qubits</strong> (<em>int</em>)</p></li>
+<li><p><strong>elapsed</strong> (<em>float</em>)</p></li>
+<li><p><strong>hot_start_dist</strong> (<em>float</em>)</p></li>
+<li><p><strong>best_dist_found</strong> (<em>float</em>)</p></li>
+<li><p><strong>best_dist</strong> (<em>float</em>)</p></li>
+<li><p><strong>iteration_found</strong> (<em>int</em>)</p></li>
+<li><p><strong>cache_max_size</strong> (<em>int</em>)</p></li>
+<li><p><strong>cache_items</strong> (<em>int</em>)</p></li>
+<li><p><strong>cache_hits</strong> (<em>int</em>)</p></li>
+<li><p><strong>cache_misses</strong> (<em>int</em>)</p></li>
+<li><p><strong>index_list</strong> (<em>list</em>)</p></li>
+<li><p><strong>average_list</strong> (<em>list</em>)</p></li>
+<li><p><strong>lowest_list</strong> (<em>list</em>)</p></li>
+<li><p><strong>sliced_list</strong> (<em>list</em>)</p></li>
+<li><p><strong>average_list_all</strong> (<em>list</em>)</p></li>
+<li><p><strong>lowest_list_all</strong> (<em>list</em>)</p></li>
+<li><p><strong>sliced_cost_list_all</strong> (<em>list</em>)</p></li>
+<li><p><strong>noise</strong> (<em>bool</em>)</p></li>
+<li><p><strong>monte_carlo</strong> (<em>bool</em>)</p></li>
+<li><p><strong>mps</strong> (<em>bool</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.alpha">
+<span class="sig-name descname"><span class="pre">alpha</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.alpha" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.average_list">
+<span class="sig-name descname"><span class="pre">average_list</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.average_list" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.average_list_all">
+<span class="sig-name descname"><span class="pre">average_list_all</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.average_list_all" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.best_dist">
+<span class="sig-name descname"><span class="pre">best_dist</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.best_dist" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.best_dist_found">
+<span class="sig-name descname"><span class="pre">best_dist_found</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.best_dist_found" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.big_a">
+<span class="sig-name descname"><span class="pre">big_a</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.big_a" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.c">
+<span class="sig-name descname"><span class="pre">c</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.c" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.cache_hits">
+<span class="sig-name descname"><span class="pre">cache_hits</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.cache_hits" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.cache_items">
+<span class="sig-name descname"><span class="pre">cache_items</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.cache_items" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.cache_max_size">
+<span class="sig-name descname"><span class="pre">cache_max_size</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.cache_max_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.cache_misses">
+<span class="sig-name descname"><span class="pre">cache_misses</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.cache_misses" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.calculate_parameter_numbers">
+<span class="sig-name descname"><span class="pre">calculate_parameter_numbers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="_modules/classes/MyDataLogger.html#MySubDataLogger.calculate_parameter_numbers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.calculate_parameter_numbers" title="Link to this definition"></a></dt>
+<dd><p>Calculate the number of parameters in a variational quantum circuit</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.detailed_results_filename">
+<span class="sig-name descname"><span class="pre">detailed_results_filename</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.detailed_results_filename" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.elapsed">
+<span class="sig-name descname"><span class="pre">elapsed</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.elapsed" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.eta">
+<span class="sig-name descname"><span class="pre">eta</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.eta" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.find_detailed_results_filename">
+<span class="sig-name descname"><span class="pre">find_detailed_results_filename</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyDataLogger.html#MySubDataLogger.find_detailed_results_filename"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.find_detailed_results_filename" title="Link to this definition"></a></dt>
+<dd><p>Create the filepath for the detailed results</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.find_graph_filename">
+<span class="sig-name descname"><span class="pre">find_graph_filename</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyDataLogger.html#MySubDataLogger.find_graph_filename"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.find_graph_filename" title="Link to this definition"></a></dt>
+<dd><p>Create the filepath for the graphs results</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.formulation">
+<span class="sig-name descname"><span class="pre">formulation</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.formulation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.gamma">
+<span class="sig-name descname"><span class="pre">gamma</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.gamma" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.gradient_type">
+<span class="sig-name descname"><span class="pre">gradient_type</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.gradient_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.graph_filename">
+<span class="sig-name descname"><span class="pre">graph_filename</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.graph_filename" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.gray">
+<span class="sig-name descname"><span class="pre">gray</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.gray" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.hot_start">
+<span class="sig-name descname"><span class="pre">hot_start</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.hot_start" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.hot_start_dist">
+<span class="sig-name descname"><span class="pre">hot_start_dist</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.hot_start_dist" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.index_list">
+<span class="sig-name descname"><span class="pre">index_list</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.index_list" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.iteration_found">
+<span class="sig-name descname"><span class="pre">iteration_found</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.iteration_found" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.iterations">
+<span class="sig-name descname"><span class="pre">iterations</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.iterations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.layers">
+<span class="sig-name descname"><span class="pre">layers</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.layers" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.locations">
+<span class="sig-name descname"><span class="pre">locations</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.locations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.lowest_list">
+<span class="sig-name descname"><span class="pre">lowest_list</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.lowest_list" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.lowest_list_all">
+<span class="sig-name descname"><span class="pre">lowest_list_all</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.lowest_list_all" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.lr">
+<span class="sig-name descname"><span class="pre">lr</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.lr" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.mode">
+<span class="sig-name descname"><span class="pre">mode</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.mode" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.momentum">
+<span class="sig-name descname"><span class="pre">momentum</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.momentum" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.monte_carlo">
+<span class="sig-name descname"><span class="pre">monte_carlo</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.monte_carlo" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.mps">
+<span class="sig-name descname"><span class="pre">mps</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.mps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.noise">
+<span class="sig-name descname"><span class="pre">noise</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.noise" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.quantum">
+<span class="sig-name descname"><span class="pre">quantum</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.quantum" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.qubits">
+<span class="sig-name descname"><span class="pre">qubits</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.qubits" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.s">
+<span class="sig-name descname"><span class="pre">s</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.s" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.save_detailed_results">
+<span class="sig-name descname"><span class="pre">save_detailed_results</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyDataLogger.html#MySubDataLogger.save_detailed_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.save_detailed_results" title="Link to this definition"></a></dt>
+<dd><p>Save detailed data</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.save_plot">
+<span class="sig-name descname"><span class="pre">save_plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyDataLogger.html#MySubDataLogger.save_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.save_plot" title="Link to this definition"></a></dt>
+<dd><p>Plot results</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.save_results_to_csv">
+<span class="sig-name descname"><span class="pre">save_results_to_csv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyDataLogger.html#MySubDataLogger.save_results_to_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.save_results_to_csv" title="Link to this definition"></a></dt>
+<dd><p>Save the results to a CSV file</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.shots">
+<span class="sig-name descname"><span class="pre">shots</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.shots" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.slice">
+<span class="sig-name descname"><span class="pre">slice</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.slice" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.sliced_cost_list_all">
+<span class="sig-name descname"><span class="pre">sliced_cost_list_all</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.sliced_cost_list_all" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.sliced_list">
+<span class="sig-name descname"><span class="pre">sliced_list</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.sliced_list" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.std_dev">
+<span class="sig-name descname"><span class="pre">std_dev</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.std_dev" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.subid">
+<span class="sig-name descname"><span class="pre">subid</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.subid" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.update_cache_statistics">
+<span class="sig-name descname"><span class="pre">update_cache_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cost_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyDataLogger.html#MySubDataLogger.update_cache_statistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.update_cache_statistics" title="Link to this definition"></a></dt>
+<dd><p>Update cache statistics</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cost_fn</strong> (<em>Callable</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.update_constants_from_dict">
+<span class="sig-name descname"><span class="pre">update_constants_from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyDataLogger.html#MySubDataLogger.update_constants_from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.update_constants_from_dict" title="Link to this definition"></a></dt>
+<dd><p>Update the constants from a dictionary</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_dict</strong> (<em>dict</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.update_general_constants_from_config">
+<span class="sig-name descname"><span class="pre">update_general_constants_from_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyDataLogger.html#MySubDataLogger.update_general_constants_from_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.update_general_constants_from_config" title="Link to this definition"></a></dt>
+<dd><p>Update general constants from the config file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.update_ml_constants_from_config">
+<span class="sig-name descname"><span class="pre">update_ml_constants_from_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyDataLogger.html#MySubDataLogger.update_ml_constants_from_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.update_ml_constants_from_config" title="Link to this definition"></a></dt>
+<dd><p>Update constants needed for ML from config file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.update_quantum_constants_from_config">
+<span class="sig-name descname"><span class="pre">update_quantum_constants_from_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyDataLogger.html#MySubDataLogger.update_quantum_constants_from_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.update_quantum_constants_from_config" title="Link to this definition"></a></dt>
+<dd><p>Update constants needed for quantum from config file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.validate_input">
+<span class="sig-name descname"><span class="pre">validate_input</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyDataLogger.html#MySubDataLogger.validate_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.validate_input" title="Link to this definition"></a></dt>
+<dd><p>Validate the input fields</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="classes.MyDataLogger.MySubDataLogger.weight_decay">
+<span class="sig-name descname"><span class="pre">weight_decay</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#classes.MyDataLogger.MySubDataLogger.weight_decay" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-classes.MyModel">
+<span id="classes-mymodel-module"></span><h2>classes.MyModel module<a class="headerlink" href="#module-classes.MyModel" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="classes.MyModel.BinaryToCost">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">classes.MyModel.</span></span><span class="sig-name descname"><span class="pre">BinaryToCost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyModel.html#BinaryToCost"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyModel.BinaryToCost" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Convert a bit string to a cost in forwards, estimate gradient backwards</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cost_fn</strong> (<em>Callable</em><em>[</em><em>[</em><em>list</em><em>]</em><em>, </em><em>int</em><em>]</em>)</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyModel.BinaryToCost.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="_modules/classes/MyModel.html#BinaryToCost.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyModel.BinaryToCost.forward" title="Link to this definition"></a></dt>
+<dd><p>calculate cost forwards</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="classes.MyModel.CostFunction">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">classes.MyModel.</span></span><span class="sig-name descname"><span class="pre">CostFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyModel.html#CostFunction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyModel.CostFunction" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code></p>
+<p>A custom autograd function to calculate the cost function and estimate the gradient</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<em>Any</em>)</p></li>
+<li><p><strong>kwargs</strong> (<em>Any</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Any</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyModel.CostFunction.backward">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_output</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyModel.html#CostFunction.backward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyModel.CostFunction.backward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyModel.CostFunction.forward">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_fn</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyModel.html#CostFunction.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyModel.CostFunction.forward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="classes.MyModel.MyModel">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">classes.MyModel.</span></span><span class="sig-name descname"><span class="pre">MyModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyModel.html#MyModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyModel.MyModel" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>A simple feedforward neural network model for TSP</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cost_fn</strong> (<em>Callable</em><em>[</em><em>[</em><em>list</em><em>]</em><em>, </em><em>int</em><em>]</em>)</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyModel.MyModel.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyModel.html#MyModel.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyModel.MyModel.forward" title="Link to this definition"></a></dt>
+<dd><p>Define the forward pass</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="classes.MyModel.MySine">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">classes.MyModel.</span></span><span class="sig-name descname"><span class="pre">MySine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyModel.html#MySine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyModel.MySine" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Returns a sine function symmetric about 0.5</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyModel.MySine.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyModel.html#MySine.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyModel.MySine.forward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="classes.MyModel.Sample_Binary">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">classes.MyModel.</span></span><span class="sig-name descname"><span class="pre">Sample_Binary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/classes/MyModel.html#Sample_Binary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyModel.Sample_Binary" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Return probability in forward, linear backwards</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="classes.MyModel.Sample_Binary.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="_modules/classes/MyModel.html#Sample_Binary.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyModel.Sample_Binary.forward" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="classes.MyModel.estimate_cost_fn_gradient">
+<span class="sig-prename descclassname"><span class="pre">classes.MyModel.</span></span><span class="sig-name descname"><span class="pre">estimate_cost_fn_gradient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">my_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="_modules/classes/MyModel.html#estimate_cost_fn_gradient"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#classes.MyModel.estimate_cost_fn_gradient" title="Link to this definition"></a></dt>
+<dd><p>estimate the gradient of the cost function by
+changing each bit in turn and calculating the difference in cost function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>my_input</strong> (<em>torch.Tensor</em>) – The input tensor</p></li>
+<li><p><strong>output</strong> (<em>torch.Tensor</em>) – Contains a precalculated run of the cost function
+for performance reasons</p></li>
+<li><p><strong>cost_fn</strong> (<em>Callable</em><em>[</em><em>[</em><em>list</em><em>]</em><em>, </em><em>int</em><em>]</em>) – The cost function to be used</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The estimated gradient.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-classes">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-classes" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="modules package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Daniel Goldsmitih.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

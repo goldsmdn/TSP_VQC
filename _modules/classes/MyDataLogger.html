@@ -1,0 +1,508 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>classes.MyDataLogger &mdash; Travelling Salesman Problem 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Travelling Salesman Problem
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">modules package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../classes.html">classes package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Travelling Salesman Problem</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">classes.MyDataLogger</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for classes.MyDataLogger</h1><div class="highlight"><pre>
+<span></span><span class="c1">#Class to handle data logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">strftime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">asdict</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">modules.config</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">RESULTS_DIR</span><span class="p">,</span> 
+                            <span class="n">RESULTS_FILE</span><span class="p">,</span>
+                            <span class="n">GRAPH_DIR</span><span class="p">,</span>
+                            <span class="n">CACHE_MAX_SIZE</span><span class="p">,</span>
+                            <span class="n">LOCATIONS</span><span class="p">,</span> 
+                            <span class="n">SHOTS</span><span class="p">,</span>
+                            <span class="n">MODE</span><span class="p">,</span> 
+                            <span class="n">ITERATIONS</span><span class="p">,</span> 
+                            <span class="n">GRAY</span><span class="p">,</span> 
+                            <span class="n">HOT_START</span><span class="p">,</span>
+                            <span class="n">GRADIENT_TYPE</span><span class="p">,</span> 
+                            <span class="n">S</span><span class="p">,</span> 
+                            <span class="n">ETA</span><span class="p">,</span> 
+                            <span class="n">ALPHA</span><span class="p">,</span> 
+                            <span class="n">GAMMA</span><span class="p">,</span> 
+                            <span class="n">C</span><span class="p">,</span> 
+                            <span class="n">BIG_A</span><span class="p">,</span>    
+                            <span class="n">DECODING_FORMULATION</span><span class="p">,</span>
+                            <span class="n">NUM_LAYERS</span><span class="p">,</span> 
+                            <span class="n">STD_DEV</span><span class="p">,</span>
+                            <span class="n">LR</span><span class="p">,</span> 
+                            <span class="n">MOMENTUM</span><span class="p">,</span>
+                            <span class="n">WEIGHT_DECAY</span><span class="p">,</span>
+                            <span class="n">SIMULATE_NOISE</span><span class="p">,</span>
+                            <span class="n">MPS</span><span class="p">,</span>
+                            <span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">modules.graph_functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">cost_graph_multi</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">modules.helper_functions_tsp</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">validate_gradient_type</span><span class="p">,</span>
+                                          <span class="n">format_boolean</span><span class="p">,</span>
+                                          <span class="p">)</span>                                   
+
+<div class="viewcode-block" id="MyDataLogger">
+<a class="viewcode-back" href="../../classes.html#classes.MyDataLogger.MyDataLogger">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyDataLogger</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parent - header information for a group of data runs&quot;&quot;&quot;</span>
+    <span class="n">runid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">-%H-%M-%S&#39;</span><span class="p">)</span> <span class="c1"># Define runid as a dataclass field</span>
+    <span class="n">graph_sub_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">results_sub_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">summary_results_filename</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This method is called after __init__&quot;&quot;&quot;</span>
+        <span class="c1"># Now we can call create_sub_graph_path and create_sub_results_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graph_sub_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_sub_graph_path</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_sub_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_sub_results_path</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">summary_results_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_summary_results_filename</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MyDataLogger.create_sub_graph_path">
+<a class="viewcode-back" href="../../classes.html#classes.MyDataLogger.MyDataLogger.create_sub_graph_path">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_sub_graph_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a folder for graphs&quot;&quot;&quot;</span>
+        <span class="n">graph_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">GRAPH_DIR</span><span class="p">)</span>
+        <span class="n">graph_sub_path</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">graph_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+        <span class="n">graph_sub_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">graph_sub_path</span></div>
+
+    
+<div class="viewcode-block" id="MyDataLogger.create_sub_results_path">
+<a class="viewcode-back" href="../../classes.html#classes.MyDataLogger.MyDataLogger.create_sub_results_path">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_sub_results_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a folder for results&quot;&quot;&quot;</span>
+        <span class="n">results_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">RESULTS_DIR</span><span class="p">)</span>
+        <span class="n">results_sub_path</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">results_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">runid</span><span class="p">)</span>
+        <span class="n">results_sub_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results_sub_path</span></div>
+
+    
+<div class="viewcode-block" id="MyDataLogger.find_summary_results_filename">
+<a class="viewcode-back" href="../../classes.html#classes.MyDataLogger.MyDataLogger.find_summary_results_filename">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_summary_results_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the filepath for the summary results&quot;&quot;&quot;</span> 
+        <span class="n">results_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">RESULTS_DIR</span><span class="p">)</span>
+        <span class="n">summary_results_filename</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">results_path</span><span class="p">,</span> <span class="n">RESULTS_FILE</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">summary_results_filename</span></div>
+</div>
+
+    
+<div class="viewcode-block" id="MySubDataLogger">
+<a class="viewcode-back" href="../../classes.html#classes.MyDataLogger.MySubDataLogger">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MySubDataLogger</span><span class="p">(</span><span class="n">MyDataLogger</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Child details of each data run&quot;&quot;&quot;</span>
+    <span class="c1">#file details</span>
+    <span class="n">subid</span><span class="p">:</span><span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">detailed_results_filename</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">graph_filename</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1">#general inputs</span>
+    <span class="n">quantum</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Fixed: Use &#39;bool&#39; instead of &#39;Bool&#39;</span>
+    <span class="n">locations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="nb">slice</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">shots</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span> 
+    <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">gray</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">hot_start</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span> 
+    <span class="n">gradient_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span> 
+    <span class="n">formulation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1">#ml specific set up</span>
+    <span class="n">layers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+    
+    <span class="n">std_dev</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">weight_decay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span> 
+    <span class="n">momentum</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1">#quantum specific input</span>
+    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1">#default= 0.602 </span>
+    <span class="n">big_a</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1">#default= 0.50 </span>
+    <span class="n">c</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>     <span class="c1">#default= 0.314</span>
+    <span class="n">eta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>   <span class="c1">#default= 0.02 </span>
+    <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1">#default= 0.5</span>
+    <span class="n">s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span> 
+    <span class="c1">#calculated results</span>
+    <span class="n">qubits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>                 <span class="c1">#number of qubits / binary variables needed</span>
+    <span class="n">elapsed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span> 
+    <span class="n">hot_start_dist</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">best_dist_found</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">best_dist</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">iteration_found</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1">#Cache statistics</span>
+    <span class="n">cache_max_size</span><span class="p">:</span><span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cache_items</span><span class="p">:</span><span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cache_hits</span><span class="p">:</span><span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span> 
+    <span class="n">cache_misses</span><span class="p">:</span><span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1">#detailed_results</span>
+    <span class="n">index_list</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>  <span class="c1"># Use default_factory for mutable defaults</span>
+    <span class="n">average_list</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">lowest_list</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">sliced_list</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="c1">#results for graphing</span>
+    <span class="n">average_list_all</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">lowest_list_all</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">sliced_cost_list_all</span><span class="p">:</span><span class="nb">list</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="c1">#noise simulation</span>
+    <span class="n">noise</span><span class="p">:</span><span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1">#monte carlo</span>
+    <span class="n">monte_carlo</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">mps</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This method is called after __init__&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subid</span> <span class="o">=</span> <span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%H-%M-%S&#39;</span><span class="p">)</span> <span class="c1"># Generate subid if not provided</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__post_init__</span><span class="p">()</span> <span class="c1"># call parent&#39;s self init</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detailed_results_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_detailed_results_filename</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graph_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_graph_filename</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;SubDataLogger instantiated.  Run ID = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">runid</span><span class="si">}</span><span class="s1"> - </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">subid</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MySubDataLogger.calculate_parameter_numbers">
+<a class="viewcode-back" href="../../classes.html#classes.MyDataLogger.MySubDataLogger.calculate_parameter_numbers">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_parameter_numbers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the number of parameters in a variational quantum circuit&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,]:</span>
+            <span class="n">num_params</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">qubits</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">num_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">qubits</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Mode </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="si">}</span><span class="s1"> has not been coded for&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">num_params</span></div>
+
+
+<div class="viewcode-block" id="MySubDataLogger.validate_input">
+<a class="viewcode-back" href="../../classes.html#classes.MyDataLogger.MySubDataLogger.validate_input">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate the input fields&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quantum</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Input field quantum is not boolean&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gray</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Input field gray is not boolean&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hot_start</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Input field hot start is not boolean&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">formulation</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;original&#39;</span><span class="p">,</span> <span class="s1">&#39;new&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Value </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">formulation</span><span class="si">}</span><span class="s1"> is not allowed for formulation&#39;</span> <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">noise</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Input field noise is not boolean&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">quantum</span><span class="p">:</span>
+            <span class="n">validate_gradient_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gradient_type</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;mode = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="si">}</span><span class="s1"> is not permitted for quantum&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="mi">4</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;mode = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="si">}</span><span class="s1"> is only for 1 layer&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">True</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">mps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Input field mps is not boolean&#39;</span><span class="p">)</span>  
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mps</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;MPS simulator cannot be used with noise simulation&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;SGD&#39;</span><span class="p">,</span> <span class="s1">&#39;SGD+X&#39;</span><span class="p">,</span> <span class="s1">&#39;Adam&#39;</span><span class="p">,</span> <span class="s1">&#39;Adam+X&#39;</span><span class="p">,</span> <span class="s1">&#39;RMSprop&#39;</span><span class="p">,]:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Only certain gradient type are allowed for non quantum, not </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">gradient_type</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">19</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;mode = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="si">}</span><span class="s1"> is not permitted for non quantum&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;SGD+X&#39;</span><span class="p">,</span> <span class="s1">&#39;Adam+X&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hot_start</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Hot start is not allowed with SGD+X&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mps</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;MPS simulator is only for quantum runs&#39;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="MySubDataLogger.save_results_to_csv">
+<a class="viewcode-back" href="../../classes.html#classes.MyDataLogger.MySubDataLogger.save_results_to_csv">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_results_to_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save the results to a CSV file&quot;&quot;&quot;</span>
+        <span class="n">results_dict</span> <span class="o">=</span> <span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="c1"># delete items not needed in summary file</span>
+        <span class="k">del</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;index_list&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;average_list&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;lowest_list&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;sliced_list&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;average_list_all&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;lowest_list_all&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;sliced_cost_list_all&#39;</span><span class="p">]</span>
+        <span class="n">data_row</span> <span class="o">=</span> <span class="p">[</span><span class="n">results_dict</span><span class="p">]</span>
+
+        <span class="c1"># Save the data to the specified CSV file</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary_results_filename</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saving data to </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">file_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+                    <span class="n">fieldnames</span> <span class="o">=</span> <span class="n">data_row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                    <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="n">fieldnames</span><span class="p">)</span>
+                    <span class="n">writer</span><span class="o">.</span><span class="n">writerows</span><span class="p">(</span><span class="n">data_row</span><span class="p">)</span>
+
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred while saving the data to </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>    
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+                    <span class="n">fieldnames</span> <span class="o">=</span> <span class="n">data_row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                    <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="n">fieldnames</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Writing header&#39;</span><span class="p">)</span>
+                    <span class="n">writer</span><span class="o">.</span><span class="n">writeheader</span><span class="p">()</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Writing data&#39;</span><span class="p">)</span>
+                    <span class="n">writer</span><span class="o">.</span><span class="n">writerows</span><span class="p">(</span><span class="n">data_row</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data saved to </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred while saving the data to </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MySubDataLogger.update_constants_from_dict">
+<a class="viewcode-back" href="../../classes.html#classes.MyDataLogger.MySubDataLogger.update_constants_from_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_constants_from_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                                   <span class="n">data_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+                                   <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the constants from a dictionary&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quantum</span> <span class="o">=</span> <span class="n">format_boolean</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;quantum&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;locations&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shots</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;shots&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;iterations&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gray</span> <span class="o">=</span> <span class="n">format_boolean</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;gray&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hot_start</span> <span class="o">=</span> <span class="n">format_boolean</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;hot_start&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradient_type</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;gradient_type&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;formulation&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_max_size</span> <span class="o">=</span> <span class="n">CACHE_MAX_SIZE</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;mode&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;layers&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">quantum</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">std_dev</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;std_dev&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lr</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;lr&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weight_decay</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;weight_decay&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient_type</span> <span class="o">==</span> <span class="s1">&#39;SGD&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">momentum</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;momentum&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">quantum</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">slice</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;slice&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;alpha&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">big_a</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;big_a&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;gamma&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;eta&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;s&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">noise</span> <span class="o">=</span> <span class="n">format_boolean</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;noise&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mps</span> <span class="o">=</span> <span class="n">format_boolean</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;mps&#39;</span><span class="p">])</span></div>
+
+        
+<div class="viewcode-block" id="MySubDataLogger.update_general_constants_from_config">
+<a class="viewcode-back" href="../../classes.html#classes.MyDataLogger.MySubDataLogger.update_general_constants_from_config">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_general_constants_from_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update general constants from the config file&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="n">LOCATIONS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shots</span> <span class="o">=</span> <span class="n">SHOTS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">MODE</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span> <span class="o">=</span> <span class="n">ITERATIONS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gray</span> <span class="o">=</span> <span class="n">GRAY</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hot_start</span> <span class="o">=</span> <span class="n">HOT_START</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradient_type</span> <span class="o">=</span> <span class="n">GRADIENT_TYPE</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">formulation</span> <span class="o">=</span> <span class="n">DECODING_FORMULATION</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">=</span> <span class="n">NUM_LAYERS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_max_size</span> <span class="o">=</span> <span class="n">CACHE_MAX_SIZE</span></div>
+
+
+<div class="viewcode-block" id="MySubDataLogger.update_quantum_constants_from_config">
+<a class="viewcode-back" href="../../classes.html#classes.MyDataLogger.MySubDataLogger.update_quantum_constants_from_config">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_quantum_constants_from_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update constants needed for quantum from config file&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quantum</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">ALPHA</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">big_a</span> <span class="o">=</span> <span class="n">BIG_A</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">=</span> <span class="n">C</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="n">ETA</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">GAMMA</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">S</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noise</span> <span class="o">=</span> <span class="n">SIMULATE_NOISE</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mps</span> <span class="o">=</span> <span class="n">MPS</span></div>
+
+
+<div class="viewcode-block" id="MySubDataLogger.update_ml_constants_from_config">
+<a class="viewcode-back" href="../../classes.html#classes.MyDataLogger.MySubDataLogger.update_ml_constants_from_config">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_ml_constants_from_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update constants needed for ML from config file&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quantum</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noise</span> <span class="o">=</span> <span class="kc">False</span> <span class="c1"># noise is for quantum, not classical</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std_dev</span> <span class="o">=</span> <span class="n">STD_DEV</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lr</span> <span class="o">=</span> <span class="n">LR</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">momentum</span> <span class="o">=</span> <span class="n">MOMENTUM</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight_decay</span> <span class="o">=</span> <span class="n">WEIGHT_DECAY</span></div>
+
+
+<div class="viewcode-block" id="MySubDataLogger.update_cache_statistics">
+<a class="viewcode-back" href="../../classes.html#classes.MyDataLogger.MySubDataLogger.update_cache_statistics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_cache_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                                <span class="n">cost_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+                                <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update cache statistics&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cost_fn</span><span class="p">,</span> <span class="s1">&#39;report_cache_stats&#39;</span><span class="p">):</span>
+            <span class="n">items</span><span class="p">,</span> <span class="n">hits</span><span class="p">,</span> <span class="n">misses</span> <span class="o">=</span> <span class="n">cost_fn</span><span class="o">.</span><span class="n">report_cache_stats</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache_items</span> <span class="o">=</span> <span class="n">items</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache_hits</span> <span class="o">=</span> <span class="n">hits</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache_misses</span> <span class="o">=</span> <span class="n">misses</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache_items</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache_hits</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache_misses</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cost_fn</span><span class="p">,</span> <span class="s1">&#39;clear_cache&#39;</span><span class="p">):</span>
+            <span class="n">cost_fn</span><span class="o">.</span><span class="n">clear_cache</span><span class="p">()</span> </div>
+
+
+<div class="viewcode-block" id="MySubDataLogger.find_detailed_results_filename">
+<a class="viewcode-back" href="../../classes.html#classes.MyDataLogger.MySubDataLogger.find_detailed_results_filename">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_detailed_results_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the filepath for the detailed results&quot;&quot;&quot;</span>
+        <span class="n">detailed_results_filename</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results_sub_path</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">subid</span><span class="si">}</span><span class="s1">.csv&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">detailed_results_filename</span></div>
+
+    
+<div class="viewcode-block" id="MySubDataLogger.find_graph_filename">
+<a class="viewcode-back" href="../../classes.html#classes.MyDataLogger.MySubDataLogger.find_graph_filename">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_graph_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the filepath for the graphs results&quot;&quot;&quot;</span>
+        <span class="n">graph_filename</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graph_sub_path</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">subid</span><span class="si">}</span><span class="s1">.png&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">graph_filename</span></div>
+
+    
+<div class="viewcode-block" id="MySubDataLogger.save_detailed_results">
+<a class="viewcode-back" href="../../classes.html#classes.MyDataLogger.MySubDataLogger.save_detailed_results">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_detailed_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save detailed data&quot;&quot;&quot;</span>
+        <span class="n">field_name_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;index_list&#39;</span><span class="p">,</span> <span class="s1">&#39;average_list&#39;</span><span class="p">,</span> <span class="s1">&#39;lowest_list&#39;</span><span class="p">,</span> <span class="s1">&#39;sliced_list&#39;</span><span class="p">]</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detailed_results_filename</span>
+        <span class="n">index_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_list</span>
+        <span class="n">average_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">average_list</span><span class="p">))</span>
+        <span class="n">lowest_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowest_list</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sliced_list</span> <span class="o">!=</span> <span class="p">[]:</span>
+            <span class="n">sliced_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sliced_list</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span> 
+                <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> 
+                <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">field_name_list</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sliced_list</span> <span class="o">!=</span> <span class="p">[]:</span>
+                    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">index_list</span><span class="p">,</span> <span class="n">average_list</span><span class="p">,</span> <span class="n">lowest_list</span><span class="p">,</span> <span class="n">sliced_list</span><span class="p">):</span>
+                        <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">index_list</span><span class="p">,</span> <span class="n">average_list</span><span class="p">,</span> <span class="n">lowest_list</span><span class="p">):</span>
+                        <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Detailed data for Run ID: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">runid</span><span class="si">}</span><span class="s1"> - </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">subid</span><span class="si">}</span><span class="s1"> successfully added to </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred while saving the data to </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MySubDataLogger.save_plot">
+<a class="viewcode-back" href="../../classes.html#classes.MyDataLogger.MySubDataLogger.save_plot">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot results&quot;&quot;&quot;</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Evolution of loss for Run ID </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">runid</span><span class="si">}</span><span class="s1"> - </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">subid</span><span class="si">}</span><span class="s1">&#39;</span> 
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Graph for Run ID: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">runid</span><span class="si">}</span><span class="s1">-</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">subid</span><span class="si">}</span><span class="s1"> being saved to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">graph_filename</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        
+        <span class="n">cost_graph_multi</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">graph_filename</span><span class="p">,</span>
+                         <span class="n">x_list</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_list</span><span class="p">,</span>
+                         <span class="n">av_list</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">average_list_all</span><span class="p">,</span>
+                         <span class="n">lowest_list</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lowest_list_all</span><span class="p">,</span>
+                         <span class="n">sliced_list</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sliced_cost_list_all</span><span class="p">,</span>
+                         <span class="n">main_title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+                         <span class="n">best</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">best_dist</span>
+                         <span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Daniel Goldsmitih.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
