@@ -16,11 +16,11 @@ PLOT_TITLE = False                  # Plot titles with graphs.  Not needed for p
 
 # configuration information used in ALL manual runs
 
-LOCATIONS = 10                      # number of locations to be visited          
+LOCATIONS = 4                       # number of locations to be visited          
 SHOTS = 1_024                       # shots used for each call of the quantum circuit
 
-ITERATIONS =  250                   # updates, or iterations
-PRINT_FREQUENCY = 15                # how often results are printed out
+ITERATIONS =  50                    # updates, or iterations
+PRINT_FREQUENCY = 10                # how often results are printed out
 GRAY = False                        # Use Gray codes
 HOT_START = False                   # Make a hot start
 GRADIENT_TYPE = 'SPSA'              # controls the optimiser used

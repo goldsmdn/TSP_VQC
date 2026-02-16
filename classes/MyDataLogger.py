@@ -92,6 +92,7 @@ class MySubDataLogger(MyDataLogger):
     formulation: str = None
     #ml specific set up
     layers: int = None
+    
     std_dev: float = None
     lr: float = None
     weight_decay: float = None 
