@@ -57,10 +57,12 @@ def find_quality(df, factor=1, round=None):
 
 def select_key_fields_qml(df):
     """Restrict data set to key fields for VQA model"""
-    df = df[['locations', 'slice','iteration_found', 'best_dist_found', 'best_dist', 'quality', 'error','mode','monte_carlo', 'layers', 'elapsed']]
+    df = df[['locations', 'slice','iteration_found', 'best_dist_found', 'best_dist', 
+             'quality', 'error','mode','monte_carlo', 'layers', 'elapsed','mps']]
     return df
 
 def select_key_fields_ml(df):
     """Restrict data set to key fields for ML model"""
-    df = df[['locations', 'iteration_found', 'best_dist_found', 'best_dist', 'quality', 'error','mode', 'layers', 'elapsed', 'monte_carlo']]
+    df = df[['locations', 'iteration_found', 'best_dist_found', 'best_dist', 
+             'quality', 'error','mode', 'layers', 'elapsed', 'monte_carlo']]
     return df

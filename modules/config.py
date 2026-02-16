@@ -17,17 +17,13 @@ PLOT_TITLE = False                  # Plot titles with graphs.  Not needed for p
 # configuration information used in ALL manual runs
 
 LOCATIONS = 4                       # number of locations to be visited          
-                                    # Slices to use when calculating the gradient
-                                    #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
-                                    # For example, 0.2 means that the best 20% 
-                                    # of distances found is included in the average.
 SHOTS = 1_024                       # shots used for each call of the quantum circuit
 
-ITERATIONS =  10                    # updates, or iterations
-PRINT_FREQUENCY = 15                # how often results are printed out
+ITERATIONS =  50                    # updates, or iterations
+PRINT_FREQUENCY = 10                # how often results are printed out
 GRAY = False                        # Use Gray codes
 HOT_START = False                   # Make a hot start
-GRADIENT_TYPE = 'SGD'               # controls the optimiser used
+GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
                                     # quantum - 'parameter_shift' - default
                                     # quantum - 'SPSA' is a stochastic gradient descent
                                     # ml - 'SGD' stochastical
@@ -37,7 +33,7 @@ DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation f
 NUM_LAYERS = 1                      # number of layers in the model
 
 #information needed in QML manual runs:
-MODE = 8                            # MODE = 1 - rxgate, rygate, cnot gates
+MODE = 2                            # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 2 - rxgate, XX gates -can be used with Hot Start
                                     # MODE = 3 - IQP based
                                     # MODE = 4 - rxgate
@@ -47,7 +43,10 @@ MODE = 8                            # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 9 - input is 0.5 - with sine activation
                                     # MODE = 18 - input is all zeros - with sigmoid activation
                                     # MODE = 19 - input is 0.5 - with sigmoid activation
-SLICES = [0.8]                      # Slices to use when calculating the gradient                                   
+SLICES = [0.8]                      # Slices to use when calculating the gradient  
+                                    #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
+                                    # For example, 0.2 means that the best 20% 
+                                    # of distances found is included in the average.                                 
 ALPHA = 0.602                       # constant that controls the learning rate for SPSA decays
 BIG_A = 25                          # A for SPSA
 C = np.pi/10                        # initial CK for SPSA
@@ -55,6 +54,7 @@ ETA = 0.1                           # eta - learning rate for parameter shift
 GAMMA = 0.101                       # constant that determines how quickly the SPSA perturbation decays
 S = 0.5                             # parameter for parameter shift.  Default is 0.5 
 SIMULATE_NOISE = False              # Simulate noise in the quantum circuit
+MPS = True                          # Use MPS simulator
 
 ROTATIONS = 10                      # number of rotations sampled in parameter graphs
 
