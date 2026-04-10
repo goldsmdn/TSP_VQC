@@ -6,7 +6,6 @@ import graycode
 from braket.parametric import FreeParameter
 from braket.circuits import Circuit
 from braket.devices import Devices, LocalSimulator
-from braket.aws import AwsDevice
 
 import random
 from typing import Callable # Import Callable for type hinting
@@ -23,10 +22,10 @@ from modules.helper_functions_tsp import (convert_bit_string_to_cycle,
                                   validate_gradient_type
                                   ) 
 
-
 from braket.jobs.metrics import log_metric
 
 from modules.config import PRINT_FREQUENCY
+
 
 def cost_fn_fact(locations:int, 
                  gray:bool, 

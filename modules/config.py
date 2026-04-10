@@ -1,21 +1,6 @@
 from collections.abc import Set
 
 import numpy as np
-import boto3
-from braket.aws import AwsDevice, AwsSession
-from braket.devices import LocalSimulator
-
-
-AWS_PROFILE = 'qcap'
-AWS_REGION = 'eu-west-2'
-
-# Create a boto3 session with region
-BOTO_SESSION = boto3.Session(
-    profile_name=AWS_PROFILE,
-    region_name=AWS_REGION,
-    )
-
-AWS_SESSION = AwsSession(boto_session=BOTO_SESSION)
 
 # General control data - directories, file names, etc.
 
@@ -29,14 +14,6 @@ RESULTS_FILE = 'results.csv'
 ENCODING = 'utf-8-sig'              # Encoding of csv file
 AWS = False                         # Whether runs are on AWS or Qiskit.
 
-
-ANKAA_DEVICE = "arn:aws:braket:us-west-1::device/qpu/rigetti/Ankaa-3"
-TARGET = 'local'                    # Options 'local', 'ankaa', 'ankaa_sim'
-
-TARGETS = {'local': {'device': LocalSimulator()},
-                   'ankaa': {'device': AwsDevice(ANKAA_DEVICE, aws_session = AWS_SESSION)},
-                   'ankaa_em': {'device': AwsDevice(ANKAA_DEVICE, aws_session = AWS_SESSION).emulator()},
-                   } 
 
 #General control parameters - verbosity, cache size, etc.
 VERBOSE = False                     # controls how much is printed
