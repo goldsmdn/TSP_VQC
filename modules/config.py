@@ -1,5 +1,24 @@
+from collections.abc import Set
+
 import numpy as np
+import boto3
+from braket.aws import AwsDevice, AwsSession
+from braket.devices import LocalSimulator
+
+
+AWS_PROFILE = 'qcap'
+AWS_REGION = 'eu-west-2'
+
+# Create a boto3 session with region
+BOTO_SESSION = boto3.Session(
+    profile_name=AWS_PROFILE,
+    region_name=AWS_REGION,
+    )
+
+AWS_SESSION = AwsSession(boto_session=BOTO_SESSION)
+
 # General control data - directories, file names, etc.
+
 CONTROL_DIR = 'control'
 CONTROL_FILE = 'control_parameters.csv'
 NETWORK_DIR = 'networks'
@@ -8,10 +27,16 @@ GRAPH_DIR = 'graphs'
 RESULTS_DIR = 'results'
 RESULTS_FILE = 'results.csv'
 ENCODING = 'utf-8-sig'              # Encoding of csv file
-AWS = True                          # Whether runs are on AWS or Qiskit.
+AWS = False                         # Whether runs are on AWS or Qiskit.
 
-AWS_DEFAULT_REGION = 'eu-west-2'           # AWS region for S3 bucket - not really needed for local runs, but prevents errors when running locally.
-AWS_PROFILE = 'QCAP-Researcher-Permission-Set-470855104497'
+
+ANKAA_DEVICE = "arn:aws:braket:us-west-1::device/qpu/rigetti/Ankaa-3"
+TARGET = 'local'                    # Options 'local', 'ankaa', 'ankaa_sim'
+
+TARGETS = {'local': {'device': LocalSimulator()},
+                   'ankaa': {'device': AwsDevice(ANKAA_DEVICE, aws_session = AWS_SESSION)},
+                   'ankaa_em': {'device': AwsDevice(ANKAA_DEVICE, aws_session = AWS_SESSION).emulator()},
+                   } 
 
 #General control parameters - verbosity, cache size, etc.
 VERBOSE = False                     # controls how much is printed
@@ -68,4 +93,21 @@ STD_DEV = 0.05                      #standard deviation for warm start weight ra
 LR = 1e-3                           #Learning rate
 MOMENTUM = 0.9                     
 WEIGHT_DECAY = 0.0006               #importance of L2 regularization in optimiser
-                                    #options: 'Adam', 'SGD', 'RMSprop'                                 
+                                    #options: 'Adam', 'SGD', 'RMSprop'    
+                                    
+VALID_QUBIT_LOOPS = {3: [  0, 1, 8, 7,], #convention - loops return to qubit 0 at the end and this is assumed in the code
+                     8: [  0, 1, 2, 3, 10, 9,  8,  7,],
+                     14: [ 0,  1,  2,  3,  4,  5,  6, 13, 12, 11, 10,  9, 8, 7,],
+                     29: [ 0,  1,  2,  3,  4,  5,  6, 13, 12, 11, 10,  9, 8,
+                          15, 16, 17, 18, 19, 20, 27, 26, 25, 24, 23, 22, 29, 28, 21,
+                          14, 7,],
+                     41:[ 0,  1,  2,  3,  4,  5,  6, 13, 12, 11, 10, 9, 8, 
+                         15, 16, 17, 18, 19, 20, 27, 26, 25, 24, 23, 22, 29, 
+                         30, 37, 44, 51, 58, 
+                         57, 56, 49, 50, 43, 36, 35, 28, 21, 14,  7,],
+
+                     49:[ 0,  1,  2,  3,  4,  5,  6, 13, 12, 11, 10, 9, 8, 
+                         15, 16, 17, 18, 19, 20, 27, 26, 25, 24, 23, 22, 29, 
+                         30, 37, 44, 51, 52, 53, 54, 55, 62, 61, 60, 59, 58, 
+                         57, 56, 49, 50, 43, 36, 35, 28, 21, 14,  7,]
+                         }                             

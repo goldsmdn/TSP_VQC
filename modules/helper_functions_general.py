@@ -1,6 +1,6 @@
 #General helper functions that could be used for other projects, not just Travelling Salesman Problem (TSP)
 
-from modules.config import VA
+from modules.config import VALID_QUBIT_LOOPS
 
 def validate_list_for_duplicates(input_list:list) -> bool:
     """Validate that a list does not contain duplicates"""
