@@ -8,6 +8,10 @@ GRAPH_DIR = 'graphs'
 RESULTS_DIR = 'results'
 RESULTS_FILE = 'results.csv'
 ENCODING = 'utf-8-sig'              # Encoding of csv file
+AWS = True                          # Whether runs are on AWS or Qiskit.
+
+AWS_DEFAULT_REGION = 'eu-west-2'           # AWS region for S3 bucket - not really needed for local runs, but prevents errors when running locally.
+AWS_PROFILE = 'QCAP-Researcher-Permission-Set-470855104497'
 
 #General control parameters - verbosity, cache size, etc.
 VERBOSE = False                     # controls how much is printed
@@ -33,12 +37,13 @@ DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation f
 NUM_LAYERS = 1                      # number of layers in the model
 
 #information needed in QML manual runs:
-MODE = 2                            # MODE = 1 - rxgate, rygate, cnot gates
+MODE = 7                            # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 2 - rxgate, XX gates -can be used with Hot Start
                                     # MODE = 3 - IQP based
                                     # MODE = 4 - rxgate
                                     # MODE = 5 - test mode
                                     # MODE = 6 - rxgate, ry gate
+                                    # MODE = 7 - rz gates, iswap gates 
                                     # MODE = 8 - input is all zeros - with sine activation
                                     # MODE = 9 - input is 0.5 - with sine activation
                                     # MODE = 18 - input is all zeros - with sigmoid activation
@@ -54,7 +59,7 @@ ETA = 0.1                           # eta - learning rate for parameter shift
 GAMMA = 0.101                       # constant that determines how quickly the SPSA perturbation decays
 S = 0.5                             # parameter for parameter shift.  Default is 0.5 
 SIMULATE_NOISE = False              # Simulate noise in the quantum circuit
-MPS = True                          # Use MPS simulator
+MPS = False                         # Use MPS simulator
 
 ROTATIONS = 10                      # number of rotations sampled in parameter graphs
 

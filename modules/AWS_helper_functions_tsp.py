@@ -76,6 +76,34 @@ def cost_fn_fact(locations:int,
             raise Exception(f'bit_string {bit_string_input} is not a list or a tensor')
     return cost_fn
 
+def find_problem_size(locations, formulation) -> int:
+    """Finds the number of binary variables needed
+    
+    Parameters
+    ----------
+    locations : int 
+        Number of locations
+    formulation:
+        'original' => method from Goldsmith D, Day-Evans J.
+        'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
+
+    Returns
+    ----------
+    pb_dim : int
+        Length of the bit string needed to store the problem
+    """
+    if formulation == 'original':
+        pb_dim = 0
+        for i in range(1, locations):
+            bin_len = find_bin_length(i)
+            pb_dim += bin_len
+    elif formulation == 'new':
+        f = math.factorial(locations)
+        pb_dim = find_bin_length(f)
+    else:
+        raise Exception(f'Unknown method {formulation}')
+    return(pb_dim)
+
 def find_stats(cost_fn: Callable,
                counts: dict, 
                shots: int, 
@@ -440,8 +468,8 @@ def cost_func_evaluate(noise,
         A list of the bits for the lowest energy bit string
     """
 
-    #device = LocalSimulator()
-    device = AwsDevice(Devices.Amazon.SV1)
+    device = LocalSimulator()
+    #device = AwsDevice(Devices.Amazon.SV1)
         # Run on Braket
     job = device.run(model, shots=shots)    
     result = job.result()
