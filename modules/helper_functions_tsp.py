@@ -945,7 +945,7 @@ def define_parameters(sdl) -> list:
 
     """
     params = []
-    if sdl.mode in [1, 2, 3, 4, 6,]:
+    if sdl.mode in [1, 2, 3, 4, 6, 7,]:
         for i in range(sdl.num_params):
             text = "param " + str(i)
             params.append(Parameter(text))
@@ -996,17 +996,18 @@ def vqc_circuit(sdl, params: list) -> QuantumCircuit:
                 else:
                     qc.rxx(params[sdl.qubits+i+offset], i, 0,)
     elif sdl.mode == 3:
-        for layer in range(sdl.layers):
-            offset = layer * sdl.qubits * 2
-            for i in range(sdl.qubits):
-                qc.h(i)
-                if i < sdl.qubits-1:
-                    qc.rzz(params[sdl.qubits+i+offset], i, i+1,)
-                else:
-                    qc.rzz(params[sdl.qubits+i+offset], i, 0,)
-            for i in range(sdl.qubits):
-                qc.rz(params[i+offset], i)
-                qc.h(i)
+        if sdl.layers > 1:
+            raise Exception('Mode 3 is only coded for one layer')
+        offset = layer * sdl.qubits * 2
+        for i in range(sdl.qubits):
+            qc.h(i)
+            if i < sdl.qubits-1:
+                qc.rzz(params[sdl.qubits+i+offset], i, i+1,)
+            else:
+                qc.rzz(params[sdl.qubits+i+offset], i, 0,)
+        for i in range(sdl.qubits):
+            qc.rz(params[i+offset], i)
+            qc.h(i)
     elif sdl.mode == 4:
         for layer in range(sdl.layers):
             offset = layer * sdl.qubits
@@ -1027,6 +1028,17 @@ def vqc_circuit(sdl, params: list) -> QuantumCircuit:
                 qc.h(i)
                 qc.ry(params[i+offset], i)
                 qc.rx(params[sdl.qubits+i+offset], i)
+    elif sdl.mode == 7:
+        for layer in range(sdl.layers):
+            offset = layer * sdl.qubits * 2
+            for i in range(sdl.qubits):
+                qc.rz(params[i+offset], i)
+                if i < sdl.qubits-1:
+                    qc.iswap(i,i+1)
+                else:
+                    qc.iswap(i,0)
+                qc.rz(params[sdl.qubits+i+offset],i)
+                #qc = Circuit().add_verbatim_box(inner)
     else:
         raise Exception(f'Mode {sdl.mode} has not been coded for')
     qc.measure_all()
@@ -1057,7 +1069,7 @@ def create_initial_rotations(sdl, bin_hot_start_list: list=False,)-> np.ndarray:
     
     """
     
-    if sdl.mode in [1, 2, 3, 6,]:
+    if sdl.mode in [1, 2, 3, 6, 7, ]:
         param_num = 2 * sdl.qubits * sdl.layers
     elif sdl.mode == 4:
         param_num = sdl.qubits * sdl.layers
