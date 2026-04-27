@@ -1,0 +1,309 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>classes.MyModel &mdash; Travelling Salesman Problem 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Travelling Salesman Problem
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">modules package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../classes.html">classes package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Travelling Salesman Problem</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">classes.MyModel</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for classes.MyModel</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">modules.helper_ML_functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">find_device</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">modules.helper_functions_tsp</span><span class="w"> </span><span class="kn">import</span> <span class="n">cost_fn_tensor</span>
+
+<div class="viewcode-block" id="estimate_cost_fn_gradient">
+<a class="viewcode-back" href="../../classes.html#classes.MyModel.estimate_cost_fn_gradient">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">estimate_cost_fn_gradient</span><span class="p">(</span><span class="n">my_input</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> 
+                              <span class="n">output</span><span class="p">:</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> 
+                              <span class="n">cost_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">list</span><span class="p">],</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;estimate the gradient of the cost function by </span>
+<span class="sd">    changing each bit in turn and calculating the difference in cost function.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    my_input : torch.Tensor</span>
+<span class="sd">        The input tensor</span>
+<span class="sd">    output : torch.Tensor</span>
+<span class="sd">        Contains a precalculated run of the cost function </span>
+<span class="sd">        for performance reasons</span>
+<span class="sd">    cost_fn : Callable[[list], int]</span>
+<span class="sd">        The cost function to be used</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    torch.Tensor</span>
+<span class="sd">        The estimated gradient.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">find_device</span><span class="p">()</span>
+    <span class="n">gradient_est</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">my_input</span><span class="p">)</span>  <span class="c1"># Initialize with zeros for clarity</span>
+
+    <span class="n">dim0</span> <span class="o">=</span> <span class="n">my_input</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">dim1</span> <span class="o">=</span> <span class="n">my_input</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">my_input_clone</span> <span class="o">=</span> <span class="n">my_input</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>  <span class="c1"># Clone once, modify in-place</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dim0</span><span class="p">):</span> 
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dim1</span><span class="p">):</span>
+            <span class="n">old_bit</span> <span class="o">=</span> <span class="n">my_input</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">sign</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">old_bit</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># Convert to -1 or 1</span>
+            <span class="n">my_input_clone</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">old_bit</span>
+            <span class="n">new_output</span> <span class="o">=</span> <span class="n">cost_fn_tensor</span><span class="p">(</span><span class="n">my_input_clone</span><span class="p">[[</span><span class="n">i</span><span class="p">]],</span> <span class="n">cost_fn</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">gradient_est</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">new_output</span><span class="p">)</span> <span class="o">/</span> <span class="n">sign</span>
+            <span class="n">my_input_clone</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">old_bit</span> 
+    <span class="k">return</span> <span class="n">gradient_est</span></div>
+
+
+<div class="viewcode-block" id="CostFunction">
+<a class="viewcode-back" href="../../classes.html#classes.MyModel.CostFunction">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CostFunction</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A custom autograd function to calculate the cost function and estimate the gradient&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="CostFunction.forward">
+<a class="viewcode-back" href="../../classes.html#classes.MyModel.CostFunction.forward">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">cost_fn</span><span class="p">):</span>
+        <span class="c1"># Save the gradient for the backward pass</span>
+        <span class="n">device</span> <span class="o">=</span> <span class="n">find_device</span><span class="p">()</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">cost_fn_tensor</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">cost_fn</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">gradient_est</span> <span class="o">=</span> <span class="n">estimate_cost_fn_gradient</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">cost_fn</span><span class="p">)</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="n">gradient_est</span>
+        <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="CostFunction.backward">
+<a class="viewcode-back" href="../../classes.html#classes.MyModel.CostFunction.backward">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
+        <span class="c1"># Read the gradient from the forward pass</span>
+        <span class="n">grad_cost_fn</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">ctx</span><span class="o">.</span><span class="n">grad</span><span class="p">,</span> <span class="n">grad_cost_fn</span></div>
+</div>
+
+    
+<div class="viewcode-block" id="MySine">
+<a class="viewcode-back" href="../../classes.html#classes.MyModel.MySine">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MySine</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a sine function symmetric about 0.5&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MySine</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>  <span class="c1"># Initialize parent class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;pi&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+
+<div class="viewcode-block" id="MySine.forward">
+<a class="viewcode-back" href="../../classes.html#classes.MyModel.MySine.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="c1">#rads = ((x - 0.5) * torch.tensor(math.pi))</span>
+        <span class="c1">#return 0.5 * (1 + torch.sin(rads)) </span>
+        <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span></div>
+</div>
+
+    
+<div class="viewcode-block" id="Sample_Binary">
+<a class="viewcode-back" href="../../classes.html#classes.MyModel.Sample_Binary">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Sample_Binary</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return probability in forward, linear backwards&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Sample_Binary</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>  <span class="c1"># Initialize parent class</span>
+
+<div class="viewcode-block" id="Sample_Binary.forward">
+<a class="viewcode-back" href="../../classes.html#classes.MyModel.Sample_Binary.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">sampled</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>  <span class="c1"># 0/1 values as float</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">sampled</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="p">(</span><span class="n">output</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span></div>
+</div>
+
+
+<div class="viewcode-block" id="BinaryToCost">
+<a class="viewcode-back" href="../../classes.html#classes.MyModel.BinaryToCost">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BinaryToCost</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a bit string to a cost in forwards, estimate gradient backwards&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cost_fn</span><span class="p">:</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">list</span><span class="p">],</span> <span class="nb">int</span><span class="p">]):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BinaryToCost</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span> <span class="c1"># Intialize parent class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cost_fn</span> <span class="o">=</span> <span class="n">cost_fn</span>
+    
+<div class="viewcode-block" id="BinaryToCost.forward">
+<a class="viewcode-back" href="../../classes.html#classes.MyModel.BinaryToCost.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;calculate cost forwards&quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">CostFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cost_fn</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span></div>
+</div>
+
+
+<div class="viewcode-block" id="MyModel">
+<a class="viewcode-back" href="../../classes.html#classes.MyModel.MyModel">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A simple feedforward neural network model for TSP&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sdl</span><span class="p">,</span> <span class="n">cost_fn</span><span class="p">:</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">list</span><span class="p">],</span> <span class="nb">int</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the model&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bits</span> <span class="o">=</span> <span class="n">sdl</span><span class="o">.</span><span class="n">qubits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="n">sdl</span><span class="o">.</span><span class="n">layers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std_dev</span> <span class="o">=</span> <span class="n">sdl</span><span class="o">.</span><span class="n">std_dev</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cost_fn</span> <span class="o">=</span> <span class="n">cost_fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hot_start</span> <span class="o">=</span> <span class="n">sdl</span><span class="o">.</span><span class="n">hot_start</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">sdl</span><span class="o">.</span><span class="n">mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradient_type</span> <span class="o">=</span> <span class="n">sdl</span><span class="o">.</span><span class="n">gradient_type</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">activation</span> <span class="o">=</span> <span class="n">MySine</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">18</span><span class="p">,</span> <span class="mi">19</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">activation</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Mode </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="si">}</span><span class="s1"> is not supported&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_build_layers</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fc</span><span class="p">,</span> <span class="n">first_layer</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper: initialize weights depending on hot_start mode&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">hot_start</span><span class="p">:</span>
+                <span class="c1"># Xavier initialization for sigmoid, SIREN for sine</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;SGD+X&#39;</span><span class="p">,</span> <span class="s1">&#39;Adam+X&#39;</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">activation</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">):</span>
+                        <span class="n">gain</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">calculate_gain</span><span class="p">(</span><span class="s2">&quot;sigmoid&quot;</span><span class="p">)</span>
+                        <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">xavier_uniform_</span><span class="p">(</span><span class="n">fc</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">gain</span><span class="o">=</span><span class="n">gain</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">fc</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">zeros_</span><span class="p">(</span><span class="n">fc</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">activation</span><span class="p">,</span> <span class="n">MySine</span><span class="p">):</span>
+                        <span class="c1"># Sitzmann et al. 2020 (SIREN)</span>
+                        <span class="k">if</span> <span class="n">first_layer</span><span class="p">:</span>
+                            <span class="c1"># First layer: uniform(-1/num_inputs, 1/num_inputs)</span>
+                            <span class="n">fc</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">bits</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">bits</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">fc</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                <span class="n">fc</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="c1"># Hidden layers: uniform(-sqrt(6 / num_inputs)/ω, sqrt(6 / num_inputs)/ω)</span>
+                            <span class="c1"># Default ω₀ = 30 in the SIREN paper</span>
+                            <span class="n">w0</span> <span class="o">=</span> <span class="mf">30.0</span>
+                            <span class="n">bound</span> <span class="o">=</span> <span class="p">(</span><span class="mi">6</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">bits</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span> <span class="o">/</span> <span class="n">w0</span>
+                            <span class="n">fc</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="n">bound</span><span class="p">,</span> <span class="n">bound</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">fc</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                <span class="n">fc</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="n">bound</span><span class="p">,</span> <span class="n">bound</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Activation function </span><span class="si">{self.activation}</span><span class="s1"> not supported for SGD+X&#39;</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fc</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">copy_</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bits</span><span class="p">))</span>
+                <span class="n">fc</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">std_dev</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">fc</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+                <span class="n">fc</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">copy_</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">std_dev</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">fc</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_layers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create layers fc1..fcN and act1..actN.&quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">fc</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bits</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bits</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_init_weights</span><span class="p">(</span><span class="n">fc</span><span class="p">,</span> <span class="n">first_layer</span><span class="o">=</span><span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;fc</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fc</span><span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;act</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample</span> <span class="o">=</span> <span class="n">Sample_Binary</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cost</span> <span class="o">=</span> <span class="n">BinaryToCost</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cost_fn</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MyModel.forward">
+<a class="viewcode-back" href="../../classes.html#classes.MyModel.MyModel.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Define the forward pass&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="c1">#iterate through the layers and create a forward pass</span>
+            <span class="n">fc</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;fc</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">act</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;act</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">fc</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">act</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cost</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Daniel Goldsmitih.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
