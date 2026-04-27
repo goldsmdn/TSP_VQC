@@ -5,7 +5,8 @@ import graycode
 
 from braket.parametric import FreeParameter
 from braket.circuits import Circuit
-from braket.devices import Devices, LocalSimulator
+#from braket.devices import Devices, LocalSimulator
+#from braket.aws import AwsDevice
 
 import random
 from typing import Callable # Import Callable for type hinting
@@ -20,14 +21,44 @@ from modules.helper_functions_tsp import (convert_bit_string_to_cycle,
                                   binary_string_format,
                                   convert_integer_to_binary_list,
                                   validate_gradient_type
-                                  ) 
+                                  )
+
+from modules.helper_functions_general import (find_logical_to_physical_dictionary,
+                                              convert_physical_to_logical_bit_string,
+                                              find_qubits_measured,
+                                              find_valid_device_loop
+                                              )
+
 
 from braket.jobs.metrics import log_metric
 
-from modules.config import PRINT_FREQUENCY
+from modules.config import (PRINT_FREQUENCY, 
+                            #ANKAA_DEVICE,
+                            TARGET,
+                            TARGETS,
+                           )
 
+def find_device(target=TARGET):
+    device = TARGETS[target]['device']
+    return(device)
 
-def cost_fn_fact(locations:int, 
+def validate_qubit_loops(qubits, loop_dict):
+    device = find_device(target = 'ankaa') # always use ANKAA for the qubit check, which ever device we are running on.
+    #device = AwsDevice(ANKAA_DEVICE) 
+    connectivity_dict = device.properties.dict()['paradigm']['connectivity']
+    loop_list = loop_dict[qubits]
+    for index, qubit in enumerate(loop_list):
+        last_valid_index = len(loop_list) - 1
+        if index < last_valid_index:
+            next_qubit = loop_list[index+1]
+        else:
+            next_qubit = loop_list[0]
+        connected_qubits = connectivity_dict['connectivityGraph'][str(qubit)]
+        if str(next_qubit) not in connected_qubits:
+            raise Exception(f'qubits{qubit} and {next_qubit} are not connected')
+    
+def cost_fn_fact(locations:int,
+                 qubits,
                  gray:bool, 
                  formulation:str, 
                  distance_array: np.ndarray, ) -> Callable[[list], int]:
@@ -37,6 +68,8 @@ def cost_fn_fact(locations:int,
     ----------
     locations: int
         The number of locations in the problem
+    qubits:int
+        The number of qubits required
     gray: bool
         If True Gray codes are used
     formulation: str
@@ -54,9 +87,11 @@ def cost_fn_fact(locations:int,
     @LRUCacheUnhashable
     def cost_fn(bit_string_input: list) -> float:
         """Returns the value of the objective function for a bit_string"""
+        #print(f'Analysing bit string {bit_string_input} with {qubits=}')
         if isinstance(bit_string_input, list):
-            bit_string = bit_string_input
-            full_list_of_locs = convert_bit_string_to_cycle(bit_string, 
+            bit_string = convert_physical_to_logical_bit_string(bit_string_input, qubits)
+            #print(f'After conversion, bit string {bit_string}')
+            full_list_of_locs = convert_bit_string_to_cycle(bit_string,
                                                             locations, 
                                                             gray, 
                                                             formulation
@@ -74,34 +109,6 @@ def cost_fn_fact(locations:int,
         else:
             raise Exception(f'bit_string {bit_string_input} is not a list or a tensor')
     return cost_fn
-
-def find_problem_size(locations, formulation) -> int:
-    """Finds the number of binary variables needed
-    
-    Parameters
-    ----------
-    locations : int 
-        Number of locations
-    formulation:
-        'original' => method from Goldsmith D, Day-Evans J.
-        'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
-
-    Returns
-    ----------
-    pb_dim : int
-        Length of the bit string needed to store the problem
-    """
-    if formulation == 'original':
-        pb_dim = 0
-        for i in range(1, locations):
-            bin_len = find_bin_length(i)
-            pb_dim += bin_len
-    elif formulation == 'new':
-        f = math.factorial(locations)
-        pb_dim = find_bin_length(f)
-    else:
-        raise Exception(f'Unknown method {formulation}')
-    return(pb_dim)
 
 def find_stats(cost_fn: Callable,
                counts: dict, 
@@ -273,25 +280,26 @@ def hot_start_list_to_string(locations:int,
         for i in range(len(total_binary_string)):
             result_list.append(int(total_binary_string[i]))
         return(result_list)
-    elif formulation == 'new':
-        dim = find_problem_size(locations, formulation)
-        f = math.factorial(locations)
-        y = 0
-        i = 0
-        start_cycle_list = [i for i in range(locations)]
-        while i < locations:
-            f = int(f / (locations - i))
-            m = hot_start_list[i]
-            j = start_cycle_list.index(m)
-            start_cycle_list.remove(m)  
-            y += j * f
-            i += 1
-        result_list = convert_integer_to_binary_list(y, dim, gray=gray)
-        return result_list
+    #elif formulation == 'new':
+    #    dim = find_problem_size(locations, formulation)
+    #    f = math.factorial(locations)
+    #    y = 0
+    #    i = 0
+    #    start_cycle_list = [i for i in range(locations)]
+    #    while i < locations:
+    #        f = int(f / (locations - i))
+    #        m = hot_start_list[i]
+    #        j = start_cycle_list.index(m)
+    #        start_cycle_list.remove(m)  
+    #        y += j * f
+    #        i += 1
+    #    result_list = convert_integer_to_binary_list(y, dim, gray=gray)
+    #    return result_list
     else:
         raise Exception(f'Unknown method {formulation}')
 
 def update_parameters_using_gradient(locations:int,
+                                     qubits:int,
                                      average_slice:float,
                                      shots:int,
                                      mode:int,
@@ -371,6 +379,7 @@ def update_parameters_using_gradient(locations:int,
             if lowest < lowest_to_date:
                 lowest_to_date = lowest
                 lowest_string_to_date = lowest_energy_bit_string
+        lowest_string_to_date = convert_physical_to_logical_bit_string(lowest_string_to_date, qubits)
         route_list = convert_bit_string_to_cycle(lowest_string_to_date, 
                                                  locations, 
                                                  gray, 
@@ -412,13 +421,12 @@ def update_parameters_using_gradient(locations:int,
         else:
             raise Exception(f'Error found when calculating gradient. {gradient_type} is not an allowed gradient type')
         gradient_list.append(gradient.tolist())
-        #print(f'Ready to print results with {PRINT_FREQUENCY=} and {print_results=}', flush=True)
         if print_results and i % PRINT_FREQUENCY == 0:  
             #Force flush to push to Cloudwatch quickly
             print(f'For iteration {i} using the best {average_slice*100} percent of the results', flush=True)
-            print(f'The average cost from the sample is {average:.3f} and the top-sliced average of the best results is {cost:.3f}, flush=True')
+            print(f'The average cost from the sample is {average:.3f} and the top-sliced average of the best results is {cost:.3f}', flush=True)
             print(f'The lowest cost from the sample is {lowest:.3f}, flush=True')
-            print(f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date}, flush=True ')
+            print(f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date}', flush=True)
             print(f'and route {route_list}')
             #AWS hybrid job
             log_metric(metric_name="average_sample_cost", iteration_number=i, value=average)
@@ -467,13 +475,12 @@ def cost_func_evaluate(noise,
         A list of the bits for the lowest energy bit string
     """
 
-    device = LocalSimulator()
-    #device = AwsDevice(Devices.Amazon.SV1)
-        # Run on Braket
+    device = find_device()
+    #print(f'Found device as {device}')
     job = device.run(model, shots=shots)    
     result = job.result()
     counts = result.measurement_counts 
-    
+    print(f'{counts=}')
     cost, lowest, lowest_energy_bit_string = find_stats(cost_fn, counts, shots, average_slice, )
     return(cost, lowest, lowest_energy_bit_string)
 
@@ -597,9 +604,9 @@ def define_parameters(qubits:int,
 
     """
     params = []
-    if mode in [1, 2, 3, 4, 6, ]:
+    if mode in [1, 2, 3, 4, 6, 7, 12, ]:
         for i in range(num_params):
-            text = "param " + str(i)
+            text = "param_" + str(i)
             params.append(FreeParameter(text))
         return params
     else:   
@@ -631,7 +638,8 @@ def vqc_circuit(qubits: int,
     qc: Quantum Circuit
         A quantum circuit without bound weights
     """
-
+    qubit_dict = find_logical_to_physical_dictionary(qubits)
+    qubits_measured = find_qubits_measured(qubits)
     qc = Circuit()
     if mode == 1:
         for layer in range(layers):
@@ -652,9 +660,9 @@ def vqc_circuit(qubits: int,
                 qc.rx(i, params[i+offset],)
             for i in range(qubits):
                 if i < qubits-1:
-                    qc.xx(i, i+1,params[qubits+i+offset],)
+                    qc.xx(i, i+1, params[qubits+i+offset],)
                 else:
-                    qc.xx(i, 0,params[qubits+i+offset],)
+                    qc.xx(i, 0, params[qubits+i+offset],)
     elif mode == 3:
         for layer in range(layers):
             offset = layer * qubits * 2
@@ -679,7 +687,6 @@ def vqc_circuit(qubits: int,
         qc.x(1)
         qc.x(3)
         qc.x(4)
-
     elif mode == 6:
         for layer in range(layers):
             offset = layer * qubits * 2
@@ -687,14 +694,52 @@ def vqc_circuit(qubits: int,
                 qc.h(i)
                 qc.ry(i, params[i+offset],)
                 qc.rx(i, params[qubits+i+offset],)
+    elif mode == 7:
+        inner = Circuit()
+        for layer in range(layers):
+            offset = layer * qubits_measured * 2
+            for i in range(qubits_measured):
+                inner.rz(qubit_dict[i], params[i+offset])
+                if i < qubits_measured-1:
+                    inner.iswap(qubit_dict[i],qubit_dict[i+1])
+                else:
+                    inner.iswap(qubit_dict[i],qubit_dict[0])
+                inner.rz(qubit_dict[i], params[qubits_measured+i+offset])
+        #starts AWS support: new line below added.
+        print(f'After circuit set up, the verbatim box receives the following circuit{inner.qubits}')
+        #end AWS support
+        qc = Circuit().add_verbatim_box(inner)
+    elif mode == 11:
+        inner = Circuit()
+        for layer in range(layers):
+            offset = layer * qubits * 2
+            for i in range(qubits):
+                inner.h(i)
+                inner.ry(i, params[i+offset],)
+                inner.rx(i, params[qubits+i+offset]),
+            for i in range(qubits):
+                if i < qubits-1:
+                    inner.cnot(i,i+1)
+                else:
+                    inner.cnot(i,0)
+        qc = Circuit().add_verbatim_box(inner)          
     else:
         raise Exception(f'Mode {mode} has not been coded for')
         
-    qc.measure(range(qubits))
+    #qc.measure(range(qubits))
+    # only measure the qubits in the sorted list
+    valid_device_loop = find_valid_device_loop(qubits)
+    #print(f'Valid device loop found = {valid_device_loop}')
+    sorted_list = sorted(find_valid_device_loop(qubits))
+    qc.measure(sorted_list)
+    #starts AWS support: new line below added.
+    print(f'After measurement, the following qubits are measured {sorted_list}') # <==== add this line
+    #end AWS support
 
     return qc
 
 def create_initial_rotations(qubits: int,
+                             param_num: int,
                              mode: int,
                              layers:int,
                              hot_start:bool=False,
@@ -720,13 +765,12 @@ def create_initial_rotations(qubits: int,
         initial rotations
     
     """
-    
-    if mode in [1, 2, 3, 6,]:
-        param_num = 2 * qubits * layers
-    elif mode == 4:
-        param_num = qubits * layers
-    else:
-        raise Exception(f'Mode {mode} is not yet coded')
+    #if mode in [1, 2, 3, 6, 7, 12,]:
+    #    param_num = 2 * qubits * layers
+    #elif mode == 4:
+    #    param_num = qubits * layers
+    #else:
+    #    raise Exception(f'Mode {mode} is not yet coded')
     if hot_start:
         if layers in [1]:
             raise Exception('Cannot use a hot start for mode {mode}')
