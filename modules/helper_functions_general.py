@@ -13,17 +13,41 @@ def convert_list_to_dictionary(input_list:list) -> dict:
     """Convert a list to a dictionary with the list elements as values and the keys as the index of the element in the list"""
     duplicates = validate_list_for_duplicates(input_list)
     if duplicates is False:
-        raise Exception(f'Qubit list contains duplicates, not a valid input')
-    elif duplicates != True:
-        raise Exception(f'Unexpected error validating list for duplicates, got {duplicates}')
+        raise Exception(f'Qubit list {input_list} contains duplicates, not a valid input')
     output_dict = {}
     for key, item in enumerate(input_list):
         output_dict[key] = item
     return output_dict
 
-def process_output_bit_string(input_list, bit_string:str) -> str:
-    """Process the output bit string from the quantum circuit to a list of integers"""
-    output_list = []
-    for char in bit_string:
-        output_list.append(int(char))
+def find_valid_device_loop(qubits:int, ) -> list:
+    """read the valid qubit loops as a list from the configuration file"""
+    output_list = VALID_QUBIT_LOOPS[qubits]
     return output_list
+
+def find_logical_to_physical_dictionary(qubits:int) -> dict:
+    """return a dictionary showing the looking up from logical to physical qubit"""
+    my_list = find_valid_device_loop(qubits)
+    output_dict = convert_list_to_dictionary(my_list)
+    return output_dict
+
+def convert_physical_to_logical_bit_string(input_bitstring:list, qubits:int) -> list:
+    """finds the permutation to be applied to the output bit string"""
+    #print(f'{input_bitstring=}, {qubits=}')
+    output_list = []
+    qubit_list = find_valid_device_loop(qubits)
+    # remove last qubit - highest physical qubit
+    qubit_list = qubit_list[:qubits]
+    sorted_list = sorted(qubit_list) #only process the qubits mapped to logical qubits. 
+    logical_to_physical_dict = find_logical_to_physical_dictionary(qubits)
+    physical_to_logical_dict = {value: key for key, value in logical_to_physical_dict.items()}   
+    for i, item in enumerate(sorted_list):
+            physical_qubit = item
+            logical_qubit = physical_to_logical_dict[physical_qubit]
+            output_list.append(input_bitstring[logical_qubit])
+    #output_list = output_list[:qubits] #only send the items for logical qubits. 
+    return output_list
+
+def find_qubits_measured(qubits:int) -> int:
+    return len(find_valid_device_loop(qubits))
+    
+    
