@@ -868,3 +868,31 @@ def bind_weights(params:list, rots:list, qc:Circuit) -> Circuit:
 def detect_quantum_GPU_support()-> bool:
     """Detect if a GPU is available for quantum simulations"""
     return False
+
+def bind_weights(params:list, rots:list, qc:Circuit) -> Circuit:
+#def bind_weights(params:list, rots:list, qc:QuantumCircuit) -> QuantumCircuit:
+    """Bind parameters to rotations and return a bound quantum circuit
+
+    Parameters
+    ----------
+    params: list
+        A list of parameters (the texts)
+    rots: list
+        The exact values for the parameters, which are rotations of quantum gates
+    qc: Quantum Circuit
+        A quantum circuit without bound weights  
+
+    Returns
+    -------
+    bc: Quantum Circuit
+        A quantum circuit with including bound weights, ready to run an evaluation
+    """
+
+    binding_dict = {}
+    for i, rot in enumerate(rots):
+        param_name = str(params[i])
+        binding_dict[param_name] = rot
+        #binding_dict[str(params[i])] = rot #qiskit verion
+    #bc = qc.assign_parameters(binding_dict)#qiskit version
+    bc = qc.make_bound_circuit(binding_dict) #aws
+    return(bc)
