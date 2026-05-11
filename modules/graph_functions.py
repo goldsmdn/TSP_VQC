@@ -109,6 +109,7 @@ def cost_graph_multi(filename: str,
         axs[i,j].legend(fontsize=6, loc='upper right')
     fig.tight_layout()
     fig.savefig(filename)
+    plt.close(fig)
 
 def plot_shortest_routes(points: list, 
                          route1:list, 
@@ -152,6 +153,7 @@ def plot_shortest_routes(points: list,
     blue_patch = mpatches.Patch(color='blue', label='The shortest route')
     plt.legend(handles=[red_patch, blue_patch])
     plt.show()
+    plt.close()
 
 def plot_sine_activation():    
     """Plot the Sine Activation Function for the classical ML model."""
@@ -170,9 +172,9 @@ def plot_sine_activation():
 
     plt.tight_layout()
     plt.savefig(filepath, bbox_inches='tight')
-
     plt.show()
-
+    plt.close()
+    
 def plot_3d_graph_models(grouped_means: pd.DataFrame, 
                          input: str,
                          input2: str = 'layers'
@@ -238,7 +240,8 @@ def plot_3d_graph_models(grouped_means: pd.DataFrame,
     plt.tight_layout()
     plt.savefig(filepath, bbox_inches='tight')
     plt.show()
-
+    plt.close(fig)
+    
 def plot_3d_graph_slice(grouped_means: pd.DataFrame, 
                         input: str, 
                         show_sem:bool=False
@@ -259,11 +262,17 @@ def plot_3d_graph_slice(grouped_means: pd.DataFrame,
     ax = fig.add_subplot(111, projection='3d')
 
     # Map categorical data to numeric positions
-    locations = grouped_means['locations'].unique()
+    locations = sorted(grouped_means['locations'].unique())
     slices = sorted(grouped_means['slice'].unique())
+
+    #rint(f'Locations: {locations}')
+    #rint(f'Slices: {slices}')
 
     loc_map = {loc: i for i, loc in enumerate(locations)}
     slice_map = {sli: i for i, sli in enumerate(slices)}
+
+    #rint(f'Location Map: {loc_map}')
+    #rint(f'Slice Map: {slice_map}')
 
     # Assign colors for each location
     colors = plt.get_cmap(CMAP, len(locations))  # or 'Set3', 'Paired', etc.
@@ -274,42 +283,47 @@ def plot_3d_graph_slice(grouped_means: pd.DataFrame,
     dy = 0.25
     cap_width = 0.1
 
-    # Plot bars with different colors
-    for i, row in grouped_means.iterrows():
-        x = slice_map[row['slice']]   
-        y = loc_map[row['locations']]
-        x_bar = slice_map[row['slice']] - dx/2    # Center the bar on the x-axis
-        y_bar = loc_map[row['locations']] - dy/2  # Center the bar on the y-axis
-        z_bar = 0
-        dz = row[input]
-        if show_sem:
-            error = row['sem']
+   # loop BY LOCATION ORDER so that the bars for higher locations are drawn on top of the bars for lower locations, making them more visible.
+    for loc in locations:  # so 15 is drawn last
+        #rint(f'Processing location: {loc}')
+        df_loc = grouped_means[grouped_means['locations'] == loc]
+        for _, row in df_loc.iterrows():
+            x = slice_map[row['slice']] - dx / 2
+            y = loc_map[loc] - dy / 2
+            dz = row[input]
 
-        color = location_colors[row['locations']]
-        ax.bar3d(x_bar , y_bar, z_bar, dx, dy, dz, color=color, shade=True)
-        
-        x_center = x + dx / 4
-        y_center = y + dy / 4
-        y_center = y
+            ax.bar3d(
+                x, y, 0,
+                dx, dy, dz,
+                color=location_colors[loc],
+                shade=True, 
+                zsort='max' #puts smaller bars in front of taller bars, making them more visible
+            )
 
-        if show_sem:
-            if error > 0:
-                #error bars
+            if show_sem and row['sem'] > 0:
+                x_center = x + dx / 2
+                y_center = y + dy / 2
+
                 ax.plot(
-                    [x_center , x_center],
+                    [x_center, x_center],
                     [y_center, y_center],
-                    [0, dz + error],
+                    [dz, dz + row['sem']],
                     color='black',
-                    linewidth=2
-                    )     
-                # Horizontal cap at the top
+                    linewidth=1.5
+                )
+
                 ax.plot(
                     [x_center - cap_width, x_center + cap_width],
                     [y_center, y_center],
-                    [dz + error, dz + error],
+                    [dz + row['sem'], dz + row['sem']],
                     color='black',
-                    linewidth=2
-                    )
+                    linewidth=1.5
+                )
+
+# ✅ View so Y is true depth axis
+    ax.view_init(elev=20, azim=-60)
+
+
     # Label axes
     ax.set_xlabel('Slice')
     ax.set_ylabel('Locations')
@@ -333,6 +347,7 @@ def plot_3d_graph_slice(grouped_means: pd.DataFrame,
     plt.savefig(filepath, bbox_inches='tight')
 
     plt.show()
+    plt.close(fig)
 
 def plot_heatmap(input: pd.DataFrame,
                  title: str,
@@ -374,3 +389,67 @@ def plot_heatmap(input: pd.DataFrame,
 
     plt.tight_layout()
     plt.show()
+    plt.close()
+
+def plot_2d_graph_slice(
+    sliced_summary,
+    input='error',
+    location_value=None,
+    show_sem=True
+):
+    """
+    Plot 2D means with optional SEM error bars for one location across slices.
+
+    Parameters
+    ----------
+    sliced_summary : pd.DataFrame
+        DataFrame with columns:
+        ['locations', 'slice', input, 'sem']
+    input : str, default='error'
+        Column name of the metric to plot
+    location_value : str or int
+        Location value to plot (required)
+    show_sem : bool, default=True
+        Whether to show SEM error bars
+    """
+
+    if location_value is None:
+        raise ValueError("location_value must be specified")
+
+    # Filter data for the chosen location
+    df_loc = (
+        sliced_summary[sliced_summary['locations'] == location_value]
+        .sort_values('slice')
+    )
+
+    slices = df_loc['slice']
+    means = df_loc[input]
+    sems = df_loc['sem']
+
+    plt.figure(figsize=(8, 5))
+
+    if show_sem:
+        plt.errorbar(
+            slices,
+            means,
+            yerr=sems,
+            fmt='o-',
+            capsize=4,
+            label=f"Location {location_value}"
+        )
+    else:
+        plt.plot(
+            slices,
+            means,
+            marker='o',
+            label=f"Location {location_value}"
+        )
+
+    plt.xlabel("Slice")
+    plt.ylabel(input)
+    plt.title(f"{input.capitalize()} across slices\n(Location = {location_value})")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.show()
+    plt.close()

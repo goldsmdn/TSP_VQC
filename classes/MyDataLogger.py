@@ -4,6 +4,7 @@ from pathlib import Path
 import csv
 from dataclasses import dataclass, asdict, field
 from typing import Callable
+from modules.helper_functions_general import find_qubits_measured
 
 from modules.config import (RESULTS_DIR, 
                             RESULTS_FILE,
@@ -30,6 +31,8 @@ from modules.config import (RESULTS_DIR,
                             WEIGHT_DECAY,
                             SIMULATE_NOISE,
                             TARGET,
+                            MPS,
+                            AWS,
                             )
 
 from modules.graph_functions import cost_graph_multi
@@ -94,6 +97,7 @@ class MySubDataLogger(MyDataLogger):
     formulation: str = None
     #ml specific set up
     layers: int = None
+    
     std_dev: float = None
     lr: float = None
     weight_decay: float = None 
@@ -130,6 +134,8 @@ class MySubDataLogger(MyDataLogger):
     noise:bool = None
     #monte carlo
     monte_carlo: bool = False
+    mps: bool = None
+    aws:bool = None
 
     def __post_init__(self):
         """This method is called after __init__"""
@@ -142,12 +148,13 @@ class MySubDataLogger(MyDataLogger):
     def calculate_parameter_numbers(self) -> int:
         """Calculate the number of parameters in a variational quantum circuit"""
 
-        if self.mode in [1, 2, 3, 6, 12,]:
+        #if self.mode in [1, 2, 3, 6, 7,] :
+        if self.mode in [1, 2, 3, 6, 7, 12] :
             num_params = 2 * self.qubits * self.layers
         elif self.mode == 4:
             num_params = self.qubits * self.layers
-        elif self.mode in [7, 13,]:
-            qubits_measured = find_qubits_measured(self.qubits, TARGET)
+        elif self.mode ==7:
+            qubits_measured = find_qubits_measured(self.qubits)
             num_params = 2 * qubits_measured * self.layers
         else:
             raise Exception(f'Mode {self.mode} has not been coded for')
@@ -178,9 +185,13 @@ class MySubDataLogger(MyDataLogger):
                 raise Exception(f'Only certain gradient type are allowed for non quantum, not {self.gradient_type}')
             if self.mode not in [8, 9, 18, 19]:
                 raise Exception(f'mode = {self.mode} is not permitted for non quantum')
-            if self.gradient_type in ['SGD+X', 'Adam+X']:
+            if self.gradient_type in ['SGD+X', 'Adam+X'] and self.start:
                 if self.hot_start:
                     raise Exception(f'Hot start is not allowed with SGD+X')
+            if self.mps is True:
+                raise Exception(f'MPS simulator is only for quantum runs')
+            if self.aws is True:
+                raise Exception(f'AWS is only for quantum runs')
     
     def save_results_to_csv(self):
         """Save the results to a CSV file"""
@@ -251,6 +262,8 @@ class MySubDataLogger(MyDataLogger):
             self.eta = float(data_dict['eta'])
             self.s = float(data_dict['s'])
             self.noise = format_boolean(data_dict['noise'])
+            self.mps = format_boolean(data_dict['mps'])
+            self.aws = format_boolean(data_dict['aws'])
         
     def update_general_constants_from_config(self):
         """Update general constants from the config file"""
@@ -275,6 +288,8 @@ class MySubDataLogger(MyDataLogger):
         self.gamma = GAMMA
         self.s = S
         self.noise = SIMULATE_NOISE
+        self.mps = MPS
+        self.aws = AWS
 
     def update_ml_constants_from_config(self):
         """Update constants needed for ML from config file"""

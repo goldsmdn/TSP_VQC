@@ -826,36 +826,24 @@ def cost_func_evaluate(sdl,
         A list of the bits for the lowest energy bit string
     """
     if sdl.quantum:
-        #if sdl.noise:
-        #    backend = FakeAuckland()
-        #    job = backend.run(model, shots=sdl.shots)     
-        #    counts = job.result().get_counts()
-        #else:
-        #    if detect_quantum_GPU_support():
-        #        simulator = AerSimulator(method='statevector', device='GPU')
-        #        results = simulator.run(model).result()
-        #        counts = results.get_counts(model)
-        #    else:
-        #        sampler = SamplerV2()
-        #        job = sampler.run([model], shots=sdl.shots)
-        #        results = job.result()
-        #        counts = results[0].data.meas.get_counts()
-    
-        # Create provider
-        #provider = AWSBraketProvider()
-        
-        # Choose a Braket backend
-        #backend = provider.get_backend("SV1")   # managed simulator
-        # backend = provider.get_backend("ionq.device")     # real hardware example
-        
-        # set up device
-        device = LocalSimulator()
-        #device = AwsDevice(Devices.Amazon.SV1)
-        # Run on Braket
-        job = device.run(model, shots=sdl.shots)    
-        result = job.result()
-        counts = result.measurement_counts 
-        
+        if sdl.noise:
+            backend = FakeAuckland()
+            job = backend.run(model, shots=sdl.shots)     
+            counts = job.result().get_counts()
+        elif sdl.mps:
+            simulator = AerSimulator(method='matrix_product_state')
+            results = simulator.run(model).result()
+            counts = results.get_counts(model)
+        else:
+            if detect_quantum_GPU_support():
+                simulator = AerSimulator(method='statevector', device='GPU')
+                results = simulator.run(model).result()
+                counts = results.get_counts(model)
+            else:
+                sampler = SamplerV2()
+                job = sampler.run([model], shots=sdl.shots)
+                results = job.result()
+                counts = results[0].data.meas.get_counts()
     else:
         raise Exception('Classical model not yet coded for')
     cost, lowest, lowest_energy_bit_string = find_stats(cost_fn, counts, sdl.shots, average_slice, )
@@ -979,8 +967,7 @@ def define_parameters(sdl) -> list:
 
     """
     params = []
-    #add new modes.
-    if sdl.mode in [1, 2, 3, 4, 6, ]:
+    if sdl.mode in [1, 2, 3, 4, 6, 7,]:
         for i in range(sdl.num_params):
             text = "param " + str(i)
             #params.append(Parameter(text))
@@ -1036,17 +1023,18 @@ def vqc_circuit(sdl, params: list) -> Circuit:
                 else:
                     qc.xx(i, 0,params[sdl.qubits+i+offset],)
     elif sdl.mode == 3:
-        for layer in range(sdl.layers):
-            offset = layer * sdl.qubits * 2
-            for i in range(sdl.qubits):
-                qc.h(i)
-                if i < sdl.qubits-1:
-                    qc.zz(i, i+1, params[sdl.qubits+i+offset],)
-                else:
-                    qc.zz(i, 0, params[sdl.qubits+i+offset],)
-            for i in range(sdl.qubits):
-                qc.rz(i, params[i+offset],)
-                qc.h(i)
+        if sdl.layers > 1:
+            raise Exception('Mode 3 is only coded for one layer')
+        offset = layer * sdl.qubits * 2
+        for i in range(sdl.qubits):
+            qc.h(i)
+            if i < sdl.qubits-1:
+                qc.rzz(params[sdl.qubits+i+offset], i, i+1,)
+            else:
+                qc.rzz(params[sdl.qubits+i+offset], i, 0,)
+        for i in range(sdl.qubits):
+            qc.rz(params[i+offset], i)
+            qc.h(i)
     elif sdl.mode == 4:
         for layer in range(sdl.layers):
             offset = layer * sdl.qubits
@@ -1065,8 +1053,19 @@ def vqc_circuit(sdl, params: list) -> Circuit:
             offset = layer * sdl.qubits * 2
             for i in range(sdl.qubits):
                 qc.h(i)
-                qc.ry(i, params[i+offset],)
-                qc.rx(i, params[sdl.qubits+i+offset],)
+                qc.ry(params[i+offset], i)
+                qc.rx(params[sdl.qubits+i+offset], i)
+    elif sdl.mode == 7:
+        for layer in range(sdl.layers):
+            offset = layer * sdl.qubits * 2
+            for i in range(sdl.qubits):
+                qc.rz(params[i+offset], i)
+                if i < sdl.qubits-1:
+                    qc.iswap(i,i+1)
+                else:
+                    qc.iswap(i,0)
+                qc.rz(params[sdl.qubits+i+offset],i)
+                #qc = Circuit().add_verbatim_box(inner)
     else:
         raise Exception(f'Mode {sdl.mode} has not been coded for')
     
@@ -1098,14 +1097,15 @@ def create_initial_rotations(sdl, bin_hot_start_list: list=False,)-> np.ndarray:
     
     """
     
-    if sdl.mode in [1, 2, 3, 6,]:
+    if sdl.mode in [1, 2, 3, 6, 7, ]:
         param_num = 2 * sdl.qubits * sdl.layers
     elif sdl.mode == 4:
         param_num = sdl.qubits * sdl.layers
     else:
         raise Exception(f'Mode {sdl.mode} is not yet coded')
     if sdl.hot_start:
-        if sdl.layers in [1]:
+#        if sdl.layers in [1]:
+        if sdl.mode not in [2]:
             raise Exception('Cannot use a hot start for mode {mode}')
         init_rots = [0 for i in range(param_num)]
         for i, item in enumerate(bin_hot_start_list):

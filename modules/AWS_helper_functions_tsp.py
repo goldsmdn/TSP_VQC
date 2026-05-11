@@ -5,6 +5,8 @@ import graycode
 
 from braket.parametric import FreeParameter
 from braket.circuits import Circuit
+#from braket.devices import Devices, LocalSimulator
+#from braket.aws import AwsDevice
 
 import random
 from typing import Callable # Import Callable for type hinting
