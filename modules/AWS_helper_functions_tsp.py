@@ -13,40 +13,69 @@ from typing import Callable # Import Callable for type hinting
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
-from modules.helper_functions_tsp import (convert_bit_string_to_cycle, 
-                                  find_total_distance,
-                                  find_bin_length,
-                                  check_loc_list,
-                                  validate_distance_array,
-                                  binary_string_format,
-                                  convert_integer_to_binary_list,
-                                  validate_gradient_type
-                                  )
+from modules.helper_functions_tsp import (
+    convert_bit_string_to_cycle, 
+    find_total_distance,
+    find_bin_length,
+    check_loc_list,
+    validate_distance_array,
+    binary_string_format,
+    convert_integer_to_binary_list,
+    validate_gradient_type
+    )
 
-from modules.helper_functions_general import (find_logical_to_physical_dictionary,
-                                              convert_physical_to_logical_bit_string,
-                                              find_qubits_measured,
-                                              find_valid_device_loop
-                                              )
-
+from modules.helper_functions_general import (
+    find_logical_to_physical_dictionary,
+    convert_physical_to_logical_bit_string,
+    find_qubits_measured,
+    find_valid_device_loop
+    )
 
 from braket.jobs.metrics import log_metric
 
-from modules.config import (PRINT_FREQUENCY, 
-                            #ANKAA_DEVICE,
-                            TARGET,
-                            TARGETS,
-                           )
+from modules.config import (
+    PRINT_FREQUENCY, 
+    TARGET,
+    TARGETS,
+    )
+
+def find_device_string(target=TARGET):
+    device_arn = TARGETS[target]['arn']
+    return(device_arn)
 
 def find_device(target=TARGET):
-    device = TARGETS[target]['device']
-    return(device)
+    """
+    Lazily create and return a Braket device.
+    This function is hybrid-job safe.
+    """
+    from braket.aws import AwsDevice
+    from braket.devices import LocalSimulator
 
-def validate_qubit_loops(qubits, loop_dict):
-    device = find_device(target = 'ankaa') # always use ANKAA for the qubit check, which ever device we are running on.
-    #device = AwsDevice(ANKAA_DEVICE) 
+    cfg = TARGETS[target]
+
+    # Local simulator
+    if cfg["type"] == "local":
+        return LocalSimulator()
+
+    # AWS device
+    device = AwsDevice(cfg["arn"])
+
+    # Optional emulator
+    if cfg.get("emulator", False):
+        return device.emulator()
+
+    return device
+
+def is_even(n):
+    return n % 2 == 0
+
+def validate_qubit_loops(qubits, loop_dict, target):
+    device = find_device(target = target)
     connectivity_dict = device.properties.dict()['paradigm']['connectivity']
-    loop_list = loop_dict[qubits]
+    loop_list = loop_dict[target][qubits]
+    set_list = set(loop_list)
+    if len(set_list) != len(loop_list):
+        raise Exception(f'The loop list {loop_list} contains duplicates')
     for index, qubit in enumerate(loop_list):
         last_valid_index = len(loop_list) - 1
         if index < last_valid_index:
@@ -56,6 +85,13 @@ def validate_qubit_loops(qubits, loop_dict):
         connected_qubits = connectivity_dict['connectivityGraph'][str(qubit)]
         if str(next_qubit) not in connected_qubits:
             raise Exception(f'qubits{qubit} and {next_qubit} are not connected')
+    loop_length = len(loop_list)
+    if is_even(qubits) and loop_length != qubits:
+        raise Exception(f'{len(loop_list)=} and {qubits=} for {target=}')
+    if not is_even(qubits) and (loop_length - qubits) !=1:
+        raise Exception(f'{len(loop_list)=} and {qubits=} for {target=}')
+    print(f'No errors found for {target=} {qubits=} \n')
+    return
     
 def cost_fn_fact(locations:int,
                  qubits,
@@ -89,7 +125,7 @@ def cost_fn_fact(locations:int,
         """Returns the value of the objective function for a bit_string"""
         #print(f'Analysing bit string {bit_string_input} with {qubits=}')
         if isinstance(bit_string_input, list):
-            bit_string = convert_physical_to_logical_bit_string(bit_string_input, qubits)
+            bit_string = convert_physical_to_logical_bit_string(bit_string_input, qubits, TARGET)
             #print(f'After conversion, bit string {bit_string}')
             full_list_of_locs = convert_bit_string_to_cycle(bit_string,
                                                             locations, 
@@ -280,48 +316,49 @@ def hot_start_list_to_string(locations:int,
         for i in range(len(total_binary_string)):
             result_list.append(int(total_binary_string[i]))
         return(result_list)
-    #elif formulation == 'new':
-    #    dim = find_problem_size(locations, formulation)
-    #    f = math.factorial(locations)
-    #    y = 0
-    #    i = 0
-    #    start_cycle_list = [i for i in range(locations)]
-    #    while i < locations:
-    #        f = int(f / (locations - i))
-    #        m = hot_start_list[i]
-    #        j = start_cycle_list.index(m)
-    #        start_cycle_list.remove(m)  
-    #        y += j * f
-    #        i += 1
-    #    result_list = convert_integer_to_binary_list(y, dim, gray=gray)
-    #    return result_list
+    elif formulation == 'new':
+        dim = find_problem_size(locations, formulation)
+        f = math.factorial(locations)
+        y = 0
+        i = 0
+        start_cycle_list = [i for i in range(locations)]
+        while i < locations:
+            f = int(f / (locations - i))
+            m = hot_start_list[i]
+            j = start_cycle_list.index(m)
+            start_cycle_list.remove(m)  
+            y += j * f
+            i += 1
+        result_list = convert_integer_to_binary_list(y, dim, gray=gray)
+        return result_list
     else:
         raise Exception(f'Unknown method {formulation}')
 
-def update_parameters_using_gradient(locations:int,
-                                     qubits:int,
-                                     average_slice:float,
-                                     shots:int,
-                                     mode:int,
-                                     iterations:int,
-                                     gray:bool,
-                                     hot_start:bool,
-                                     gradient_type:str,
-                                     formulation:str,
-                                     layers:int,
-                                     alpha:float,     
-                                     big_a:float,
-                                     c:float,
-                                     eta:float,
-                                     gamma:float,
-                                     s:float,
-                                     noise:bool,                                 
-                                     params: list,
-                                     rots: np.ndarray,
-                                     cost_fn: Callable,
-                                     qc: Circuit,
-                                     print_results: str=True,
-                                     ):
+def update_parameters_using_gradient(
+                locations:int,
+                qubits:int,
+                average_slice:float,
+                shots:int,
+                mode:int,
+                iterations:int,
+                gray:bool,
+                hot_start:bool,
+                gradient_type:str,
+                formulation:str,
+                layers:int,
+                alpha:float,     
+                big_a:float,
+                c:float,
+                eta:float,
+                gamma:float,
+                s:float,
+                noise:bool,                                 
+                params: list,
+                rots: np.ndarray,
+                cost_fn: Callable,
+                qc: Circuit,
+                print_results: str=True,
+                ):
     """Updates parameters using SPSA or parameter shift gradients"""
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
     parameter_list, average_list = [], []
@@ -379,7 +416,7 @@ def update_parameters_using_gradient(locations:int,
             if lowest < lowest_to_date:
                 lowest_to_date = lowest
                 lowest_string_to_date = lowest_energy_bit_string
-        lowest_string_to_date = convert_physical_to_logical_bit_string(lowest_string_to_date, qubits)
+        lowest_string_to_date = convert_physical_to_logical_bit_string(lowest_string_to_date, qubits, TARGET)
         route_list = convert_bit_string_to_cycle(lowest_string_to_date, 
                                                  locations, 
                                                  gray, 
@@ -480,7 +517,7 @@ def cost_func_evaluate(noise,
     job = device.run(model, shots=shots)    
     result = job.result()
     counts = result.measurement_counts 
-    print(f'{counts=}')
+    #print(f'{counts=}')
     cost, lowest, lowest_energy_bit_string = find_stats(cost_fn, counts, shots, average_slice, )
     return(cost, lowest, lowest_energy_bit_string)
 
@@ -604,7 +641,7 @@ def define_parameters(qubits:int,
 
     """
     params = []
-    if mode in [1, 2, 3, 4, 6, 7, 12, ]:
+    if mode in [1, 2, 3, 4, 6, 7, 12, 13, ]:
         for i in range(num_params):
             text = "param_" + str(i)
             params.append(FreeParameter(text))
@@ -638,8 +675,8 @@ def vqc_circuit(qubits: int,
     qc: Quantum Circuit
         A quantum circuit without bound weights
     """
-    qubit_dict = find_logical_to_physical_dictionary(qubits)
-    qubits_measured = find_qubits_measured(qubits)
+    qubit_dict = find_logical_to_physical_dictionary(qubits, TARGET)
+    qubits_measured = find_qubits_measured(qubits, TARGET)
     qc = Circuit()
     if mode == 1:
         for layer in range(layers):
@@ -722,15 +759,40 @@ def vqc_circuit(qubits: int,
                     inner.cnot(i,i+1)
                 else:
                     inner.cnot(i,0)
-        qc = Circuit().add_verbatim_box(inner)          
+        qc = Circuit().add_verbatim_box(inner)    
+    elif mode == 13:
+        inner = Circuit()
+        for layer in range(layers):
+            print(f'{qubit_dict=}, {qubits_measured=}, {qubits=}')
+            offset = layer * qubits_measured * 2
+            for i in range(qubits_measured):
+                #hadamard
+                inner.rz(qubit_dict[i], np.pi/2)
+                inner.rx(qubit_dict[i], np.pi/2)
+                inner.rz(qubit_dict[i], np.pi/2)
+                inner.rz(qubit_dict[i], params[i+offset])
+                if i < qubits_measured-1:
+                    inner.cz(qubit_dict[i], qubit_dict[i+1])
+                else:
+                    inner.cz(qubit_dict[i], qubit_dict[0])
+            for i in range(qubits_measured):
+                inner.rz(qubit_dict[i], params[qubits_measured+i+offset],)
+                # hadamdard
+                inner.rz(qubit_dict[i], np.pi/2)
+                inner.rx(qubit_dict[i], np.pi/2)
+                inner.rz(qubit_dict[i], np.pi/2)
+            #starts AWS support: new line below added.
+            print(f'After circuit set up, the verbatim box receives the following circuit{inner.qubits}')
+            #end AWS support
+            print(f'The qubit dictionary is {qubit_dict}')
+            qc = Circuit().add_verbatim_box(inner)  
     else:
         raise Exception(f'Mode {mode} has not been coded for')
         
-    #qc.measure(range(qubits))
     # only measure the qubits in the sorted list
-    valid_device_loop = find_valid_device_loop(qubits)
-    #print(f'Valid device loop found = {valid_device_loop}')
-    sorted_list = sorted(find_valid_device_loop(qubits))
+    valid_device_loop = find_valid_device_loop(qubits, TARGET)
+    #sorted_list = sorted(find_valid_device_loop(qubits, TARGET))
+    sorted_list = sorted(valid_device_loop)
     qc.measure(sorted_list)
     #starts AWS support: new line below added.
     print(f'After measurement, the following qubits are measured {sorted_list}') # <==== add this line
@@ -765,12 +827,6 @@ def create_initial_rotations(qubits: int,
         initial rotations
     
     """
-    #if mode in [1, 2, 3, 6, 7, 12,]:
-    #    param_num = 2 * qubits * layers
-    #elif mode == 4:
-    #    param_num = qubits * layers
-    #else:
-    #    raise Exception(f'Mode {mode} is not yet coded')
     if hot_start:
         if layers in [1]:
             raise Exception('Cannot use a hot start for mode {mode}')

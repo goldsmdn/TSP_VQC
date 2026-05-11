@@ -4,14 +4,19 @@ import copy
 import graycode
 import csv
 from itertools import count
-from qiskit.circuit import Parameter
+
+"""from qiskit.circuit import Parameter
 from qiskit import QuantumCircuit, transpile
-
 from qiskit_aer import AerSimulator
-
 from qiskit_ibm_runtime.fake_provider import FakeAuckland
-
 from qiskit_aer.primitives import SamplerV2
+from qiskit_braket_provider import AWSBraketProvider"""
+
+from braket.parametric import FreeParameter
+from braket.circuits import Circuit
+from braket.devices import Devices, LocalSimulator
+from braket.aws import AwsDevice
+
 import random
 import json
 import torch
@@ -24,6 +29,8 @@ from modules.config import (NETWORK_DIR,
                             )
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
+
+from braket.jobs.metrics import log_metric
 
 def load_dict_from_json(filename: str) -> dict:
     """Loads a dictionary from a JSON file"""
@@ -672,7 +679,8 @@ def update_parameters_using_gradient(sdl,
                                      params: list,
                                      rots: np.ndarray,
                                      cost_fn: Callable,
-                                     qc: QuantumCircuit,
+                                     #qc: QuantumCircuit,
+                                     qc: Circuit,
                                      print_results: str=False,
                                      ):
     """Updates parameters using SPSA or parameter shift gradients"""
@@ -703,10 +711,11 @@ def update_parameters_using_gradient(sdl,
             a = sdl.eta*((sdl.big_a+1)**sdl.alpha)/magnitude_g0
 
     for i in range(0, sdl.iterations):
-        if detect_quantum_GPU_support:
-            bc = qc.assign_parameters({params: rot for params, rot in zip(params, rots)})
-        else:
-            bc = bind_weights(params, rots, qc)
+        #if detect_quantum_GPU_support:
+        #    bc = qc.assign_parameters({params: rot for params, rot in zip(params, rots)})
+        #else:
+        #    bc = bind_weights(params, rots, qc)
+        bc = bind_weights(params, rots, qc)
         cost, lowest, lowest_energy_bit_string = cost_func_evaluate(sdl,
                                                                     cost_fn, 
                                                                     bc, 
@@ -768,6 +777,14 @@ def update_parameters_using_gradient(sdl,
                 print(f'The lowest cost from the sample is {lowest:.3f}')
                 print(f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date} ')
                 print(f'and route {route_list}')
+                #AWS hybrid job
+                log_metric(metric_name="average_sample_cost", iteration_number=i, value=average)
+                log_metric(metric_name="top_sliced_sample_cost", iteration_number=i, value=cost)
+                log_metric(metric_name="lowest_sample_cost", iteration_number=i, value=lowest)
+                log_metric(metric_name="lowest_to_date", iteration_number=i, value=lowest_to_date)
+                log_metric(metric_name="lowest_string_to_date", iteration_number=i, value=lowest_string_to_date)
+                log_metric(metric_name="route_list", iteration_number=i, value=route_list)
+                
     return index_list, cost_list, lowest_list, gradient_list, average_list, parameter_list 
     
 def cost_func_evaluate(sdl,
@@ -790,7 +807,7 @@ def cost_func_evaluate(sdl,
     cost_fn: function
         A function of a bit string evaluating a distance for that bit string
     model : a model to evalulate an output bit string given weights eg
-        QuantumCircuit
+        Circuit
             A quantum circuit with bound weights for which the energy is to be found
         Classical Model
             A classical model with bound weights for which the energy is to be found
@@ -834,7 +851,8 @@ def cost_func_evaluate(sdl,
 
 def my_gradient(sdl,
                 cost_fn, 
-                qc:QuantumCircuit, 
+                #qc:QuantumCircuit, 
+                qc:Circuit,
                 params:list, 
                 rots:np.ndarray, 
                 average_slice:float, 
@@ -859,7 +877,7 @@ def my_gradient(sdl,
             SPSA parameter, small number controlling perturbations
     cost_fn: function
         A function of a bit string evaluating an energy (distance) for that bit string
-    qc: QuantumCircuit
+    qc: Circuit
         A quantum circuit for which the gradient is to be found, without the weights being bound
     params: list
         A list of parameters (the texts)
@@ -880,6 +898,7 @@ def my_gradient(sdl,
         for i, theta in enumerate(rots):
             new_rots[i] = theta + np.pi/(4*sdl.s)
             bc = bind_weights(params, new_rots, qc)
+            #bc = RemoveBarriers()(bc)
             cost_plus, _, _ = cost_func_evaluate(sdl,
                                                  cost_fn, 
                                                  bc, 
@@ -888,6 +907,7 @@ def my_gradient(sdl,
             
             new_rots[i] = theta - np.pi/(4*sdl.s)
             bc = bind_weights(params, new_rots, qc)
+            #bc = RemoveBarriers()(bc)
             cost_minus, _, _ = cost_func_evaluate(sdl,
                                                   cost_fn, 
                                                   bc, 
@@ -907,6 +927,7 @@ def my_gradient(sdl,
         new_rots = rots + ck_deltak
         # gradient approximation]
         bc = bind_weights(params, new_rots, qc)
+        #bc = RemoveBarriers()(bc)
         cost_plus, _, _ = cost_func_evaluate(sdl,
                                              cost_fn, 
                                              bc, 
@@ -915,6 +936,7 @@ def my_gradient(sdl,
 
         new_rots = rots - ck_deltak
         bc = bind_weights(params, new_rots, qc)
+        #bc = RemoveBarriers()(bc)
         cost_minus, _, _ = cost_func_evaluate(sdl,
                                               cost_fn, 
                                               bc, 
@@ -948,12 +970,13 @@ def define_parameters(sdl) -> list:
     if sdl.mode in [1, 2, 3, 4, 6, 7,]:
         for i in range(sdl.num_params):
             text = "param " + str(i)
-            params.append(Parameter(text))
+            #params.append(Parameter(text))
+            params.append(FreeParameter(text))
         return params
     else:   
         raise Exception(f'Mode {sdl.mode} has not been coded for')
     
-def vqc_circuit(sdl, params: list) -> QuantumCircuit:
+def vqc_circuit(sdl, params: list) -> Circuit:
     """Set up a variational quantum circuit
 
     Parameters
@@ -971,30 +994,34 @@ def vqc_circuit(sdl, params: list) -> QuantumCircuit:
     qc: Quantum Circuit
         A quantum circuit without bound weights
     """
-    
-    qc = QuantumCircuit(sdl.qubits)
+
+    #if len(params) != sdl.layers * sdl.qubits * 2:
+    #raise Exception(f"Expected {sdl.layers * sdl.qubits * 2} params, got {len(params)}")
+
+    #print(f'{params=}')
+    qc = Circuit()
     if sdl.mode == 1:
         for layer in range(sdl.layers):
             offset = layer * sdl.qubits * 2
             for i in range(sdl.qubits):
                 qc.h(i)
-                qc.ry(params[i+offset], i)
-                qc.rx(params[sdl.qubits+i+offset], i)
+                qc.ry(i, params[i+offset],)
+                qc.rx(i, params[sdl.qubits+i+offset]),
             for i in range(sdl.qubits):
                 if i < sdl.qubits-1:
-                    qc.cx(i,i+1)
+                    qc.cnot(i,i+1)
                 else:
-                    qc.cx(i,0)
+                    qc.cnot(i,0)
     elif sdl.mode == 2:
         for layer in range(sdl.layers):
             offset = layer * sdl.qubits * 2
             for i in range(sdl.qubits):
-                qc.rx(params[i+offset], i)
+                qc.rx(i, params[i+offset],)
             for i in range(sdl.qubits):
                 if i < sdl.qubits-1:
-                    qc.rxx(params[sdl.qubits+i+offset], i, i+1,)
+                    qc.xx(i, i+1,params[sdl.qubits+i+offset],)
                 else:
-                    qc.rxx(params[sdl.qubits+i+offset], i, 0,)
+                    qc.xx(i, 0,params[sdl.qubits+i+offset],)
     elif sdl.mode == 3:
         if sdl.layers > 1:
             raise Exception('Mode 3 is only coded for one layer')
@@ -1012,7 +1039,7 @@ def vqc_circuit(sdl, params: list) -> QuantumCircuit:
         for layer in range(sdl.layers):
             offset = layer * sdl.qubits
             for i in range(sdl.qubits):
-                qc.rx(params[i+offset], i)
+                qc.rx(i, params[i+offset],)
     elif sdl.mode == 5:
     #test mode
         if sdl.qubits != 5:
@@ -1041,10 +1068,11 @@ def vqc_circuit(sdl, params: list) -> QuantumCircuit:
                 #qc = Circuit().add_verbatim_box(inner)
     else:
         raise Exception(f'Mode {sdl.mode} has not been coded for')
-    qc.measure_all()
-    if sdl.noise:
-        backend = FakeAuckland()
-        qc= transpile(qc, backend)
+    
+    qc.measure(range(sdl.qubits))
+    #if sdl.noise:
+    #   backend = FakeAuckland()
+    #    qc= transpile(qc, backend)
     return qc
 
 def create_initial_rotations(sdl, bin_hot_start_list: list=False,)-> np.ndarray: 
@@ -1090,7 +1118,7 @@ def create_initial_rotations(sdl, bin_hot_start_list: list=False,)-> np.ndarray:
     return(init_rots_array)
 from typing import Callable
 
-def bind_weights(params:list, rots:list, qc:QuantumCircuit) -> QuantumCircuit:
+def bind_weights(params:list, rots:list, qc:Circuit) -> Circuit:
     """Bind parameters to rotations and return a bound quantum circuit
 
     Parameters
@@ -1110,8 +1138,11 @@ def bind_weights(params:list, rots:list, qc:QuantumCircuit) -> QuantumCircuit:
 
     binding_dict = {}
     for i, rot in enumerate(rots):
-        binding_dict[str(params[i])] = rot
-    bc = qc.assign_parameters(binding_dict)
+        param_name = str(params[i])
+        binding_dict[param_name] = rot
+        #binding_dict[str(params[i])] = rot
+    #bc = qc.assign_parameters(binding_dict)
+    bc = qc.make_bound_circuit(binding_dict)
     return(bc)
 
 def find_run_stats(lowest_list:list)-> tuple[float, int]:
@@ -1166,11 +1197,11 @@ def format_boolean(string_input: str)->bool:
 
 def detect_quantum_GPU_support()-> bool:
     """Detect if a GPU is available for quantum simulations"""
-    devices = AerSimulator().available_devices()
-    if 'GPU' in devices:
-        return True
-    else:
-        return False
+    #devices = AerSimulator().available_devices()
+    #if 'GPU' in devices:
+    #    return True
+    #else:
+    return False
     
 def calculate_hot_start_data(sdl, 
                              distance_array: np.ndarray, 

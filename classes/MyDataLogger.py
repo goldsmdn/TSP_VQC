@@ -30,6 +30,7 @@ from modules.config import (RESULTS_DIR,
                             MOMENTUM,
                             WEIGHT_DECAY,
                             SIMULATE_NOISE,
+                            TARGET,
                             MPS,
                             AWS,
                             )
@@ -37,7 +38,9 @@ from modules.config import (RESULTS_DIR,
 from modules.graph_functions import cost_graph_multi
 from modules.helper_functions_tsp import (validate_gradient_type,
                                           format_boolean,
-                                          )                                   
+                                          )        
+from modules.helper_functions_general import find_qubits_measured
+
 
 @dataclass
 class MyDataLogger:
@@ -171,19 +174,12 @@ class MySubDataLogger(MyDataLogger):
             raise Exception(f'Input field noise is not boolean')
         if self.quantum:
             validate_gradient_type(self.gradient_type)
-            #if self.mode not in [1, 2, 3, 4, 6, 7, ]:
-            if self.mode not in [1, 2, 3, 4, 6, 7, 12]:
+            if self.mode not in [1, 2, 3, 4, 6, 7, 12, 13]:
                 raise Exception(f'mode = {self.mode} is not permitted for quantum')
             if self.mode == 4 and self.layers> 1:
                 raise Exception(f'mode = {self.mode} is only for 1 layer')
-            if self.mps and self.noise:
-                raise Exception(f'MPS simulator cannot be used with noise simulation')
-            if self.aws and self.hot_start:
-                    raise Exception(f'Hot start is not coded for AWS')
-            if self.aws and self.gray:
-                    raise Exception(f'Gray code is not coded for AWS')
-            if self.aws and self.mode !=7:
-                raise Exception(f'mode = {self.mode=} selected, but ony mode 7 is suitable to run on an AWS device')
+            #if self.aws and self.mode !=7:
+            #    raise Exception(f'mode = {self.mode=} selected, but ony mode 7 is suitable to run on an AWS device')
         else:
             if self.gradient_type not in ['SGD', 'SGD+X', 'Adam', 'Adam+X', 'RMSprop',]:
                 raise Exception(f'Only certain gradient type are allowed for non quantum, not {self.gradient_type}')
