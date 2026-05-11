@@ -1076,7 +1076,8 @@ def create_initial_rotations(sdl, bin_hot_start_list: list=False,)-> np.ndarray:
     else:
         raise Exception(f'Mode {sdl.mode} is not yet coded')
     if sdl.hot_start:
-        if sdl.layers in [1]:
+#        if sdl.layers in [1]:
+        if sdl.mode not in [2]:
             raise Exception('Cannot use a hot start for mode {mode}')
         init_rots = [0 for i in range(param_num)]
         for i, item in enumerate(bin_hot_start_list):
