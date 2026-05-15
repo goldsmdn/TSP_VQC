@@ -12,21 +12,25 @@ GRAPH_DIR = 'graphs'
 RESULTS_DIR = 'results'
 RESULTS_FILE = 'results.csv'
 ENCODING = 'utf-8-sig'              # Encoding of csv file
-AWS = True                          # Whether runs are on AWS or Qiskit.
+AWS = False                         # Whether runs are on AWS or Qiskit.
 
 ANKAA_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Ankaa-3'
 CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
 
-TARGET = 'cephus'               # Options 'local', 'ankaa', 'ankaa_sim'
-#TARGET = 'local'
+TARGET = 'local_qiskit'               # Options from TARGETS dictionary below.  This controls which device is used and whether the emulator is used.
 
 TARGETS = {
-    'local': {
-        'type': 'local',
+    'local_aws': {
+        'type': 'aws',
+        'emulator': True,
     },
-    'local_test': {
-        'type': 'local',
+    'local_qiskit': {
+        'type': 'qiskit',
+        'emulator': True,
     },
+    #'local_test': {
+    #    'type': 'local',
+    #},
     'ankaa': {
         'type': 'aws',
         'arn': ANKAA_DEVICE,
@@ -74,7 +78,7 @@ DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation f
 NUM_LAYERS = 1                      # number of layers in the model
 
 #information needed in QML manual runs:
-MODE = 13                           # MODE = 1 - rxgate, rygate, cnot gates
+MODE = 2                            # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 2 - rxgate, XX gates -can be used with Hot Start
                                     # MODE = 3 - IQP based
                                     # MODE = 4 - rxgate

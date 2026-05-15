@@ -21,7 +21,7 @@ def convert_list_to_dictionary(input_list:list) -> dict:
 
 def find_valid_device_loop(qubits:int, target ) -> list:
     """read the valid qubit loops as a list from the configuration file"""
-    if target == 'local':
+    if target in ['local_aws', 'local_qiskit']:
     # don't need a bespoke qubit list
         output_list = [i for i in range(qubits)]
     else:

@@ -967,7 +967,7 @@ def define_parameters(sdl) -> list:
 
     """
     params = []
-    if sdl.mode in [1, 2, 3, 4, 6, 7,]:
+    if sdl.mode in [1, 2, 3, 4, 6, 7, 13]:
         for i in range(sdl.num_params):
             text = "param " + str(i)
             params.append(Parameter(text)) 

@@ -31,6 +31,7 @@ from modules.config import (RESULTS_DIR,
                             WEIGHT_DECAY,
                             SIMULATE_NOISE,
                             TARGET,
+                            TARGETS,
                             MPS,
                             AWS,
                             )
@@ -136,6 +137,7 @@ class MySubDataLogger(MyDataLogger):
     monte_carlo: bool = False
     mps: bool = None
     aws:bool = None
+    target: str = None
 
     def __post_init__(self):
         """This method is called after __init__"""
@@ -178,6 +180,12 @@ class MySubDataLogger(MyDataLogger):
                 raise Exception(f'mode = {self.mode} is not permitted for quantum')
             if self.mode == 4 and self.layers> 1:
                 raise Exception(f'mode = {self.mode} is only for 1 layer')
+            if self.mps and self.aws:
+                raise Exception(f'MPS and AWS cannot both be true')
+            if self.target not in TARGETS:
+                raise Exception(f'Target {self.target} is not in TARGETS dictionary')
+            if TARGETS[self.target]['type'] != 'aws' and self.aws:
+                raise Exception(f'AWS is set to true, but target {self.target} is not an AWS device')
             #if self.aws and self.mode !=7:
             #    raise Exception(f'mode = {self.mode=} selected, but ony mode 7 is suitable to run on an AWS device')
         else:
@@ -192,6 +200,8 @@ class MySubDataLogger(MyDataLogger):
                 raise Exception(f'MPS simulator is only for quantum runs')
             if self.aws is True:
                 raise Exception(f'AWS is only for quantum runs')
+            if self.target is not None:
+                raise Exception(f'Target is only relevant for quantum runs')
     
     def save_results_to_csv(self):
         """Save the results to a CSV file"""
@@ -264,6 +274,7 @@ class MySubDataLogger(MyDataLogger):
             self.noise = format_boolean(data_dict['noise'])
             self.mps = format_boolean(data_dict['mps'])
             self.aws = format_boolean(data_dict['aws'])
+            self.target = data_dict['target']
         
     def update_general_constants_from_config(self):
         """Update general constants from the config file"""
@@ -290,6 +301,7 @@ class MySubDataLogger(MyDataLogger):
         self.noise = SIMULATE_NOISE
         self.mps = MPS
         self.aws = AWS
+        self.target = TARGET
 
     def update_ml_constants_from_config(self):
         """Update constants needed for ML from config file"""
