@@ -36,7 +36,6 @@ from braket.jobs.metrics import log_metric
 from modules.config import (
     PRINT_FREQUENCY,
     TARGET, 
-    #TARGET,
     TARGETS,
     )
 
@@ -76,26 +75,31 @@ def is_even(n):
 def validate_qubit_loops(qubits, loop_dict, target):
     device = find_device(target = target)
     print(f'Found device as {device}')
-    connectivity_dict = device.properties.dict()['paradigm']['connectivity']
-    loop_list = loop_dict[target][qubits]
-    set_list = set(loop_list)
-    if len(set_list) != len(loop_list):
-        raise Exception(f'The loop list {loop_list} contains duplicates')
-    for index, qubit in enumerate(loop_list):
-        last_valid_index = len(loop_list) - 1
-        if index < last_valid_index:
-            next_qubit = loop_list[index+1]
-        else:
-            next_qubit = loop_list[0]
-        connected_qubits = connectivity_dict['connectivityGraph'][str(qubit)]
-        if str(next_qubit) not in connected_qubits:
-            raise Exception(f'qubits{qubit} and {next_qubit} are not connected')
-    loop_length = len(loop_list)
-    if is_even(qubits) and loop_length != qubits:
-        raise Exception(f'{len(loop_list)=} and {qubits=} for {target=}')
-    if not is_even(qubits) and (loop_length - qubits) !=1:
-        raise Exception(f'{len(loop_list)=} and {qubits=} for {target=}')
-    print(f'No errors found for {target=} {qubits=} \n')
+    if not hasattr(device, "properties"):
+        #handle local emulators
+        print("Local device detected — skipping connectivity check.")
+        return
+    else:
+        connectivity_dict = device.properties.dict()['paradigm']['connectivity']
+        loop_list = loop_dict[target][qubits]
+        set_list = set(loop_list)
+        if len(set_list) != len(loop_list):
+            raise Exception(f'The loop list {loop_list} contains duplicates')
+        for index, qubit in enumerate(loop_list):
+            last_valid_index = len(loop_list) - 1
+            if index < last_valid_index:
+                next_qubit = loop_list[index+1]
+            else:
+                next_qubit = loop_list[0]
+            connected_qubits = connectivity_dict['connectivityGraph'][str(qubit)]
+            if str(next_qubit) not in connected_qubits:
+                raise Exception(f'qubits{qubit} and {next_qubit} are not connected')
+        loop_length = len(loop_list)
+        if is_even(qubits) and loop_length != qubits:
+            raise Exception(f'{len(loop_list)=} and {qubits=} for {target=}')
+        if not is_even(qubits) and (loop_length - qubits) !=1:
+            raise Exception(f'{len(loop_list)=} and {qubits=} for {target=}')
+        print(f'No errors found for {target=} {qubits=} \n')
     return
     
 def cost_fn_fact(locations:int,
