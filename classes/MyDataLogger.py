@@ -149,12 +149,12 @@ class MySubDataLogger(MyDataLogger):
         """Calculate the number of parameters in a variational quantum circuit"""
 
         #if self.mode in [1, 2, 3, 6, 7,] :
-        if self.mode in [1, 2, 3, 6, 7, 12] :
+        if self.mode in [1, 2, 3, 6, 12] :
             num_params = 2 * self.qubits * self.layers
         elif self.mode == 4:
             num_params = self.qubits * self.layers
-        elif self.mode ==7:
-            qubits_measured = find_qubits_measured(self.qubits)
+        elif self.mode in [7, 13,]:
+            qubits_measured = find_qubits_measured(self.qubits, TARGET)
             num_params = 2 * qubits_measured * self.layers
         else:
             raise Exception(f'Mode {self.mode} has not been coded for')
