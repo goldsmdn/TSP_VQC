@@ -17,8 +17,8 @@ AWS = True                          # Whether runs are on AWS or Qiskit.
 ANKAA_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Ankaa-3'
 CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
 
-#TARGET = 'cephus'               # Options 'local', 'ankaa', 'ankaa_sim'
-TARGET = 'local'
+TARGET = 'cephus'               # Options 'local', 'ankaa', 'ankaa_sim'
+#TARGET = 'local'
 
 TARGETS = {
     'local': {
@@ -74,7 +74,7 @@ DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation f
 NUM_LAYERS = 1                      # number of layers in the model
 
 #information needed in QML manual runs:
-MODE = 2                            # MODE = 1 - rxgate, rygate, cnot gates
+MODE = 13                           # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 2 - rxgate, XX gates -can be used with Hot Start
                                     # MODE = 3 - IQP based
                                     # MODE = 4 - rxgate
@@ -83,6 +83,7 @@ MODE = 2                            # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 7 - rz gates, iswap gates 
                                     # MODE = 8 - input is all zeros - with sine activation
                                     # MODE = 9 - input is 0.5 - with sine activation
+                                    # MODE = 13 - IQP with only RX, RZ and CZ
                                     # MODE = 18 - input is all zeros - with sigmoid activation
                                     # MODE = 19 - input is 0.5 - with sigmoid activation
 SLICES = [0.8]                      # Slices to use when calculating the gradient  
