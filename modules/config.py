@@ -12,12 +12,12 @@ GRAPH_DIR = 'graphs'
 RESULTS_DIR = 'results'
 RESULTS_FILE = 'results.csv'
 ENCODING = 'utf-8-sig'              # Encoding of csv file
-AWS = False                         # Whether runs are on AWS or Qiskit.
+AWS = True                          # Whether runs are on AWS or Qiskit.
 
 ANKAA_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Ankaa-3'
 CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
 
-TARGET = 'local_qiskit'               # Options from TARGETS dictionary below.  This controls which device is used and whether the emulator is used.
+TARGET = 'local_aws'               # Options from TARGETS dictionary below.  This controls which device is used and whether the emulator is used.
 
 TARGETS = {
     'local_aws': {
@@ -28,9 +28,9 @@ TARGETS = {
         'type': 'qiskit',
         'emulator': True,
     },
-    #'local_test': {
-    #    'type': 'local',
-    #},
+    'local_aws_test': {
+        'type': 'aws',
+    },
     'ankaa': {
         'type': 'aws',
         'arn': ANKAA_DEVICE,

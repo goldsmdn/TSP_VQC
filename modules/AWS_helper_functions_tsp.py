@@ -54,7 +54,7 @@ def find_device(target=TARGET):
     cfg = TARGETS[target]
 
     # Local simulator
-    if cfg["type"] == "local":
+    if cfg['type'] == 'aws':
         return LocalSimulator()
 
     # AWS device
@@ -316,21 +316,21 @@ def hot_start_list_to_string(locations:int,
         for i in range(len(total_binary_string)):
             result_list.append(int(total_binary_string[i]))
         return(result_list)
-    elif formulation == 'new':
-        dim = find_problem_size(locations, formulation)
-        f = math.factorial(locations)
-        y = 0
-        i = 0
-        start_cycle_list = [i for i in range(locations)]
-        while i < locations:
-            f = int(f / (locations - i))
-            m = hot_start_list[i]
-            j = start_cycle_list.index(m)
-            start_cycle_list.remove(m)  
-            y += j * f
-            i += 1
-        result_list = convert_integer_to_binary_list(y, dim, gray=gray)
-        return result_list
+        #elif formulation == 'new':
+        #dim = find_problem_size(locations, formulation)
+        #f = math.factorial(locations)
+        #y = 0
+        #i = 0
+        #start_cycle_list = [i for i in range(locations)]
+        #while i < locations:
+        #   f = int(f / (locations - i))
+        #    m = hot_start_list[i]
+        #    j = start_cycle_list.index(m)
+        #    start_cycle_list.remove(m)  
+        #    y += j * f
+        #    i += 1
+        #result_list = convert_integer_to_binary_list(y, dim, gray=gray)
+        #return result_list"""
     else:
         raise Exception(f'Unknown method {formulation}')
 
