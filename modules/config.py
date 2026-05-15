@@ -14,43 +14,44 @@ RESULTS_FILE = 'results.csv'
 ENCODING = 'utf-8-sig'              # Encoding of csv file
 AWS = True                          # Whether runs are on AWS or Qiskit.
 
-ANKAA_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Ankaa-3'
+#ANKAA_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Ankaa-3'
 CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
 
-TARGET = 'local_aws'               # Options from TARGETS dictionary below.  This controls which device is used and whether the emulator is used.
+TARGET = 'local_aws_test'           # Options from TARGETS dictionary below.  This controls which device is used and whether the emulator is used.
 
 TARGETS = {
-    'local_aws': {
-        'type': 'aws',
+    'local_aws': { #test on local AWS simulator
+        'type': 'local_aws',
         'emulator': True,
     },
-    'local_qiskit': {
-        'type': 'qiskit',
+    'local_qiskit': { #test on local qiskit simulator
+        'type': 'local_qiskit',
         'emulator': True,
     },
-    'local_aws_test': {
-        'type': 'aws',
-    },
-    'ankaa': {
-        'type': 'aws',
-        'arn': ANKAA_DEVICE,
-        'emulator': False,
-    },
-    'ankaa_em': {
-        'type': 'aws',
-        'arn': ANKAA_DEVICE,
+    'local_aws_test': { #test on local qiskit simulator using Cephus connectivity
+        'type': 'local_aws',
         'emulator': True,
     },
-    'cephus': {
+    #'ankaa': {#
+    #    'type': 'aws',
+    #    'arn': ANKAA_DEVICE,
+    #    'emulator': False,
+    #},
+    #'ankaa_em': {
+    #    'type': 'aws',
+    #    'arn': ANKAA_DEVICE,
+    #    'emulator': True,
+    #},
+    'cephus': { #production run on Rigetti Cephus
         'type': 'aws',
         'arn': CEPHUS_DEVICE,
         'emulator': False,
     },
-    'cephus_em': {
-        'type': 'aws',
-        'arn': CEPHUS_DEVICE,
-        'emulator': True,
-    },
+    #'cephus_em': {
+    #    'type': 'aws',
+    #    'arn': CEPHUS_DEVICE,
+    #    'emulator': True,
+    #},
 }
 
 
@@ -78,7 +79,7 @@ DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation f
 NUM_LAYERS = 1                      # number of layers in the model
 
 #information needed in QML manual runs:
-MODE = 2                            # MODE = 1 - rxgate, rygate, cnot gates
+MODE = 13                           # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 2 - rxgate, XX gates -can be used with Hot Start
                                     # MODE = 3 - IQP based
                                     # MODE = 4 - rxgate
@@ -101,7 +102,7 @@ ETA = 0.1                           # eta - learning rate for parameter shift
 GAMMA = 0.101                       # constant that determines how quickly the SPSA perturbation decays
 S = 0.5                             # parameter for parameter shift.  Default is 0.5 
 SIMULATE_NOISE = False              # Simulate noise in the quantum circuit
-MPS = False                         # Use MPS simulator
+MPS = True                          # Use MPS simulator
 
 ROTATIONS = 10                      # number of rotations sampled in parameter graphs
 
@@ -144,7 +145,7 @@ VALID_QUBIT_LOOPS = {'ankaa':
                               49, 50, 51, 52, 61, 60, 59, 58, 57, 56, 65, 64, 55, 54, 
                               45, 36, 27, 18, 9,],
                              },
-                     'local_test':
+                     'local_aws_test':
                             {3: [  0, 1, 10, 9,],
                             14: [ 0,  1,  2,  3,  4,  5,  6, 15, 14, 13, 12, 11, 10, 9,],
                             }

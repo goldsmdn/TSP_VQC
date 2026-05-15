@@ -39,12 +39,10 @@ from modules.config import (
     TARGETS,
     )
 
-#def find_device_string(target=TARGET):
 def find_device_string(target):
     device_arn = TARGETS[target]['arn']
     return(device_arn)
 
-#def find_device(target=TARGET):
 def find_device(target):
     """
     Lazily create and return a Braket device.
@@ -54,18 +52,15 @@ def find_device(target):
     from braket.devices import LocalSimulator
 
     cfg = TARGETS[target]
-    #print(f'Finding device for target {target} with configuration {cfg}')
-
     # Local simulator
     if cfg['type'] == 'local_aws':
         return LocalSimulator()
-
     # AWS device
     device = AwsDevice(cfg['arn'])
 
     # Optional emulator
-    if cfg.get('emulator', True):
-        return device.emulator()
+    #if cfg.get('emulator', True):
+    #    return device.emulator()
 
     return device
 
@@ -106,7 +101,9 @@ def cost_fn_fact(locations:int,
                  qubits,
                  gray:bool, 
                  formulation:str, 
-                 distance_array: np.ndarray, ) -> Callable[[list], int]:
+                 distance_array: np.ndarray, 
+                 target: str
+                 ) -> Callable[[list], int]:
     """ Returns a cost function inside a decorator,
 
     Parameters
@@ -134,7 +131,8 @@ def cost_fn_fact(locations:int,
         """Returns the value of the objective function for a bit_string"""
         #print(f'Analysing bit string {bit_string_input} with {qubits=}')
         if isinstance(bit_string_input, list):
-            bit_string = convert_physical_to_logical_bit_string(bit_string_input, qubits, TARGET)
+            #bit_string = convert_physical_to_logical_bit_string(bit_string_input, qubits, TARGET)
+            bit_string = convert_physical_to_logical_bit_string(bit_string_input, qubits, target)
             #print(f'After conversion, bit string {bit_string}')
             full_list_of_locs = convert_bit_string_to_cycle(bit_string,
                                                             locations, 
@@ -704,7 +702,8 @@ def vqc_circuit(qubits: int,
                 mode:int,
                 noise:bool,
                 layers:int,
-                params:list) -> Circuit:
+                params:list,
+                target:str) -> Circuit:
     """Set up a variational quantum circuit
 
     Parameters
@@ -726,8 +725,9 @@ def vqc_circuit(qubits: int,
     qc: Quantum Circuit
         A quantum circuit without bound weights
     """
-    qubit_dict = find_logical_to_physical_dictionary(qubits, TARGET)
-    qubits_measured = find_qubits_measured(qubits, TARGET)
+    #qubit_dict = find_logical_to_physical_dictionary(qubits, TARGET)
+    qubits_measured = find_qubits_measured(qubits, target)
+    qubit_dict = find_logical_to_physical_dictionary(qubits, target)
     qc = Circuit()
     if mode == 1:
         for layer in range(layers):
@@ -841,7 +841,7 @@ def vqc_circuit(qubits: int,
         raise Exception(f'Mode {mode} has not been coded for')
         
     # only measure the qubits in the sorted list
-    valid_device_loop = find_valid_device_loop(qubits, TARGET)
+    valid_device_loop = find_valid_device_loop(qubits, target)
     #sorted_list = sorted(find_valid_device_loop(qubits, TARGET))
     sorted_list = sorted(valid_device_loop)
     qc.measure(sorted_list)
