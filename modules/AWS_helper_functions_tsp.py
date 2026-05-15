@@ -35,7 +35,7 @@ from braket.jobs.metrics import log_metric
 
 from modules.config import (
     PRINT_FREQUENCY,
-    TARGET, 
+    #TARGET, 
     TARGETS,
     )
 
@@ -433,7 +433,7 @@ def update_parameters_using_gradient(
             if lowest < lowest_to_date:
                 lowest_to_date = lowest
                 lowest_string_to_date = lowest_energy_bit_string
-        lowest_string_to_date = convert_physical_to_logical_bit_string(lowest_string_to_date, qubits, TARGET)
+        lowest_string_to_date = convert_physical_to_logical_bit_string(lowest_string_to_date, qubits, target)
         route_list = convert_bit_string_to_cycle(
             lowest_string_to_date, 
             locations, 

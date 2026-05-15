@@ -30,7 +30,7 @@ from modules.config import (RESULTS_DIR,
                             MOMENTUM,
                             WEIGHT_DECAY,
                             SIMULATE_NOISE,
-                            TARGET,
+                            #TARGET,
                             TARGETS,
                             MPS,
                             AWS,
@@ -98,7 +98,6 @@ class MySubDataLogger(MyDataLogger):
     formulation: str = None
     #ml specific set up
     layers: int = None
-    
     std_dev: float = None
     lr: float = None
     weight_decay: float = None 
@@ -156,7 +155,7 @@ class MySubDataLogger(MyDataLogger):
         elif self.mode == 4:
             num_params = self.qubits * self.layers
         elif self.mode in [7, 13,]:
-            qubits_measured = find_qubits_measured(self.qubits, TARGET)
+            qubits_measured = find_qubits_measured(self.qubits, self.target)
             num_params = 2 * qubits_measured * self.layers
         else:
             raise Exception(f'Mode {self.mode} has not been coded for')
