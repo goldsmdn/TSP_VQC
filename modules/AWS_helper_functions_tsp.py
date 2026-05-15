@@ -34,16 +34,19 @@ from modules.helper_functions_general import (
 from braket.jobs.metrics import log_metric
 
 from modules.config import (
-    PRINT_FREQUENCY, 
-    TARGET,
+    PRINT_FREQUENCY,
+    TARGET, 
+    #TARGET,
     TARGETS,
     )
 
-def find_device_string(target=TARGET):
+#def find_device_string(target=TARGET):
+def find_device_string(target):
     device_arn = TARGETS[target]['arn']
     return(device_arn)
 
-def find_device(target=TARGET):
+#def find_device(target=TARGET):
+def find_device(target):
     """
     Lazily create and return a Braket device.
     This function is hybrid-job safe.
@@ -52,16 +55,17 @@ def find_device(target=TARGET):
     from braket.devices import LocalSimulator
 
     cfg = TARGETS[target]
+    #print(f'Finding device for target {target} with configuration {cfg}')
 
     # Local simulator
-    if cfg['type'] == 'aws':
+    if cfg['type'] == 'local_aws':
         return LocalSimulator()
 
     # AWS device
-    device = AwsDevice(cfg["arn"])
+    device = AwsDevice(cfg['arn'])
 
     # Optional emulator
-    if cfg.get("emulator", False):
+    if cfg.get('emulator', True):
         return device.emulator()
 
     return device
@@ -71,6 +75,7 @@ def is_even(n):
 
 def validate_qubit_loops(qubits, loop_dict, target):
     device = find_device(target = target)
+    print(f'Found device as {device}')
     connectivity_dict = device.properties.dict()['paradigm']['connectivity']
     loop_list = loop_dict[target][qubits]
     set_list = set(loop_list)
@@ -357,6 +362,7 @@ def update_parameters_using_gradient(
                 rots: np.ndarray,
                 cost_fn: Callable,
                 qc: Circuit,
+                target: str,
                 print_results: str=True,
                 ):
     """Updates parameters using SPSA or parameter shift gradients"""
@@ -373,15 +379,16 @@ def update_parameters_using_gradient(
         if any(x is None for x in (s, eta, big_a, alpha)):
             raise Exception(f'{s=}, {eta=}, {big_a=}, {alpha=}')
         
-        abs_gradient = np.abs(my_gradient(noise,
-                                          shots,
-                                          s,
-                                          gradient_type,
-                                          cost_fn, 
-                                          qc, 
-                                          params, 
-                                          rots, 
-                                          average_slice,
+        abs_gradient = np.abs(my_gradient(noise=noise,
+                                          shots=shots,
+                                          s=s,
+                                          gradient_type=gradient_type,
+                                          cost_fn=cost_fn, 
+                                          qc=qc, 
+                                          params=params, 
+                                          rots=rots, 
+                                          average_slice=average_slice,
+                                          target=target,
                                           )
                                 )
         
@@ -394,20 +401,28 @@ def update_parameters_using_gradient(
             a = eta*((big_a+1)**alpha)/magnitude_g0
 
     for i in range(0, iterations):
-        bc = bind_weights(params, rots, qc)
-        cost, lowest, lowest_energy_bit_string = cost_func_evaluate(noise,
-                                                                    shots,
-                                                                    cost_fn, 
-                                                                    bc, 
-                                                                    average_slice=average_slice, 
-                                                                    )
+        bc = bind_weights(
+            params=params, 
+            rots=rots, 
+            qc=qc
+            )
+        cost, lowest, lowest_energy_bit_string = cost_func_evaluate(
+            noise=noise,
+            shots=shots,
+            cost_fn=cost_fn, 
+            model=bc,
+            target=target,
+            average_slice=average_slice, 
+            )
         #cost is the top-sliced energy
-        average, _ , _ = cost_func_evaluate(noise,
-                                            shots,
-                                            cost_fn, 
-                                            bc, 
-                                            average_slice=1, 
-                                            )
+        average, _ , _ = cost_func_evaluate(
+            noise=noise,
+            shots=shots,
+            cost_fn=cost_fn, 
+            model=bc, 
+            target=target,
+            average_slice=1, 
+            )
         #average is the average energy with no top slicing
         if i == 0:
             lowest_string_to_date = lowest_energy_bit_string
@@ -417,43 +432,48 @@ def update_parameters_using_gradient(
                 lowest_to_date = lowest
                 lowest_string_to_date = lowest_energy_bit_string
         lowest_string_to_date = convert_physical_to_logical_bit_string(lowest_string_to_date, qubits, TARGET)
-        route_list = convert_bit_string_to_cycle(lowest_string_to_date, 
-                                                 locations, 
-                                                 gray, 
-                                                 formulation,
-                                                 )
+        route_list = convert_bit_string_to_cycle(
+            lowest_string_to_date, 
+            locations, 
+            gray, 
+            formulation,
+            )
         index_list.append(i)
         cost_list.append(cost)
         lowest_list.append(lowest_to_date)
         average_list.append(average)
         parameter_list.append(rots)
         if gradient_type == 'parameter_shift':
-            gradient = my_gradient(noise,
-                                   shots,
-                                   s,
-                                   gradient_type,
-                                   cost_fn, 
-                                   qc, 
-                                   params, 
-                                   rots, 
-                                   average_slice=average_slice,
-                                   )
+            gradient = my_gradient(
+                noise=noise,
+                shots=shots,
+                s=s,
+                gradient_type=gradient_type,
+                cost_fn=cost_fn, 
+                qc=qc, 
+                params=params, 
+                rots=rots,
+                average_slice=average_slice,
+                target=target,
+                )
             
             rots = rots - eta * gradient
         elif gradient_type == 'SPSA':
             ak = a/((i+1+big_a)**(alpha))
             ck = c/((i+1)**(gamma))
-            gradient = my_gradient(noise,
-                                   shots,
-                                   s,
-                                   gradient_type,
-                                   cost_fn, 
-                                   qc, 
-                                   params, 
-                                   rots, 
-                                   average_slice=average_slice,
-                                   ck=ck,
-                                   )
+            gradient = my_gradient(
+                noise=noise,
+                shots=shots,
+                s=s,
+                gradient_type=gradient_type,
+                cost_fn=cost_fn, 
+                qc=qc, 
+                params=params, 
+                rots=rots, 
+                average_slice=average_slice,
+                ck=ck,
+                target=target,
+                )
             rots = rots - ak * gradient
         else:
             raise Exception(f'Error found when calculating gradient. {gradient_type} is not an allowed gradient type')
@@ -473,10 +493,11 @@ def update_parameters_using_gradient(
                 
     return index_list, cost_list, lowest_list, gradient_list, average_list, parameter_list 
     
-def cost_func_evaluate(noise,
-                       shots,
+def cost_func_evaluate(noise:bool,
+                       shots:int,
                        cost_fn:Callable,
                        model,
+                       target,
                        average_slice:float=1,
                        ) -> tuple[float, float, list[int]]:             
                        
@@ -512,7 +533,8 @@ def cost_func_evaluate(noise,
         A list of the bits for the lowest energy bit string
     """
 
-    device = find_device()
+    #device = find_device()
+    device = find_device(target)
     #print(f'Found device as {device}')
     job = device.run(model, shots=shots)    
     result = job.result()
@@ -529,7 +551,8 @@ def my_gradient(noise:bool,
                 qc:Circuit,
                 params:list, 
                 rots:np.ndarray, 
-                average_slice:float, 
+                average_slice:float,
+                target, 
                 ck:float=1e-2,
                 ) -> np.ndarray:
     """Calculate gradient for a quantum circuit with parameters and rotations
@@ -570,22 +593,34 @@ def my_gradient(noise:bool,
         gradient_list = []
         for i, theta in enumerate(rots):
             new_rots[i] = theta + np.pi/(4*s)
-            bc = bind_weights(params, new_rots, qc)
-            cost_plus, _, _ = cost_func_evaluate(noise,
-                                                 shots,
-                                                 cost_fn, 
-                                                 bc, 
-                                                 average_slice, 
-                                                 )
+            bc = bind_weights(
+                params=params, 
+                rots=new_rots, 
+                qc=qc
+                )
+            cost_plus, _, _ = cost_func_evaluate(
+                noise=noise,
+                shots=shots,
+                cost_fn=cost_fn, 
+                model=bc, 
+                target=target,
+                average_slice=average_slice, 
+                )
             
             new_rots[i] = theta - np.pi/(4*s)
-            bc = bind_weights(params, new_rots, qc)
-            cost_minus, _, _ = cost_func_evaluate(noise,
-                                                  shots,
-                                                  cost_fn, 
-                                                  bc, 
-                                                  average_slice, 
-                                                  )
+            bc = bind_weights(
+                params=params, 
+                rots=new_rots, 
+                qc=qc
+                )
+            cost_minus, _, _ = cost_func_evaluate(
+                noise=noise,
+                shots=shots,
+                cost_fn=cost_fn, 
+                model=bc, 
+                target=target,
+                average_slice=average_slice, 
+                )
             delta = s * (cost_plus - cost_minus)
             gradient_list.append(delta)
         gradient_array = np.array(gradient_list)
@@ -600,22 +635,34 @@ def my_gradient(noise:bool,
         new_rots = rots + ck_deltak
         
         # gradient approximation
-        bc = bind_weights(params, new_rots, qc)
-        cost_plus, _, _ = cost_func_evaluate(noise,
-                                             shots,
-                                             cost_fn, 
-                                             bc, 
-                                             average_slice, 
-                                             )
+        bc = bind_weights(
+            params=params, 
+            rots=new_rots,
+            qc=qc
+            )
+        cost_plus, _, _ = cost_func_evaluate(
+            noise=noise,
+            shots=shots,
+            cost_fn=cost_fn, 
+            model=bc, 
+            target=target,
+            average_slice=average_slice, 
+            )
 
         new_rots = rots - ck_deltak
-        bc = bind_weights(params, new_rots, qc)
-        cost_minus, _, _ = cost_func_evaluate(noise,
-                                              shots,
-                                              cost_fn, 
-                                              bc, 
-                                              average_slice, 
-                                              )
+        bc = bind_weights(
+            params=params, 
+            rots=new_rots,
+            qc=qc
+            )
+        cost_minus, _, _ = cost_func_evaluate(
+            noise=noise,
+            shots=shots,
+            cost_fn=cost_fn, 
+            model=bc, 
+            target=target,
+            average_slice=average_slice, 
+            )
 
         delta = cost_plus - cost_minus
         gradient_array = delta / (2 * ck_deltak)
@@ -801,7 +848,8 @@ def vqc_circuit(qubits: int,
     return qc
 
 def create_initial_rotations(qubits: int,
-                             param_num: int,
+                             #param_num: int,
+                             num_params: int,
                              mode: int,
                              layers:int,
                              hot_start:bool=False,
@@ -830,17 +878,20 @@ def create_initial_rotations(qubits: int,
     if hot_start:
         if layers in [1]:
             raise Exception('Cannot use a hot start for mode {mode}')
-        init_rots = [0 for i in range(param_num)]
+        #init_rots = [0 for i in range(param_num)]
+        init_rots = [0 for i in range(num_params)]
         for i, item in enumerate(bin_hot_start_list):
             if item == 1:
                 init_rots[qubits-i-1] = np.pi 
                 #need to reverse order because of qiskit convention
     else:
-        init_rots= [random.random() * 2 * math.pi for i in range(param_num)]
+        init_rots= [random.random() * 2 * math.pi for i in range(num_params)]
     init_rots_array = np.array(init_rots)
     return(init_rots_array)
 
-def bind_weights(params:list, rots:list, qc:Circuit) -> Circuit:
+#def bind_weights(params:list, 
+#                 rots:list, 
+#                 qc:Circuit) -> Circuit:
     """Bind parameters to rotations and return a bound quantum circuit
 
     Parameters
@@ -858,19 +909,21 @@ def bind_weights(params:list, rots:list, qc:Circuit) -> Circuit:
         A quantum circuit with including bound weights, ready to run an evaluation
     """
 
-    binding_dict = {}
-    for i, rot in enumerate(rots):
-        param_name = str(params[i])
-        binding_dict[param_name] = rot
-    bc = qc.make_bound_circuit(binding_dict)
-    return(bc)
+#    binding_dict = {}
+#    for i, rot in enumerate(rots):
+#        param_name = str(params[i])
+#        binding_dict[param_name] = rot
+#    bc = qc.make_bound_circuit(binding_dict)
+#    return(bc)
 
 def detect_quantum_GPU_support()-> bool:
     """Detect if a GPU is available for quantum simulations"""
     return False
 
-def bind_weights(params:list, rots:list, qc:Circuit) -> Circuit:
-#def bind_weights(params:list, rots:list, qc:QuantumCircuit) -> QuantumCircuit:
+#def bind_weights(params:list, rots:list, qc:Circuit) -> Circuit:
+def bind_weights(params:list, 
+                 rots:list, 
+                 qc:Circuit) -> Circuit:
     """Bind parameters to rotations and return a bound quantum circuit
 
     Parameters

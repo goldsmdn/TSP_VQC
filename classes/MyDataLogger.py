@@ -184,7 +184,8 @@ class MySubDataLogger(MyDataLogger):
                 raise Exception(f'MPS and AWS cannot both be true')
             if self.target not in TARGETS:
                 raise Exception(f'Target {self.target} is not in TARGETS dictionary')
-            if TARGETS[self.target]['type'] != 'aws' and self.aws:
+            #if TARGETS[self.target]['type'] != 'aws' and self.aws:
+            if TARGETS[self.target]['type'] not in ['local_aws', 'aws'] and self.aws:
                 raise Exception(f'AWS is set to true, but target {self.target} is not an AWS device')
             #if self.aws and self.mode !=7:
             #    raise Exception(f'mode = {self.mode=} selected, but ony mode 7 is suitable to run on an AWS device')
