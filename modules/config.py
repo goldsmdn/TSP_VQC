@@ -12,7 +12,42 @@ GRAPH_DIR = 'graphs'
 RESULTS_DIR = 'results'
 RESULTS_FILE = 'results.csv'
 ENCODING = 'utf-8-sig'              # Encoding of csv file
-AWS = False                         # Whether runs are on AWS or Qiskit.
+AWS = True                          # Whether runs are on AWS or Qiskit.
+
+ANKAA_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Ankaa-3'
+CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
+
+TARGET = 'cephus'               # Options 'local', 'ankaa', 'ankaa_sim'
+#TARGET = 'local'
+
+TARGETS = {
+    'local': {
+        'type': 'local',
+    },
+    'local_test': {
+        'type': 'local',
+    },
+    'ankaa': {
+        'type': 'aws',
+        'arn': ANKAA_DEVICE,
+        'emulator': False,
+    },
+    'ankaa_em': {
+        'type': 'aws',
+        'arn': ANKAA_DEVICE,
+        'emulator': True,
+    },
+    'cephus': {
+        'type': 'aws',
+        'arn': CEPHUS_DEVICE,
+        'emulator': False,
+    },
+    'cephus_em': {
+        'type': 'aws',
+        'arn': CEPHUS_DEVICE,
+        'emulator': True,
+    },
+}
 
 
 #General control parameters - verbosity, cache size, etc.
@@ -39,7 +74,7 @@ DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation f
 NUM_LAYERS = 1                      # number of layers in the model
 
 #information needed in QML manual runs:
-MODE = 7                            # MODE = 1 - rxgate, rygate, cnot gates
+MODE = 13                           # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 2 - rxgate, XX gates -can be used with Hot Start
                                     # MODE = 3 - IQP based
                                     # MODE = 4 - rxgate
@@ -48,6 +83,7 @@ MODE = 7                            # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 7 - rz gates, iswap gates 
                                     # MODE = 8 - input is all zeros - with sine activation
                                     # MODE = 9 - input is 0.5 - with sine activation
+                                    # MODE = 13 - IQP with only RX, RZ and CZ
                                     # MODE = 18 - input is all zeros - with sigmoid activation
                                     # MODE = 19 - input is 0.5 - with sigmoid activation
 SLICES = [0.8]                      # Slices to use when calculating the gradient  
@@ -72,19 +108,40 @@ MOMENTUM = 0.9
 WEIGHT_DECAY = 0.0006               #importance of L2 regularization in optimiser
                                     #options: 'Adam', 'SGD', 'RMSprop'    
                                     
-VALID_QUBIT_LOOPS = {3: [  0, 1, 8, 7,], #convention - loops return to qubit 0 at the end and this is assumed in the code
-                     8: [  0, 1, 2, 3, 10, 9,  8,  7,],
-                     14: [ 0,  1,  2,  3,  4,  5,  6, 13, 12, 11, 10,  9, 8, 7,],
-                     29: [ 0,  1,  2,  3,  4,  5,  6, 13, 12, 11, 10,  9, 8,
-                          15, 16, 17, 18, 19, 20, 27, 26, 25, 24, 23, 22, 29, 28, 21,
-                          14, 7,],
-                     41:[ 0,  1,  2,  3,  4,  5,  6, 13, 12, 11, 10, 9, 8, 
-                         15, 16, 17, 18, 19, 20, 27, 26, 25, 24, 23, 22, 29, 
-                         30, 37, 44, 51, 58, 
-                         57, 56, 49, 50, 43, 36, 35, 28, 21, 14,  7,],
-
-                     49:[ 0,  1,  2,  3,  4,  5,  6, 13, 12, 11, 10, 9, 8, 
-                         15, 16, 17, 18, 19, 20, 27, 26, 25, 24, 23, 22, 29, 
-                         30, 37, 44, 51, 52, 53, 54, 55, 62, 61, 60, 59, 58, 
-                         57, 56, 49, 50, 43, 36, 35, 28, 21, 14,  7,]
-                         }                             
+VALID_QUBIT_LOOPS = {'ankaa':
+                        {3: [  0, 1, 8, 7,], #convention - loops return to qubit 0 at the end and this is assumed in the code
+                         8: [  0, 1, 2, 3, 10, 9,  8,  7,],
+                         14: [ 0,  1,  2,  3,  4,  5,  6, 13, 12, 11, 10,  9, 8, 7,],
+                         29: [ 0,  1,  2,  3,  4,  5,  6, 13, 12, 11, 10,  9, 8,
+                              15, 16, 17, 18, 19, 20, 27, 26, 25, 24, 23, 22, 29, 28, 21,
+                              14, 7,],
+                         41:[ 0,  1,  2,  3,  4,  5,  6, 13, 12, 11, 10, 9, 8, 
+                             15, 16, 17, 18, 19, 20, 27, 26, 25, 24, 23, 22, 29, 
+                             30, 37, 44, 51, 58, 
+                             57, 56, 49, 50, 43, 36, 35, 28, 21, 14,  7,],
+                         49:[ 0,  1,  2,  3,  4,  5,  6, 13, 12, 11, 10, 9, 8, 
+                             15, 16, 17, 18, 19, 20, 27, 26, 25, 24, 23, 22, 29, 
+                             30, 37, 44, 51, 52, 53, 54, 55, 62, 61, 60, 59, 58, 
+                             57, 56, 49, 50, 43, 36, 35, 28, 21, 14,  7,],
+                             },
+                    'cephus': 
+                         {3: [  0, 1, 10, 9,], #convention - loops return to qubit 0 at the end and this is assumed in the code
+                          8: [  0, 1, 2, 3, 12, 11, 10,  9,],
+                          14: [ 0,  1,  2,  3,  4,  5,  6, 15, 14, 13, 12, 11, 10, 9,],
+                          29: [ 0,  1,  2,  3,  4,  5,  6, 7, 16, 15, 14, 13, 12, 11, 10,
+                              19, 20, 21, 22, 23, 24, 33, 32, 31, 30, 29, 28, 27,
+                              18, 9,],
+                          41:[ 0,  1,  2,  3,  4,  5,  6, 7, 16, 15, 14, 13, 12, 11, 10,
+                              19, 20, 21, 22, 23, 24, 25, 26, 35, 34, 33, 32, 31, 30, 39, 48, 
+                              49, 58, 57, 56, 55, 54, 
+                              45, 36, 27, 18, 9,],
+                          49:[ 0,  1,  2,  3,  4,  5,  6, 7, 16, 15, 14, 13, 12, 11, 10,
+                              19, 20, 21, 22, 23, 24, 25, 26, 35, 34, 33, 32, 31, 30, 39, 48, 
+                              49, 50, 51, 52, 61, 60, 59, 58, 57, 56, 65, 64, 55, 54, 
+                              45, 36, 27, 18, 9,],
+                             },
+                     'local_test':
+                            {3: [  0, 1, 10, 9,],
+                            14: [ 0,  1,  2,  3,  4,  5,  6, 15, 14, 13, 12, 11, 10, 9,],
+                            }
+                    }                         

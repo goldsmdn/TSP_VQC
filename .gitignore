@@ -163,3 +163,5 @@ cython_debug/
 
 #local graph and results files
 never_push/
+
+model.tar.gz #AWS control file
