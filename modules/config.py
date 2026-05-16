@@ -1,6 +1,7 @@
 from collections.abc import Set
 
 import numpy as np
+from qiskit import circuit
 
 # General control data - directories, file names, etc.
 
@@ -14,44 +15,37 @@ RESULTS_FILE = 'results.csv'
 ENCODING = 'utf-8-sig'              # Encoding of csv file
 AWS = True                          # Whether runs are on AWS or Qiskit.
 
-#ANKAA_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Ankaa-3'
 CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
 
-TARGET = 'local_aws_test'           # Options from TARGETS dictionary below.  This controls which device is used and whether the emulator is used.
+TARGET = 'local_aws'           # Options from TARGETS dictionary below.  This controls which device is used and whether the emulator is used.
 
 TARGETS = {
     'local_aws': { #test on local AWS simulator
         'type': 'local_aws',
         'emulator': True,
+        'sdk': 'aws',
     },
     'local_qiskit': { #test on local qiskit simulator
         'type': 'local_qiskit',
         'emulator': True,
+        'sdk': 'qiskit',
     },
-    'local_aws_test': { #test on local qiskit simulator using Cephus connectivity
+    'local_aws_test': { #test on local aws simulator using Cephus connectivity
         'type': 'local_aws',
         'emulator': True,
+        'sdk': 'aws',
     },
-    #'ankaa': {#
-    #    'type': 'aws',
-    #    'arn': ANKAA_DEVICE,
-    #    'emulator': False,
-    #},
-    #'ankaa_em': {
-    #    'type': 'aws',
-    #    'arn': ANKAA_DEVICE,
-    #    'emulator': True,
-    #},
     'cephus': { #production run on Rigetti Cephus
         'type': 'aws',
         'arn': CEPHUS_DEVICE,
         'emulator': False,
+        'sdk': 'aws',
     },
-    #'cephus_em': {
-    #    'type': 'aws',
-    #    'arn': CEPHUS_DEVICE,
-    #    'emulator': True,
-    #},
+    'cephus_em': {#emulator run on Rigetti Cephus - not currently provided by Rigetti, but could be added in the future
+        'type': 'aws',
+        'arn': CEPHUS_DEVICE,
+        'emulator': True,
+    },
 }
 
 
@@ -91,6 +85,19 @@ MODE = 13                           # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 13 - IQP with only RX, RZ and CZ
                                     # MODE = 18 - input is all zeros - with sigmoid activation
                                     # MODE = 19 - input is 0.5 - with sigmoid activation
+
+from modules.quantum_circuits import (
+    mode_1,
+    mode_13,
+)
+
+MODE_DISPATCH = {
+    1: {'circuit':mode_1, #Qiskit rxgate, rygate, cnot gates
+        'sdk': 'qiskit'},
+    13: {'circuit':mode_13,#AWS IQP with only RX, RZ and CZ
+         'sdk': 'aws'},
+}
+
 SLICES = [0.8]                      # Slices to use when calculating the gradient  
                                     #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
                                     # For example, 0.2 means that the best 20% 
@@ -102,7 +109,7 @@ ETA = 0.1                           # eta - learning rate for parameter shift
 GAMMA = 0.101                       # constant that determines how quickly the SPSA perturbation decays
 S = 0.5                             # parameter for parameter shift.  Default is 0.5 
 SIMULATE_NOISE = False              # Simulate noise in the quantum circuit
-MPS = True                          # Use MPS simulator
+MPS = False                         # Use MPS simulator
 
 ROTATIONS = 10                      # number of rotations sampled in parameter graphs
 

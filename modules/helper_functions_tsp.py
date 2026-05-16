@@ -10,12 +10,9 @@ from qiskit import QuantumCircuit, transpile
 from qiskit_aer import AerSimulator
 from qiskit_ibm_runtime.fake_provider import FakeAuckland
 from qiskit_aer.primitives import SamplerV2
-#from qiskit_braket_provider import AWSBraketProvider
 
-#from braket.parametric import FreeParameter  #aws
-#from braket.circuits import Circuit
-#from braket.devices import Devices, LocalSimulator
-#from braket.aws import AwsDevice
+from modules.helper_functions_quantum import bind_weights
+
 
 import random
 import json
@@ -950,7 +947,7 @@ def my_gradient(sdl,
         raise Exception(f'Gradient type {sdl.gradient_type} is not an allowed choice')
     return gradient_array   
     
-def define_parameters(sdl) -> list:
+#def define_parameters(sdl) -> list:
     """Set up parameters and initialise text
     
     Parameters
@@ -966,7 +963,7 @@ def define_parameters(sdl) -> list:
         A list of parameters (the texts)
 
     """
-    params = []
+    """params = []
     if sdl.mode in [1, 2, 3, 4, 6, 7, 13]:
         for i in range(sdl.num_params):
             text = "param " + str(i)
@@ -974,7 +971,7 @@ def define_parameters(sdl) -> list:
             #params.append(FreeParameter(text)) #AWS
         return params
     else:   
-        raise Exception(f'Mode {sdl.mode} has not been coded for')
+        raise Exception(f'Mode {sdl.mode} has not been coded for')"""
     
 #def vqc_circuit(sdl, params: list) -> Circuit:
 def vqc_circuit(sdl, params: list) -> QuantumCircuit:
@@ -1122,32 +1119,32 @@ def create_initial_rotations(sdl, bin_hot_start_list: list=False,)-> np.ndarray:
 from typing import Callable
 
 #def bind_weights(params:list, rots:list, qc:Circuit) -> Circuit:
-def bind_weights(params:list, rots:list, qc:QuantumCircuit) -> QuantumCircuit:
-    """Bind parameters to rotations and return a bound quantum circuit
+#def bind_weights(params:list, rots:list, qc:QuantumCircuit) -> QuantumCircuit:
+#    """Bind parameters to rotations and return a bound quantum circuit#
+#
+#    Parameters
+#    ----------
+#    params: list
+#        A list of parameters (the texts)
+#    rots: list
+#        The exact values for the parameters, which are rotations of quantum gates
+#    qc: Quantum Circuit
+#        A quantum circuit without bound weights  #
+#
+#    Returns
+#    -------
+#    bc: Quantum Circuit
+#        A quantum circuit with including bound weights, ready to run an evaluation
+#    """
 
-    Parameters
-    ----------
-    params: list
-        A list of parameters (the texts)
-    rots: list
-        The exact values for the parameters, which are rotations of quantum gates
-    qc: Quantum Circuit
-        A quantum circuit without bound weights  
-
-    Returns
-    -------
-    bc: Quantum Circuit
-        A quantum circuit with including bound weights, ready to run an evaluation
-    """
-
-    binding_dict = {}
-    for i, rot in enumerate(rots):
-        param_name = str(params[i])
-        #binding_dict[param_name] = rot #aws
-        binding_dict[str(params[i])] = rot
-    bc = qc.assign_parameters(binding_dict)
+    #binding_dict = {}
+    #for i, rot in enumerate(rots):
+    #    param_name = str(params[i])
+    #    #binding_dict[param_name] = rot #aws
+    #    binding_dict[str(params[i])] = rot
+    #bc = qc.assign_parameters(binding_dict)
     #bc = qc.make_bound_circuit(binding_dict) #aws
-    return(bc)
+    #return(bc)"""
 
 def find_run_stats(lowest_list:list)-> tuple[float, int]:
     """Finds the lowest energy and the iteration at which it was found

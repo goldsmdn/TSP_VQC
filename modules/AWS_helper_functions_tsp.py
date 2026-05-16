@@ -5,8 +5,8 @@ import graycode
 
 from braket.parametric import FreeParameter
 from braket.circuits import Circuit
-#from braket.devices import Devices, LocalSimulator
-#from braket.aws import AwsDevice
+
+from modules.helper_functions_quantum import bind_weights
 
 import random
 from typing import Callable # Import Callable for type hinting
@@ -57,11 +57,6 @@ def find_device(target):
         return LocalSimulator()
     # AWS device
     device = AwsDevice(cfg['arn'])
-
-    # Optional emulator
-    #if cfg.get('emulator', True):
-    #    return device.emulator()
-
     return device
 
 def is_even(n):
@@ -406,7 +401,8 @@ def update_parameters_using_gradient(
         bc = bind_weights(
             params=params, 
             rots=rots, 
-            qc=qc
+            qc=qc,
+            target=target,
             )
         cost, lowest, lowest_energy_bit_string = cost_func_evaluate(
             noise=noise,
@@ -613,7 +609,8 @@ def my_gradient(noise:bool,
             bc = bind_weights(
                 params=params, 
                 rots=new_rots, 
-                qc=qc
+                qc=qc,
+                target=target,
                 )
             cost_minus, _, _ = cost_func_evaluate(
                 noise=noise,
@@ -640,7 +637,8 @@ def my_gradient(noise:bool,
         bc = bind_weights(
             params=params, 
             rots=new_rots,
-            qc=qc
+            qc=qc,
+            target=target,
             )
         cost_plus, _, _ = cost_func_evaluate(
             noise=noise,
@@ -655,7 +653,8 @@ def my_gradient(noise:bool,
         bc = bind_weights(
             params=params, 
             rots=new_rots,
-            qc=qc
+            qc=qc,
+            target=target,
             )
         cost_minus, _, _ = cost_func_evaluate(
             noise=noise,
@@ -698,12 +697,12 @@ def define_parameters(qubits:int,
     else:   
         raise Exception(f'Mode {mode} has not been coded for')
     
-def vqc_circuit(qubits: int,
-                mode:int,
-                noise:bool,
-                layers:int,
-                params:list,
-                target:str) -> Circuit:
+#def vqc_circuit(qubits: int,
+#                mode:int,
+#                noise:bool,
+#                layers:int,
+#                params:list,
+#                target:str) -> Circuit:
     """Set up a variational quantum circuit
 
     Parameters
@@ -725,8 +724,7 @@ def vqc_circuit(qubits: int,
     qc: Quantum Circuit
         A quantum circuit without bound weights
     """
-    #qubit_dict = find_logical_to_physical_dictionary(qubits, TARGET)
-    qubits_measured = find_qubits_measured(qubits, target)
+    """qubits_measured = find_qubits_measured(qubits, target)
     qubit_dict = find_logical_to_physical_dictionary(qubits, target)
     qc = Circuit()
     if mode == 1:
@@ -849,16 +847,15 @@ def vqc_circuit(qubits: int,
     print(f'After measurement, the following qubits are measured {sorted_list}') # <==== add this line
     #end AWS support
 
-    return qc
+    return qc"""
 
 def create_initial_rotations(qubits: int,
-                             #param_num: int,
                              num_params: int,
                              mode: int,
                              layers:int,
                              hot_start:bool=False,
                              bin_hot_start_list: list=False,)-> np.ndarray: 
-    """Initialise parameters with random weights
+    """Initialise parameters with random weights, or hot start list
 
     Parameters
     ----------
@@ -882,7 +879,6 @@ def create_initial_rotations(qubits: int,
     if hot_start:
         if layers in [1]:
             raise Exception('Cannot use a hot start for mode {mode}')
-        #init_rots = [0 for i in range(param_num)]
         init_rots = [0 for i in range(num_params)]
         for i, item in enumerate(bin_hot_start_list):
             if item == 1:
@@ -893,63 +889,6 @@ def create_initial_rotations(qubits: int,
     init_rots_array = np.array(init_rots)
     return(init_rots_array)
 
-#def bind_weights(params:list, 
-#                 rots:list, 
-#                 qc:Circuit) -> Circuit:
-    """Bind parameters to rotations and return a bound quantum circuit
-
-    Parameters
-    ----------
-    params: list
-        A list of parameters (the texts)
-    rots: list
-        The exact values for the parameters, which are rotations of quantum gates
-    qc: Quantum Circuit
-        A quantum circuit without bound weights  
-
-    Returns
-    -------
-    bc: Quantum Circuit
-        A quantum circuit with including bound weights, ready to run an evaluation
-    """
-
-#    binding_dict = {}
-#    for i, rot in enumerate(rots):
-#        param_name = str(params[i])
-#        binding_dict[param_name] = rot
-#    bc = qc.make_bound_circuit(binding_dict)
-#    return(bc)
-
-def detect_quantum_GPU_support()-> bool:
-    """Detect if a GPU is available for quantum simulations"""
-    return False
-
-#def bind_weights(params:list, rots:list, qc:Circuit) -> Circuit:
-def bind_weights(params:list, 
-                 rots:list, 
-                 qc:Circuit) -> Circuit:
-    """Bind parameters to rotations and return a bound quantum circuit
-
-    Parameters
-    ----------
-    params: list
-        A list of parameters (the texts)
-    rots: list
-        The exact values for the parameters, which are rotations of quantum gates
-    qc: Quantum Circuit
-        A quantum circuit without bound weights  
-
-    Returns
-    -------
-    bc: Quantum Circuit
-        A quantum circuit with including bound weights, ready to run an evaluation
-    """
-
-    binding_dict = {}
-    for i, rot in enumerate(rots):
-        param_name = str(params[i])
-        binding_dict[param_name] = rot
-        #binding_dict[str(params[i])] = rot #qiskit verion
-    #bc = qc.assign_parameters(binding_dict)#qiskit version
-    bc = qc.make_bound_circuit(binding_dict) #aws
-    return(bc)
+#def detect_quantum_GPU_support()-> bool:
+#    """Detect if a GPU is available for quantum simulations"""
+#    return False
