@@ -1,6 +1,7 @@
 #helper functions for quantum circuit construction and evaluation
 from braket.circuits import Circuit
 from braket.parametric import FreeParameter
+from qiskit.circuit import Parameter
 
 from modules.helper_functions_general import (
     find_logical_to_physical_dictionary, 
@@ -64,11 +65,15 @@ def bind_weights(params:list,
                 binding_dict[param_name] = rot
             case 'qiskit':
                 binding_dict[param_name] = rot
+            case _:
+                raise Exception(f'Mode {mode} has not been coded for')
     match mode:
         case 'aws':
             bc = qc.make_bound_circuit(binding_dict)
         case 'qiskit':
             bc = qc.assign_parameters(binding_dict)
+        case _:
+            raise Exception(f'Mode {mode} has not been coded for')
     return(bc)
 
 def define_parameters(
@@ -146,3 +151,33 @@ def vqc_circuit(qubits: int,
     print(f'After measurement, the following qubits are measured {sorted_list}') 
 
     return qc
+
+def define_parameters(                
+        mode:int, 
+        num_params:int
+        ) -> list:
+    """Set up parameters and initialise text
+    
+    Parameters
+    ----------
+        mode: int - Controls setting the circuit up in different modes
+
+    Returns
+    -------
+    params: list
+        A list of parameters (the texts)
+
+    """
+    params = []
+    circuit_sdk = MODE_DISPATCH[mode]['sdk']
+         
+    for i in range(num_params):
+        text = "param_" + str(i)
+        match circuit_sdk:
+            case 'aws':
+                params.append(FreeParameter(text))
+            case 'qiskit':
+                params.append(Parameter(text)) 
+            case _:
+                raise Exception(f'Mode {mode} has not been coded for')
+    return params

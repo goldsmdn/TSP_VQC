@@ -30,7 +30,7 @@ TARGETS = {
         'emulator': True,
         'sdk': 'qiskit',
     },
-    'local_aws_test': { #test on local qiskit simulator using Cephus connectivity
+    'local_aws_test': { #test on local aws simulator using Cephus connectivity
         'type': 'local_aws',
         'emulator': True,
         'sdk': 'aws',
@@ -41,11 +41,11 @@ TARGETS = {
         'emulator': False,
         'sdk': 'aws',
     },
-    #'cephus_em': {
-    #    'type': 'aws',
-    #    'arn': CEPHUS_DEVICE,
-    #    'emulator': True,
-    #},
+    'cephus_em': {#emulator run on Rigetti Cephus - not currently provided by Rigetti, but could be added in the future
+        'type': 'aws',
+        'arn': CEPHUS_DEVICE,
+        'emulator': True,
+    },
 }
 
 

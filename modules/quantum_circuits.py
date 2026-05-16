@@ -8,7 +8,7 @@ from qiskit import QuantumCircuit
 
 
 def mode_1(context_dict:dict) -> QuantumCircuit:
-    """Creates a simple circuit with multiple layera of Hadamards, 
+    """Creates a simple Qiskit circuit with multiple layera of Hadamards, 
         RY and RX rotations and one layer of CNOTs
 
     Parameters
@@ -41,7 +41,7 @@ def mode_1(context_dict:dict) -> QuantumCircuit:
     return qc
 
 def mode_13(context_dict:dict) -> Circuit:
-    """An IPQ inspired circuit 
+    """An IPQ inspired circuit created in AWS Braket
 
     Parameters
     ----------
