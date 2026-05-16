@@ -34,6 +34,7 @@ from modules.config import (RESULTS_DIR,
                             TARGETS,
                             MPS,
                             AWS,
+                            MODE_DISPATCH,
                             )
 
 from modules.graph_functions import cost_graph_multi
@@ -186,8 +187,10 @@ class MySubDataLogger(MyDataLogger):
             #if TARGETS[self.target]['type'] != 'aws' and self.aws:
             if TARGETS[self.target]['type'] not in ['local_aws', 'aws'] and self.aws:
                 raise Exception(f'AWS is set to true, but target {self.target} is not an AWS device')
-            #if self.aws and self.mode !=7:
-            #    raise Exception(f'mode = {self.mode=} selected, but ony mode 7 is suitable to run on an AWS device')
+            circuit_sdk = MODE_DISPATCH[self.mode]['sdk']
+            targets_sdk = TARGETS[self.target]['sdk']
+            if circuit_sdk != targets_sdk:
+                raise Exception(f'Mode {self.mode} is set up for {circuit_sdk}, but target {self.target} is set up for {targets_sdk}')
         else:
             if self.gradient_type not in ['SGD', 'SGD+X', 'Adam', 'Adam+X', 'RMSprop',]:
                 raise Exception(f'Only certain gradient type are allowed for non quantum, not {self.gradient_type}')
