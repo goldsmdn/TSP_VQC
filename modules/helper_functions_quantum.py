@@ -2,6 +2,21 @@
 from braket.circuits import Circuit
 from braket.parametric import FreeParameter
 
+from modules.helper_functions_general import (
+    find_logical_to_physical_dictionary, 
+    find_qubits_measured, 
+    find_valid_device_loop
+)
+
+from modules.quantum_circuits import (
+    mode_1,
+    mode_13,
+)
+
+from modules.config import MODE_DISPATCH
+
+import numpy as np
+
 def find_mode(target:str) -> str:
     """Find the mode (braket or qiskit) for a given target
 
@@ -16,7 +31,7 @@ def find_mode(target:str) -> str:
         The mode for the given target, either 'braket' or 'qiskit' that determines subsequent processing.
     """
     from modules.config import TARGETS
-    return TARGETS[target]['mode']
+    return TARGETS[target]['sdk']
 
 def bind_weights(params:list, 
                  rots:list, 
@@ -55,3 +70,79 @@ def bind_weights(params:list,
         case 'qiskit':
             bc = qc.assign_parameters(binding_dict)
     return(bc)
+
+def define_parameters(
+        #qubits:int,                  
+        mode:int, 
+        num_params:int) -> list:
+    """Set up parameters and initialise text
+    
+    Parameters
+    ----------
+    #qubits: int - The number of qubits in the circuit
+    mode: int - Controls setting the circuit up in different modes
+
+    Returns
+    -------
+    params: list
+        A list of parameters (the texts)
+
+    """
+    params = []
+    if mode in [1, 2, 3, 4, 6, 7, 12, 13, ]:
+        for i in range(num_params):
+            text = "param_" + str(i)
+            params.append(FreeParameter(text))
+        return params
+    else:   
+        raise Exception(f'Mode {mode} has not been coded for')
+    
+
+def vqc_circuit(qubits: int,
+                mode:int,
+                #noise:bool,
+                layers:int,
+                params:list,
+                target:str) -> Circuit:
+    """Set up a variational quantum circuit
+
+    Parameters
+    ----------
+    A sub data logger holding the parameters for the run with key fields:
+    qubits: int
+        The number of qubits in the circuit
+    mode: int
+        Controls setting the circuit up in different modes
+    #noise: bool
+    #    Controls if noise is included in the circuit
+    layers: int
+        The numnber of layers
+    params: list
+        A list of parameters (the texts)
+
+    Returns
+    -------
+    qc: Quantum Circuit
+        A quantum circuit without bound weights
+    """
+
+    qubit_dict = find_logical_to_physical_dictionary(qubits, target)
+    qubits_measured = find_qubits_measured(qubits, target)
+    
+    context_dict = {
+        'qubits': qubits,
+        'params': params,
+        'layers': layers,   
+        'qubit_dict': qubit_dict,
+        'qubits_measured': qubits_measured,
+        }
+    
+    qc = MODE_DISPATCH[mode]['circuit'](context_dict)
+        
+    # only measure the qubits in the sorted list
+    valid_device_loop = find_valid_device_loop(qubits, target)
+    sorted_list = sorted(valid_device_loop)
+    qc.measure(sorted_list)
+    print(f'After measurement, the following qubits are measured {sorted_list}') 
+
+    return qc

@@ -1,6 +1,7 @@
 from collections.abc import Set
 
 import numpy as np
+from qiskit import circuit
 
 # General control data - directories, file names, etc.
 
@@ -22,23 +23,23 @@ TARGETS = {
     'local_aws': { #test on local AWS simulator
         'type': 'local_aws',
         'emulator': True,
-        'mode': 'aws',
+        'sdk': 'aws',
     },
     'local_qiskit': { #test on local qiskit simulator
         'type': 'local_qiskit',
         'emulator': True,
-        'mode': 'qiskit',
+        'sdk': 'qiskit',
     },
     'local_aws_test': { #test on local qiskit simulator using Cephus connectivity
         'type': 'local_aws',
         'emulator': True,
-        'mode': 'aws',
+        'sdk': 'aws',
     },
     'cephus': { #production run on Rigetti Cephus
         'type': 'aws',
         'arn': CEPHUS_DEVICE,
         'emulator': False,
-        'mode': 'aws',
+        'sdk': 'aws',
     },
     #'cephus_em': {
     #    'type': 'aws',
@@ -84,6 +85,19 @@ MODE = 13                           # MODE = 1 - rxgate, rygate, cnot gates
                                     # MODE = 13 - IQP with only RX, RZ and CZ
                                     # MODE = 18 - input is all zeros - with sigmoid activation
                                     # MODE = 19 - input is 0.5 - with sigmoid activation
+
+from modules.quantum_circuits import (
+    mode_1,
+    mode_13,
+)
+
+MODE_DISPATCH = {
+    1: {'circuit':mode_1, #Qiskit rxgate, rygate, cnot gates
+        'sdk': 'qiskit'},
+    13: {'circuit':mode_13,#AWS IQP with only RX, RZ and CZ
+         'sdk': 'aws'},
+}
+
 SLICES = [0.8]                      # Slices to use when calculating the gradient  
                                     #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
                                     # For example, 0.2 means that the best 20% 
