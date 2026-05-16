@@ -5,8 +5,8 @@ import graycode
 
 from braket.parametric import FreeParameter
 from braket.circuits import Circuit
-#from braket.devices import Devices, LocalSimulator
-#from braket.aws import AwsDevice
+
+from modules.helper_functions_quantum import bind_weights
 
 import random
 from typing import Callable # Import Callable for type hinting
@@ -406,7 +406,8 @@ def update_parameters_using_gradient(
         bc = bind_weights(
             params=params, 
             rots=rots, 
-            qc=qc
+            qc=qc,
+            target=target,
             )
         cost, lowest, lowest_energy_bit_string = cost_func_evaluate(
             noise=noise,
@@ -613,7 +614,8 @@ def my_gradient(noise:bool,
             bc = bind_weights(
                 params=params, 
                 rots=new_rots, 
-                qc=qc
+                qc=qc,
+                target=target,
                 )
             cost_minus, _, _ = cost_func_evaluate(
                 noise=noise,
@@ -640,7 +642,8 @@ def my_gradient(noise:bool,
         bc = bind_weights(
             params=params, 
             rots=new_rots,
-            qc=qc
+            qc=qc,
+            target=target,
             )
         cost_plus, _, _ = cost_func_evaluate(
             noise=noise,
@@ -655,7 +658,8 @@ def my_gradient(noise:bool,
         bc = bind_weights(
             params=params, 
             rots=new_rots,
-            qc=qc
+            qc=qc,
+            target=target,
             )
         cost_minus, _, _ = cost_func_evaluate(
             noise=noise,
@@ -925,9 +929,9 @@ def detect_quantum_GPU_support()-> bool:
     return False
 
 #def bind_weights(params:list, rots:list, qc:Circuit) -> Circuit:
-def bind_weights(params:list, 
-                 rots:list, 
-                 qc:Circuit) -> Circuit:
+#def bind_weights(params:list, 
+#                 rots:list, 
+#                 qc:Circuit) -> Circuit:
     """Bind parameters to rotations and return a bound quantum circuit
 
     Parameters
@@ -945,11 +949,11 @@ def bind_weights(params:list,
         A quantum circuit with including bound weights, ready to run an evaluation
     """
 
-    binding_dict = {}
-    for i, rot in enumerate(rots):
-        param_name = str(params[i])
-        binding_dict[param_name] = rot
-        #binding_dict[str(params[i])] = rot #qiskit verion
-    #bc = qc.assign_parameters(binding_dict)#qiskit version
-    bc = qc.make_bound_circuit(binding_dict) #aws
-    return(bc)
+#    binding_dict = {}
+#    for i, rot in enumerate(rots):
+#       param_name = str(params[i])
+#        binding_dict[param_name] = rot
+#        #binding_dict[str(params[i])] = rot #qiskit verion
+#    #bc = qc.assign_parameters(binding_dict)#qiskit version
+#    bc = qc.make_bound_circuit(binding_dict) #aws
+#    return(bc)
