@@ -92,13 +92,13 @@ def validate_qubit_loops(qubits, loop_dict, target):
         print(f'No errors found for {target=} {qubits=} \n')
     return
     
-def cost_fn_fact(locations:int,
-                 qubits,
-                 gray:bool, 
-                 formulation:str, 
-                 distance_array: np.ndarray, 
-                 target: str
-                 ) -> Callable[[list], int]:
+#def cost_fn_fact(locations:int,
+#                 qubits,
+#                 gray:bool, 
+#                 formulation:str, 
+#                 distance_array: np.ndarray, 
+#                 target: str
+#                 ) -> Callable[[list], int]:
     """ Returns a cost function inside a decorator,
 
     Parameters
@@ -120,33 +120,33 @@ def cost_fn_fact(locations:int,
     cost_fn: cost function
         A function of a bit string evaluating a distance for that bit string
     
-    """
-    @LRUCacheUnhashable
-    def cost_fn(bit_string_input: list) -> float:
-        """Returns the value of the objective function for a bit_string"""
-        #print(f'Analysing bit string {bit_string_input} with {qubits=}')
-        if isinstance(bit_string_input, list):
-            #bit_string = convert_physical_to_logical_bit_string(bit_string_input, qubits, TARGET)
-            bit_string = convert_physical_to_logical_bit_string(bit_string_input, qubits, target)
-            #print(f'After conversion, bit string {bit_string}')
-            full_list_of_locs = convert_bit_string_to_cycle(bit_string,
-                                                            locations, 
-                                                            gray, 
-                                                            formulation
-                                                            )
-            total_distance = find_total_distance(full_list_of_locs, 
-                                                 locations, 
-                                                 distance_array
-                                                 )
-            valid = check_loc_list(full_list_of_locs,
-                                   locations
-                                   )
-            if not valid:
-                raise Exception('Algorithm returned incorrect cycle')  
-            return total_distance
-        else:
-            raise Exception(f'bit_string {bit_string_input} is not a list or a tensor')
-    return cost_fn
+    
+    """@LRUCacheUnhashable
+    #def cost_fn(bit_string_input: list) -> float:
+    #    """Returns the value of the objective function for a bit_string"""
+    #    #print(f'Analysing bit string {bit_string_input} with {qubits=}')
+    #    if isinstance(bit_string_input, list):
+    #        #bit_string = convert_physical_to_logical_bit_string(bit_string_input, qubits, TARGET)
+    #        bit_string = convert_physical_to_logical_bit_string(bit_string_input, qubits, target)
+    #        #print(f'After conversion, bit string {bit_string}')
+    #        full_list_of_locs = convert_bit_string_to_cycle(bit_string,
+    #                                                        locations, 
+    #                                                        gray, 
+    #                                                        formulation
+    #                                                        )
+    #                total_distance = find_total_distance(full_list_of_locs, 
+    #                                                    locations, 
+    #                                                    distance_array
+    #                                                    )
+    #        valid = check_loc_list(full_list_of_locs,
+    #                               locations
+    #                               )
+    #        if not valid:
+    #            raise Exception('Algorithm returned incorrect cycle')  
+    #        return total_distance
+    #    else:
+    #        raise Exception(f'bit_string {bit_string_input} is not a list or a tensor')
+    #return cost_fn"""
 
 def find_stats(cost_fn: Callable,
                counts: dict, 

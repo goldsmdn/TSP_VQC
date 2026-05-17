@@ -184,13 +184,14 @@ class MySubDataLogger(MyDataLogger):
                 raise Exception(f'MPS and AWS cannot both be true')
             if self.target not in TARGETS:
                 raise Exception(f'Target {self.target} is not in TARGETS dictionary')
-            #if TARGETS[self.target]['type'] != 'aws' and self.aws:
             if TARGETS[self.target]['type'] not in ['local_aws', 'aws'] and self.aws:
                 raise Exception(f'AWS is set to true, but target {self.target} is not an AWS device')
             circuit_sdk = MODE_DISPATCH[self.mode]['sdk']
             targets_sdk = TARGETS[self.target]['sdk']
             if circuit_sdk != targets_sdk:
                 raise Exception(f'Mode {self.mode} is set up for {circuit_sdk}, but target {self.target} is set up for {targets_sdk}')
+            if self.noise and targets_sdk != 'aws':
+                raise Exception(f'Noise simulation is currently only not set up for AWS devices, and {self.target=}')
         else:
             if self.gradient_type not in ['SGD', 'SGD+X', 'Adam', 'Adam+X', 'RMSprop',]:
                 raise Exception(f'Only certain gradient type are allowed for non quantum, not {self.gradient_type}')

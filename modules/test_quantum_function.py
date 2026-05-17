@@ -2,11 +2,13 @@ from qiskit.circuit import QuantumCircuit, QuantumRegister, Parameter
 
 from classes.MyDataLogger import MyDataLogger, MySubDataLogger
 
-from modules.helper_functions_tsp import (vqc_circuit, 
+from modules.helper_functions_tsp import (#vqc_circuit, 
                                           cost_func_evaluate, 
                                           my_gradient, 
                                           cost_fn_fact
                                           )
+
+from modules.helper_functions_quantum import vqc_circuit
 
 import numpy as np
 import pytest as py
@@ -154,12 +156,34 @@ def test_simple_circuit():
     sdl.locations = 5
     sdl.gray = True
     sdl.formulation = 'original'
+    qubits = 5
+    params = []
+    mode = 5
+    locations = 5
+    gray = True
+    formulation = 'original'
     file = 'five_d.txt'
     filename = Path(NETWORK_DIR).joinpath(file)
     distance_array = np.genfromtxt(filename)
-    cost_fn = cost_fn_fact(sdl, distance_array,)
+    #cost_fn = cost_fn_fact(sdl, distance_array,)
+    cost_fn = cost_fn_fact(
+        locations=locations,
+        qubits=qubits,
+        gray=gray,
+        formulation=formulation,
+        distance_array=distance_array,
+        target='local_qiskit'
+        )
     
-    qc = vqc_circuit(sdl, params) 
+    #qc = vqc_circuit(sdl, params) 
+    qc = vqc_circuit(
+        qubits=qubits,
+        mode=mode,
+        noise=False,
+        layers=1,
+        params=params,
+        target='local_qiskit'
+    )
 
     actual_result, _ , _ = cost_func_evaluate(sdl,
                                               cost_fn, 

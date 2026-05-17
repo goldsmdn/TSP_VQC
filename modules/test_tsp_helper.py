@@ -274,42 +274,34 @@ def test_find_total_distance():
 
 def test_find_problem_size_4():
     """Check problem size for 4 locations"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
-    sdl.locations = 4
-    sdl.formulation = 'original'
     expected_result = 3
-    result = find_problem_size(sdl)
+    locations = 4
+    formulation = 'original'
+    result = find_problem_size(locations, formulation)
     assert expected_result == result
 
 def test_find_problem_size_4_new():
     """Check problem size for 4 locations"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
-    sdl.locations = 4
-    sdl.formulation = 'new'
+    locations = 4
+    formulation = 'new'
     expected_result = 5
-    result = find_problem_size(sdl)
+    result = find_problem_size(locations, formulation)
     assert expected_result == result
 
 def test_find_problem_size_5_new():
     """Check problem size for 5 locations"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
-    sdl.locations = 5
-    sdl.formulation = 'new'
+    locations = 5
+    formulation = 'new'
     expected_result = 7
-    result = find_problem_size(sdl)
+    result = find_problem_size(locations, formulation)
     assert expected_result == result
 
 def test_find_problem_size_26():
     """Check problem size for 26 locations"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
-    sdl.locations = 26
-    sdl.formulation = 'original'
+    locations = 26
+    formulation = 'original'
     expected_result = 94
-    result = find_problem_size(sdl)
+    result = find_problem_size(locations, formulation)
     assert expected_result == result
 
 def test_convert_bit_string_to_cycle_000():
@@ -454,49 +446,72 @@ def test_convert_bit_string_to_cycle_00010__not_gray():
 
 def test_find_average():
     """Test find_stats in average mode"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
-    sdl.locations = 4
-    sdl.gray = False
-    sdl.formulation = 'original'
+    locations = 4
+    gray = False
+    formulation = 'original'
+    qubits = find_problem_size(locations, formulation)
     filename = 'networks/four_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    cost_fn = cost_fn_fact(sdl, distance_array)
+    cost_fn = cost_fn_fact(
+        locations=locations,
+        qubits=qubits,
+        gray=gray,
+        formulation=formulation,
+        distance_array=distance_array,
+        target='local_qiskit'
+        )
     average, _, _ = find_stats(cost_fn, counts, SHOTS,)
     expected_result = 21.916
     assert expected_result == average
 
 def test_find_lowest():
     """Test find_stats in lowest mode"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
+    #datalogger = MyDataLogger()
+    #sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
-    sdl.locations = 4
-    sdl.gray = False
-    sdl.formulation = 'original'
+    #sdl.locations = 4
+    #sdl.gray = False
+   # sdl.formulation = 'original'
+    locations = 4
+    gray = False
+    formulation = 'original'
+    qubits = find_problem_size(locations, formulation)
     filename = 'networks/four_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    cost_fn = cost_fn_fact(sdl, distance_array)
+    cost_fn = cost_fn_fact(
+        locations=locations,
+        qubits=qubits,
+        gray=gray,
+        formulation=formulation,
+        distance_array=distance_array,
+        target='local_qiskit'
+        )
     _ , lowest, _ = find_stats(cost_fn, counts, SHOTS,)
     expected_result = 21.0
     assert expected_result == lowest
 
 def test_find_average_slice1():
     """Test average slice functionality"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 1000}
-    sdl.locations = 5
-    sdl.gray = True
-    sdl.formulation = 'original'
+    locations = 5
+    gray = True
+    qubits = find_problem_size(locations, 'original')
+    formulation = 'original'
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     AVERAGE_SLICE = 0.6
-    cost_fn = cost_fn_fact(sdl, distance_array)
+    cost_fn = cost_fn_fact(
+        locations=locations,
+        qubits=qubits,
+        gray=gray,
+        formulation=formulation,
+        distance_array=distance_array,
+        target='local_aws'
+        )
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
@@ -507,16 +522,22 @@ def test_find_average_slice1():
 
 def test_find_average_slice2():
     """Test average slice functionality - ensure no change"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 1000}
-    sdl.locations = 5
-    sdl.gray = True
-    sdl.formulation = 'original'
+    locations = 5
+    gray = True
+    formulation = 'original'
+    qubits = find_problem_size(locations, formulation)
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    cost_fn = cost_fn_fact(sdl, distance_array)
+    cost_fn = cost_fn_fact(
+        locations=locations,
+        qubits=qubits,
+        gray=gray,
+        formulation=formulation,
+        distance_array=distance_array,
+        target='local_aws'
+        )
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
@@ -526,16 +547,22 @@ def test_find_average_slice2():
 
 def test_find_average_slice2b():
     """Test average slice functionality - ensure no change"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'00000': 1000}
-    sdl.locations = 5
-    sdl.gray = True
-    sdl.formulation = 'original'
+    locations = 5
+    gray = True
+    formulation = 'original'
+    qubits = find_problem_size(locations, formulation)
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
-    cost_fn = cost_fn_fact(sdl, distance_array)
+    cost_fn = cost_fn_fact(
+        locations=locations,
+        qubits=qubits,
+        gray=gray,
+        formulation=formulation,
+        distance_array=distance_array,
+        target='local_aws'
+        )
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
@@ -545,18 +572,24 @@ def test_find_average_slice2b():
 
 def test_find_average_slice3():
     """Test average slice functionality - ensure no change"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 500,
               '00000': 500}
-    sdl.locations = 5
-    sdl.gray = True
-    sdl.formulation = 'original'
+    locations = 5
+    gray = True
+    formulation = 'original'
+    qubits = find_problem_size(locations, formulation)
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     AVERAGE_SLICE = 0.4
-    cost_fn = cost_fn_fact(sdl, distance_array)
+    cost_fn = cost_fn_fact(
+        locations=locations,
+        qubits=qubits,
+        gray=gray,
+        formulation=formulation,
+        distance_array=distance_array,
+        target='local_aws'
+        )
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
@@ -567,18 +600,24 @@ def test_find_average_slice3():
 
 def test_find_average_slice4():
     """Test average slice functionality - ensure no change"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 500,
               '00000': 500}
-    sdl.locations = 5
-    sdl.gray = True
-    sdl.formulation = 'original'
+    locations = 5
+    gray = True
+    formulation = 'original'
+    qubits = find_problem_size(locations, formulation)
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     AVERAGE_SLICE = 0.6
-    cost_fn = cost_fn_fact(sdl, distance_array)
+    cost_fn = cost_fn_fact(
+        locations=locations,
+        qubits=qubits,
+        gray=gray,
+        formulation=formulation,
+        distance_array=distance_array,
+        target='local_aws'
+        )
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
@@ -589,19 +628,25 @@ def test_find_average_slice4():
 
 def test_find_average_slice5():
     """Test average slice functionality - ensure no change  """
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 200, #Energy = 21
           '00000': 300, #Energy = 25
           '01101': 500} #Energy = 19
-    sdl.locations = 5
-    sdl.gray = True
-    sdl.formulation = 'original'
+    locations = 5
+    gray = True
+    formulation = 'original'
+    qubits = find_problem_size(locations, formulation)
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     AVERAGE_SLICE = 0.8
-    cost_fn = cost_fn_fact(sdl, distance_array)
+    cost_fn = cost_fn_fact(
+        locations=locations,
+        qubits=qubits,
+        gray=gray,
+        formulation=formulation,
+        distance_array=distance_array,
+        target='local_aws'
+        )
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
@@ -612,19 +657,25 @@ def test_find_average_slice5():
 
 def test_find_average_slice6():
     """Test finding average slice"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
     counts = {'11010': 200, #Energy = 21
           '00000': 300, #Energy = 25
           '01101': 500} #Energy = 19
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
-    sdl.locations = 5
-    sdl.gray = True
-    sdl.formulation = 'original'
+    locations = 5
+    gray = True
+    formulation = 'original'
+    qubits = find_problem_size(locations, formulation)
     SHOTS = 1000
     AVERAGE_SLICE = 1
-    cost_fn = cost_fn_fact(sdl, distance_array)
+    cost_fn = cost_fn_fact(
+        locations=locations,
+        qubits=qubits,
+        gray=gray,
+        formulation=formulation,
+        distance_array=distance_array,
+        target='local_aws'
+        )
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
@@ -635,20 +686,26 @@ def test_find_average_slice6():
 
 def test_find_average_slice7():
     """Test average slice functionality - ensure no change  """
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
+    locations = 5
+    gray = True
+    formulation = 'original'
+    qubits = find_problem_size(locations, formulation)
     counts = {'11010': 200, #Energy = 21
           '00000': 300, #Energy = 25
 
           '01101': 500} #Energy = 19
-    sdl.locations = 5
-    sdl.gray = True
-    sdl.formulation = 'original'
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     AVERAGE_SLICE = 0.2
-    cost_fn = cost_fn_fact(sdl, distance_array)
+    cost_fn = cost_fn_fact(
+        locations=locations,
+        qubits=qubits,
+        gray=gray,
+        formulation=formulation,
+        distance_array=distance_array,
+        target='local_aws'
+        )
     average , _ , _ = find_stats(cost_fn, 
                                  counts, 
                                  SHOTS, 
@@ -799,7 +856,8 @@ def test_bit_string_cycle_conversion_orig():
     sdl.formulation = 'new'
     sdl.gray = False
     f = math.factorial(sdl.locations)
-    dim = find_problem_size(sdl)
+    #dim = find_problem_size(sdl)
+    dim = find_problem_size(sdl.locations, sdl.formulation)
     expected_result = []
     actual_result = []
     for i in range(f):
@@ -820,7 +878,7 @@ def test_bit_string_cycle_conversion_orig2():
     sdl.formulation = 'new'
     sdl.gray = True
     f = math.factorial(sdl.locations)
-    dim = find_problem_size(sdl)
+    dim = find_problem_size(sdl.locations, sdl.formulation)
     expected_result = []
     actual_result = []
     for i in range(f):

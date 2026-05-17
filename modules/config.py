@@ -2,6 +2,7 @@ from collections.abc import Set
 
 import numpy as np
 from qiskit import circuit
+from torch import device
 
 # General control data - directories, file names, etc.
 
@@ -17,7 +18,8 @@ AWS = True                          # Whether runs are on AWS or Qiskit.
 
 CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
 
-TARGET = 'local_aws'           # Options from TARGETS dictionary below.  This controls which device is used and whether the emulator is used.
+TARGET = 'local_aws'            # Options from TARGETS dictionary below.  This controls which 
+                                # quantum device is used and whether the emulator is used.
 
 TARGETS = {
     'local_aws': { #test on local AWS simulator
@@ -88,12 +90,30 @@ MODE = 13                           # MODE = 1 - rxgate, rygate, cnot gates
 
 from modules.quantum_circuits import (
     mode_1,
+    mode_2,
+    mode_3,
+    mode_4,
+    mode_5, 
+    mode_6,
+    mode_7,
     mode_13,
 )
 
 MODE_DISPATCH = {
     1: {'circuit':mode_1, #Qiskit rxgate, rygate, cnot gates
         'sdk': 'qiskit'},
+    2: {'circuit':mode_2, #Qiskit rxgate, XX gates -can be used with Hot Start
+        'sdk': 'qiskit'},
+    3: {'circuit':mode_3, #Qiskit IQP based
+        'sdk': 'qiskit'},
+    4: {'circuit':mode_4, #Qiskit rxgate
+        'sdk': 'qiskit'},
+    5: {'circuit':mode_5, #Qiskit test mode
+        'sdk': 'qiskit'},
+    6: {'circuit':mode_6, #Qiskit rxgate, ry gate
+        'sdk': 'qiskit'},
+    7: {'circuit':mode_7, #AWS rz gates, iswap gates
+        'sdk': 'aws'},
     13: {'circuit':mode_13,#AWS IQP with only RX, RZ and CZ
          'sdk': 'aws'},
 }

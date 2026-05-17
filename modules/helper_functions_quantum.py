@@ -2,6 +2,9 @@
 from braket.circuits import Circuit
 from braket.parametric import FreeParameter
 from qiskit.circuit import Parameter
+from qiskit import transpile
+
+from qiskit_ibm_runtime.fake_provider import FakeAuckland
 
 from modules.helper_functions_general import (
     find_logical_to_physical_dictionary, 
@@ -11,6 +14,12 @@ from modules.helper_functions_general import (
 
 from modules.quantum_circuits import (
     mode_1,
+    mode_2,
+    mode_3,
+    mode_4,
+    mode_5,
+    mode_6,
+    mode_7,
     mode_13,
 )
 
@@ -18,18 +27,18 @@ from modules.config import MODE_DISPATCH
 
 import numpy as np
 
-def find_mode(target:str) -> str:
-    """Find the mode (braket or qiskit) for a given target
+def find_sdk(target:str) -> str:
+    """Find the SDK (braket or qiskit) for a given target
 
     Parameters
     ----------
     target: str
-        The target to find the mode for.  This is a key in the TARGETS dictionary in config.py
+        The target to find the sdk for.  This is a key in the TARGETS dictionary in config.py
 
     Returns
     -------
-    mode: str
-        The mode for the given target, either 'braket' or 'qiskit' that determines subsequent processing.
+    sdk: str
+        The sdk for the given target, either 'braket' or 'qiskit' that determines subsequent processing.
     """
     from modules.config import TARGETS
     return TARGETS[target]['sdk']
@@ -49,35 +58,34 @@ def bind_weights(params:list,
     qc: Circuit
         A quantum circuit without bound weights  
     target: str
-        The target to find the mode for.  This is a key in the TARGETS dictionary
+        This is a key in the TARGETS dictionary
 
     Returns
     -------
     bc: Quantum Circuit
         A quantum circuit with including bound weights, ready to run an evaluation
     """
-    mode = find_mode(target)
+    sdk = find_sdk(target)
     binding_dict = {}
     for i, rot in enumerate(rots):
         param_name = str(params[i])
-        match mode:
+        match sdk:
             case 'aws':
                 binding_dict[param_name] = rot
             case 'qiskit':
                 binding_dict[param_name] = rot
             case _:
-                raise Exception(f'Mode {mode} has not been coded for')
-    match mode:
+                raise Exception(f'SDK {sdk} has not been coded for')
+    match sdk:
         case 'aws':
             bc = qc.make_bound_circuit(binding_dict)
         case 'qiskit':
             bc = qc.assign_parameters(binding_dict)
         case _:
-            raise Exception(f'Mode {mode} has not been coded for')
+            raise Exception(f'SDK {sdk} has not been coded for')
     return(bc)
 
-def define_parameters(
-        #qubits:int,                  
+def define_parameters(            
         mode:int, 
         num_params:int) -> list:
     """Set up parameters and initialise text
@@ -105,7 +113,7 @@ def define_parameters(
 
 def vqc_circuit(qubits: int,
                 mode:int,
-                #noise:bool,
+                noise:bool,
                 layers:int,
                 params:list,
                 target:str) -> Circuit:
@@ -118,8 +126,8 @@ def vqc_circuit(qubits: int,
         The number of qubits in the circuit
     mode: int
         Controls setting the circuit up in different modes
-    #noise: bool
-    #    Controls if noise is included in the circuit
+    noise: bool
+        Controls if noise is included in the circuit
     layers: int
         The numnber of layers
     params: list
@@ -131,6 +139,7 @@ def vqc_circuit(qubits: int,
         A quantum circuit without bound weights
     """
 
+    circuit_sdk = MODE_DISPATCH[mode]['sdk']
     qubit_dict = find_logical_to_physical_dictionary(qubits, target)
     qubits_measured = find_qubits_measured(qubits, target)
     
@@ -147,9 +156,18 @@ def vqc_circuit(qubits: int,
     # only measure the qubits in the sorted list
     valid_device_loop = find_valid_device_loop(qubits, target)
     sorted_list = sorted(valid_device_loop)
-    qc.measure(sorted_list)
+    match circuit_sdk:
+        case 'aws':
+            qc.measure(sorted_list)
+        case 'qiskit':            
+            qc.measure(sorted_list, sorted_list)
+        case _:
+            raise Exception(f'SDK {circuit_sdk} has not been coded for')
     print(f'After measurement, the following qubits are measured {sorted_list}') 
 
+    if noise:
+        backend = FakeAuckland()
+        qc = transpile(qc, backend=backend)
     return qc
 
 def define_parameters(                
