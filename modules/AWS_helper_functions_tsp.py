@@ -15,12 +15,12 @@ from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
 from modules.helper_functions_tsp import (
     convert_bit_string_to_cycle, 
-    find_total_distance,
+    #find_total_distance,
     find_bin_length,
-    check_loc_list,
+    #check_loc_list,
     validate_distance_array,
     binary_string_format,
-    convert_integer_to_binary_list,
+    #convert_integer_to_binary_list,
     validate_gradient_type
     )
 
@@ -92,13 +92,13 @@ def validate_qubit_loops(qubits, loop_dict, target):
         print(f'No errors found for {target=} {qubits=} \n')
     return
     
-def cost_fn_fact(locations:int,
-                 qubits,
-                 gray:bool, 
-                 formulation:str, 
-                 distance_array: np.ndarray, 
-                 target: str
-                 ) -> Callable[[list], int]:
+#def cost_fn_fact(locations:int,
+#                 qubits,
+#                 gray:bool, 
+#                 formulation:str, 
+#                 distance_array: np.ndarray, 
+#                 target: str
+#                 ) -> Callable[[list], int]:
     """ Returns a cost function inside a decorator,
 
     Parameters
@@ -120,33 +120,33 @@ def cost_fn_fact(locations:int,
     cost_fn: cost function
         A function of a bit string evaluating a distance for that bit string
     
-    """
-    @LRUCacheUnhashable
-    def cost_fn(bit_string_input: list) -> float:
-        """Returns the value of the objective function for a bit_string"""
-        #print(f'Analysing bit string {bit_string_input} with {qubits=}')
-        if isinstance(bit_string_input, list):
-            #bit_string = convert_physical_to_logical_bit_string(bit_string_input, qubits, TARGET)
-            bit_string = convert_physical_to_logical_bit_string(bit_string_input, qubits, target)
-            #print(f'After conversion, bit string {bit_string}')
-            full_list_of_locs = convert_bit_string_to_cycle(bit_string,
-                                                            locations, 
-                                                            gray, 
-                                                            formulation
-                                                            )
-            total_distance = find_total_distance(full_list_of_locs, 
-                                                 locations, 
-                                                 distance_array
-                                                 )
-            valid = check_loc_list(full_list_of_locs,
-                                   locations
-                                   )
-            if not valid:
-                raise Exception('Algorithm returned incorrect cycle')  
-            return total_distance
-        else:
-            raise Exception(f'bit_string {bit_string_input} is not a list or a tensor')
-    return cost_fn
+    
+    """@LRUCacheUnhashable
+    #def cost_fn(bit_string_input: list) -> float:
+    #    """Returns the value of the objective function for a bit_string"""
+    #    #print(f'Analysing bit string {bit_string_input} with {qubits=}')
+    #    if isinstance(bit_string_input, list):
+    #        #bit_string = convert_physical_to_logical_bit_string(bit_string_input, qubits, TARGET)
+    #        bit_string = convert_physical_to_logical_bit_string(bit_string_input, qubits, target)
+    #        #print(f'After conversion, bit string {bit_string}')
+    #        full_list_of_locs = convert_bit_string_to_cycle(bit_string,
+    #                                                        locations, 
+    #                                                        gray, 
+    #                                                        formulation
+    #                                                        )
+    #                total_distance = find_total_distance(full_list_of_locs, 
+    #                                                    locations, 
+    #                                                    distance_array
+    #                                                    )
+    #        valid = check_loc_list(full_list_of_locs,
+    #                               locations
+    #                               )
+    #        if not valid:
+    #            raise Exception('Algorithm returned incorrect cycle')  
+    #        return total_distance
+    #    else:
+    #        raise Exception(f'bit_string {bit_string_input} is not a list or a tensor')
+    #return cost_fn"""
 
 def find_stats(cost_fn: Callable,
                counts: dict, 
@@ -672,9 +672,9 @@ def my_gradient(noise:bool,
         raise Exception(f'Gradient type {gradient_type} is not an allowed choice')
     return gradient_array   
     
-def define_parameters(qubits:int,                  
-                      mode:int, 
-                      num_params:int) -> list:
+#def define_parameters(qubits:int,                  
+#                      mode:int, 
+#                      num_params:int) -> list:
     """Set up parameters and initialise text
     
     Parameters
@@ -688,14 +688,14 @@ def define_parameters(qubits:int,
         A list of parameters (the texts)
 
     """
-    params = []
-    if mode in [1, 2, 3, 4, 6, 7, 12, 13, ]:
-        for i in range(num_params):
-            text = "param_" + str(i)
-            params.append(FreeParameter(text))
-        return params
-    else:   
-        raise Exception(f'Mode {mode} has not been coded for')
+#    params = []
+#    if mode in [1, 2, 3, 4, 6, 7, 12, 13, ]:
+#        for i in range(num_params):
+#            text = "param_" + str(i)
+#            params.append(FreeParameter(text))
+#        return params
+#    else:   
+#        raise Exception(f'Mode {mode} has not been coded for')
     
 #def vqc_circuit(qubits: int,
 #                mode:int,

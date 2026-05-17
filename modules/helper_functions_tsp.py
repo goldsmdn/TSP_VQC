@@ -13,6 +13,11 @@ from qiskit_aer.primitives import SamplerV2
 
 from modules.helper_functions_quantum import bind_weights
 
+from modules.helper_functions_general import (
+    find_logical_to_physical_dictionary,
+    convert_physical_to_logical_bit_string,
+)
+
 
 import random
 import json
@@ -149,15 +154,18 @@ def find_bin_length(i: int) -> int:
     bin_len = math.ceil((math.log2(i)))
     return(bin_len) 
 
-def find_problem_size(sdl) -> int:
+#def find_problem_size(sdl) -> int:
+def find_problem_size(
+    locations: int,
+    formulation: str
+) -> int:
     """Finds the number of binary variables needed
     
     Parameters
     ----------
-    sdl: sub data logger containing fields
-        sdl.locations : int 
+    locations : int 
             Number of locations
-        sdl.formulation:
+    formulation: str
             'original' => method from Goldsmith D, Day-Evans J.
             'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
 
@@ -166,16 +174,20 @@ def find_problem_size(sdl) -> int:
     pb_dim : int
         Length of the bit string needed to store the problem
     """
-    if sdl.formulation == 'original':
+    #if sdl.formulation == 'original':
+    if formulation == 'original':
         pb_dim = 0
-        for i in range(1, sdl.locations):
+    #    for i in range(1, sdl.locations):
+        for i in range(1, locations):
             bin_len = find_bin_length(i)
             pb_dim += bin_len
-    elif sdl.formulation == 'new':
-        f = math.factorial(sdl.locations)
+    elif formulation == 'new':
+    #    f = math.factorial(sdl.locations)
+        f = math.factorial(locations)
         pb_dim = find_bin_length(f)
     else:
-        raise Exception(f'Unknown method {sdl.formulation}')
+    #    raise Exception(f'Unknown method {sdl.formulation}')
+        raise ValueError(f'Unknown method {formulation}')
     return(pb_dim)
 
 def convert_binary_list_to_integer(binary_list: list, gray:bool=False)->int:
@@ -312,19 +324,27 @@ def find_total_distance(int_list: list,
         total_distance += distance
     return total_distance
 
-def cost_fn_fact(sdl, distance_array: np.ndarray, ) -> Callable[[list], int]:
+#def cost_fn_fact(sdl, distance_array: np.ndarray, ) -> Callable[[list], int]:
+def cost_fn_fact(locations:int,
+                 qubits,
+                 gray:bool, 
+                 formulation:str, 
+                 distance_array: np.ndarray, 
+                 target: str
+                 ) -> Callable[[list], int]:    
     """ Returns a cost function inside a decorator,
 
     Parameters
     ----------
-    sdl: SubDataLogger object containing key parameters:
-        sdl.locations: int
-            The number of locations in the problem
-        sdl.gray: bool
-            If True Gray codes are used
-        sdl.formulation: str
-            'original' => method from Goldsmith D, Day-Evans J.
-            'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
+    locations: int
+        The number of locations in the problem
+    qubits:int
+        The number of qubits required
+    gray: bool
+        If True Gray codes are used
+    formulation: str
+        'original' => method from Goldsmith D, Day-Evans J.
+        'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
     distance_array: array
         Numpy symmetric array with distances between locations
     
@@ -338,19 +358,44 @@ def cost_fn_fact(sdl, distance_array: np.ndarray, ) -> Callable[[list], int]:
     def cost_fn(bit_string_input: list) -> float:
         """Returns the value of the objective function for a bit_string"""
         if isinstance(bit_string_input, list):
-            bit_string = bit_string_input
-            full_list_of_locs = convert_bit_string_to_cycle(bit_string, 
-                                                            sdl.locations, 
-                                                            sdl.gray, 
-                                                            sdl.formulation
-                                                            )
-            total_distance = find_total_distance(full_list_of_locs, 
-                                                 sdl.locations, 
-                                                 distance_array
-                                                 )
-            valid = check_loc_list(full_list_of_locs,
-                                   sdl.locations
-                                   )
+            if target == 'ml':
+                #no need to convert from physical to logical bit string as 
+                #the input is not from a quantum computer
+                bit_string = bit_string_input
+            else:
+                bit_string = convert_physical_to_logical_bit_string(
+                    input_bitstring = bit_string_input, 
+                    qubits=qubits, 
+                    target=target
+                    )
+            #full_list_of_locs = convert_bit_string_to_cycle(bit_string, 
+            #                                                sdl.locations, 
+            #                                                sdl.gray, 
+            #                                                sdl.formulation
+            #                                                )
+            full_list_of_locs = convert_bit_string_to_cycle(
+                bit_string=bit_string,
+                locs=locations,
+                gray=gray,
+                method=formulation
+            )
+            #total_distance = find_total_distance(full_list_of_locs, 
+            #                                     sdl.locations, 
+            #                                     distance_array
+            #                                     )
+            total_distance = find_total_distance(
+                int_list=full_list_of_locs, 
+                locs=locations, 
+                distance_array=distance_array
+                )
+
+            #valid = check_loc_list(full_list_of_locs,
+            #                       sdl.locations
+            #                       )
+            valid = check_loc_list(
+                loc_list=full_list_of_locs,
+                locs=locations
+                )
             if not valid:
                 raise Exception('Algorithm returned incorrect cycle')  
             return total_distance
@@ -648,7 +693,11 @@ def hot_start_list_to_string(sdl, hot_start_list: list) -> list:
             result_list.append(int(total_binary_string[i]))
         return(result_list)
     elif sdl.formulation == 'new':
-        dim = find_problem_size(sdl)
+        #dim = find_problem_size(sdl)
+        dim = find_problem_size(
+            locations=sdl.locations,
+            formulation=sdl.formulation
+        )    
         f = math.factorial(sdl.locations)
         y = 0
         i = 0
@@ -837,10 +886,14 @@ def cost_func_evaluate(sdl,
                 results = simulator.run(model).result()
                 counts = results.get_counts(model)
             else:
-                sampler = SamplerV2()
-                job = sampler.run([model], shots=sdl.shots)
-                results = job.result()
-                counts = results[0].data.meas.get_counts()
+                #sampler = SamplerV2()
+                #job = sampler.run([model], shots=sdl.shots)
+                #results = job.result()
+                #counts = results[0].data.meas.get_counts()
+                #counts = results[0].data.get_counts()
+                simulator = AerSimulator(method='statevector')
+                results = simulator.run(model).result()
+                counts = results.get_counts(model)
     else:
         raise Exception('Classical model not yet coded for')
     cost, lowest, lowest_energy_bit_string = find_stats(cost_fn, counts, sdl.shots, average_slice, )
@@ -974,7 +1027,7 @@ def my_gradient(sdl,
         raise Exception(f'Mode {sdl.mode} has not been coded for')"""
     
 #def vqc_circuit(sdl, params: list) -> Circuit:
-def vqc_circuit(sdl, params: list) -> QuantumCircuit:
+#def vqc_circuit(sdl, params: list) -> QuantumCircuit:
     """Set up a variational quantum circuit
 
     Parameters
@@ -998,7 +1051,7 @@ def vqc_circuit(sdl, params: list) -> QuantumCircuit:
 
     #print(f'{params=}')
     #qc = Circuit()
-    qc = QuantumCircuit(sdl.qubits)
+    """qc = QuantumCircuit(sdl.qubits)
     if sdl.mode == 1:
         for layer in range(sdl.layers):
             offset = layer * sdl.qubits * 2
@@ -1073,7 +1126,7 @@ def vqc_circuit(sdl, params: list) -> QuantumCircuit:
     if sdl.noise:
         backend = FakeAuckland()
         qc= transpile(qc, backend)
-    return qc
+    return qc"""
 
 def create_initial_rotations(sdl, bin_hot_start_list: list=False,)-> np.ndarray: 
     """Initialise parameters with random weights
