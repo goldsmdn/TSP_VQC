@@ -358,8 +358,16 @@ def cost_fn_fact(locations:int,
     def cost_fn(bit_string_input: list) -> float:
         """Returns the value of the objective function for a bit_string"""
         if isinstance(bit_string_input, list):
-            #bit_string = bit_string_input
-            bit_string = convert_physical_to_logical_bit_string(bit_string_input, qubits, target)
+            if target == 'ml':
+                #no need to convert from physical to logical bit string as 
+                #the input is not from a quantum computer
+                bit_string = bit_string_input
+            else:
+                bit_string = convert_physical_to_logical_bit_string(
+                    input_bitstring = bit_string_input, 
+                    qubits=qubits, 
+                    target=target
+                    )
             #full_list_of_locs = convert_bit_string_to_cycle(bit_string, 
             #                                                sdl.locations, 
             #                                                sdl.gray, 

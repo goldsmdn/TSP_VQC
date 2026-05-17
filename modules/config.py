@@ -1,8 +1,19 @@
 from collections.abc import Set
 
 import numpy as np
-from qiskit import circuit
-from torch import device
+#from qiskit import circuit
+#from torch import device
+
+from modules.quantum_circuits import (
+    mode_1,
+    mode_2,
+    mode_3,
+    mode_4,
+    mode_5, 
+    mode_6,
+    mode_7,
+    mode_13,
+)
 
 # General control data - directories, file names, etc.
 
@@ -18,7 +29,7 @@ AWS = True                          # Whether runs are on AWS or Qiskit.
 
 CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
 
-TARGET = 'local_aws'            # Options from TARGETS dictionary below.  This controls which 
+TARGET = 'local_aws'                   # Options from TARGETS dictionary below.  This controls which 
                                 # quantum device is used and whether the emulator is used.
 
 TARGETS = {
@@ -48,8 +59,12 @@ TARGETS = {
         'arn': CEPHUS_DEVICE,
         'emulator': True,
     },
+    'ml': { #ML model - not a quantum device
+        'type': 'ml',
+        'emulator': False,
+        'sdk': 'ml',
+    },
 }
-
 
 #General control parameters - verbosity, cache size, etc.
 VERBOSE = False                     # controls how much is printed
@@ -61,8 +76,8 @@ PLOT_TITLE = False                  # Plot titles with graphs.  Not needed for p
 LOCATIONS = 4                       # number of locations to be visited          
 SHOTS = 1_024                       # shots used for each call of the quantum circuit
 
-ITERATIONS =  50                    # updates, or iterations
-PRINT_FREQUENCY = 10                # how often results are printed out
+ITERATIONS =  20                    # updates, or iterations
+PRINT_FREQUENCY = 5                 # how often results are printed out
 GRAY = False                        # Use Gray codes
 HOT_START = False                   # Make a hot start
 GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
@@ -75,29 +90,11 @@ DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation f
 NUM_LAYERS = 1                      # number of layers in the model
 
 #information needed in QML manual runs:
-MODE = 13                           # MODE = 1 - rxgate, rygate, cnot gates
-                                    # MODE = 2 - rxgate, XX gates -can be used with Hot Start
-                                    # MODE = 3 - IQP based
-                                    # MODE = 4 - rxgate
-                                    # MODE = 5 - test mode
-                                    # MODE = 6 - rxgate, ry gate
-                                    # MODE = 7 - rz gates, iswap gates 
-                                    # MODE = 8 - input is all zeros - with sine activation
-                                    # MODE = 9 - input is 0.5 - with sine activation
-                                    # MODE = 13 - IQP with only RX, RZ and CZ
-                                    # MODE = 18 - input is all zeros - with sigmoid activation
-                                    # MODE = 19 - input is 0.5 - with sigmoid activation
-
-from modules.quantum_circuits import (
-    mode_1,
-    mode_2,
-    mode_3,
-    mode_4,
-    mode_5, 
-    mode_6,
-    mode_7,
-    mode_13,
-)
+MODE = 13                           # See list of allowed modes in MODE_DISPATCH below.  
+#This controls the structure of the variational quantum circuit used in the QML runs.  
+#The modes are described in the function that sets up the variational quantum circuit 
+#in helper_functions_quantum.py.  
+#The mode also controls which SDK is used - AWS, Qiskit or ML.  
 
 MODE_DISPATCH = {
     1: {'circuit':mode_1, #Qiskit rxgate, rygate, cnot gates
@@ -114,8 +111,12 @@ MODE_DISPATCH = {
         'sdk': 'qiskit'},
     7: {'circuit':mode_7, #AWS rz gates, iswap gates
         'sdk': 'aws'},
+    8: {'sdk': 'ml'}, #input is all zeros - with sine activation
+    9: {'sdk': 'ml'}, #input is 0.5 - with sine activation
     13: {'circuit':mode_13,#AWS IQP with only RX, RZ and CZ
-         'sdk': 'aws'},
+        'sdk': 'aws'},
+    18: {'sdk': 'ml'}, #input is all zeros - with sigmoid activation    
+    19: {'sdk': 'ml'}, #input is 0.5 - with sigmoid activation
 }
 
 SLICES = [0.8]                      # Slices to use when calculating the gradient  

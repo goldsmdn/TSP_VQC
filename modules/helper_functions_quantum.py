@@ -65,35 +65,32 @@ def bind_weights(params:list,
     bc: Quantum Circuit
         A quantum circuit with including bound weights, ready to run an evaluation
     """
-    sdk = find_sdk(target)
+    circuit_sdk = find_sdk(target)
     binding_dict = {}
     for i, rot in enumerate(rots):
         param_name = str(params[i])
-        match sdk:
-            case 'aws':
-                binding_dict[param_name] = rot
-            case 'qiskit':
-                binding_dict[param_name] = rot
-            case _:
-                raise Exception(f'SDK {sdk} has not been coded for')
-    match sdk:
+        binding_dict[param_name] = rot
+    match circuit_sdk:
         case 'aws':
             bc = qc.make_bound_circuit(binding_dict)
         case 'qiskit':
             bc = qc.assign_parameters(binding_dict)
         case _:
-            raise Exception(f'SDK {sdk} has not been coded for')
+            raise Exception(f'SDK {circuit_sdk} has not been coded for')
     return(bc)
 
 def define_parameters(            
         mode:int, 
-        num_params:int) -> list:
+        num_params:int,
+        target:str) -> list:
     """Set up parameters and initialise text
     
     Parameters
     ----------
     #qubits: int - The number of qubits in the circuit
     mode: int - Controls setting the circuit up in different modes
+    num_params: int - The number of parameters to be defined
+    target: str - This is a key in the TARGETS dictionary
 
     Returns
     -------
@@ -101,16 +98,20 @@ def define_parameters(
         A list of parameters (the texts)
 
     """
+    circuit_sdk = find_sdk(target)
     params = []
-    if mode in [1, 2, 3, 4, 6, 7, 12, 13, ]:
-        for i in range(num_params):
-            text = "param_" + str(i)
-            params.append(FreeParameter(text))
-        return params
-    else:   
-        raise Exception(f'Mode {mode} has not been coded for')
-    
 
+    for i in range(num_params):
+        text = "param_" + str(i)
+        match circuit_sdk:
+            case 'aws':
+                params.append(FreeParameter(text))
+            case 'qiskit':
+                params.append(Parameter(text))
+            case _:
+                raise Exception(f'Mode {mode} has not been coded for')
+    return params
+    
 def vqc_circuit(qubits: int,
                 mode:int,
                 noise:bool,
@@ -139,7 +140,8 @@ def vqc_circuit(qubits: int,
         A quantum circuit without bound weights
     """
 
-    circuit_sdk = MODE_DISPATCH[mode]['sdk']
+    #circuit_sdk = MODE_DISPATCH[mode]['sdk']
+    circuit_sdk = find_sdk(target)
     qubit_dict = find_logical_to_physical_dictionary(qubits, target)
     qubits_measured = find_qubits_measured(qubits, target)
     

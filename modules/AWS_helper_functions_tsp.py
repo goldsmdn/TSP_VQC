@@ -15,12 +15,12 @@ from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
 from modules.helper_functions_tsp import (
     convert_bit_string_to_cycle, 
-    find_total_distance,
+    #find_total_distance,
     find_bin_length,
-    check_loc_list,
+    #check_loc_list,
     validate_distance_array,
     binary_string_format,
-    convert_integer_to_binary_list,
+    #convert_integer_to_binary_list,
     validate_gradient_type
     )
 
@@ -672,9 +672,9 @@ def my_gradient(noise:bool,
         raise Exception(f'Gradient type {gradient_type} is not an allowed choice')
     return gradient_array   
     
-def define_parameters(qubits:int,                  
-                      mode:int, 
-                      num_params:int) -> list:
+#def define_parameters(qubits:int,                  
+#                      mode:int, 
+#                      num_params:int) -> list:
     """Set up parameters and initialise text
     
     Parameters
@@ -688,14 +688,14 @@ def define_parameters(qubits:int,
         A list of parameters (the texts)
 
     """
-    params = []
-    if mode in [1, 2, 3, 4, 6, 7, 12, 13, ]:
-        for i in range(num_params):
-            text = "param_" + str(i)
-            params.append(FreeParameter(text))
-        return params
-    else:   
-        raise Exception(f'Mode {mode} has not been coded for')
+#    params = []
+#    if mode in [1, 2, 3, 4, 6, 7, 12, 13, ]:
+#        for i in range(num_params):
+#            text = "param_" + str(i)
+#            params.append(FreeParameter(text))
+#        return params
+#    else:   
+#        raise Exception(f'Mode {mode} has not been coded for')
     
 #def vqc_circuit(qubits: int,
 #                mode:int,

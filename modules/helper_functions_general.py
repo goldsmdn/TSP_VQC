@@ -19,23 +19,28 @@ def convert_list_to_dictionary(input_list:list) -> dict:
         output_dict[key] = item
     return output_dict
 
-def find_valid_device_loop(qubits:int, target ) -> list:
+def find_valid_device_loop(qubits:int, target:str ) -> list:
     """read the valid qubit loops as a list from the configuration file"""
-    if target in ['local_aws', 'local_qiskit']:
+    #print(f'Finding valid device loop for {qubits} qubits and target {target}')
+    if target in ['local_aws', 'local_qiskit', 'ml']:
     # don't need a bespoke qubit list
         output_list = [i for i in range(qubits)]
     else:
         output_list = VALID_QUBIT_LOOPS[target][qubits]
     return output_list
 
-def find_logical_to_physical_dictionary(qubits:int, target) -> dict:
+def find_logical_to_physical_dictionary(qubits:int, target:str) -> dict:
     """return a dictionary showing the looking up from logical to physical qubit"""
     my_list = find_valid_device_loop(qubits, target)
     output_dict = convert_list_to_dictionary(my_list)
     return output_dict
 
-def convert_physical_to_logical_bit_string(input_bitstring:list, qubits:int, target) -> list:
+def convert_physical_to_logical_bit_string(
+        input_bitstring:list, 
+        qubits:int, 
+        target:str) -> list:
     """finds the permutation to be applied to the output bit string"""
+    #print(f'Converting physical to logical bit string for {qubits} qubits and target {target}')
     output_list = []
     qubit_list = find_valid_device_loop(qubits, target)
     # remove last qubit - highest physical qubit
@@ -49,8 +54,5 @@ def convert_physical_to_logical_bit_string(input_bitstring:list, qubits:int, tar
             output_list.append(input_bitstring[logical_qubit])
     return output_list
 
-def find_qubits_measured(qubits:int, target) -> int:
+def find_qubits_measured(qubits:int, target:str) -> int:
     return len(find_valid_device_loop(qubits, target))
-
-    
-    

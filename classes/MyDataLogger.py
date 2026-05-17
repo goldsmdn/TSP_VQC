@@ -204,8 +204,8 @@ class MySubDataLogger(MyDataLogger):
                 raise Exception(f'MPS simulator is only for quantum runs')
             if self.aws is True:
                 raise Exception(f'AWS is only for quantum runs')
-            if self.target is not None:
-                raise Exception(f'Target is only relevant for quantum runs')
+            if self.target is not 'ml':
+                raise Exception(f'{self.target=} and should be ml for non quantum runs')
     
     def save_results_to_csv(self):
         """Save the results to a CSV file"""
@@ -261,6 +261,7 @@ class MySubDataLogger(MyDataLogger):
         self.cache_max_size = CACHE_MAX_SIZE
         self.mode = int(data_dict['mode'])
         self.layers = int(data_dict['layers'])
+        self.target = data_dict['target']
         if not self.quantum:
             self.std_dev = float(data_dict['std_dev'])
             self.lr = float(data_dict['lr'])
@@ -278,7 +279,7 @@ class MySubDataLogger(MyDataLogger):
             self.noise = format_boolean(data_dict['noise'])
             self.mps = format_boolean(data_dict['mps'])
             self.aws = format_boolean(data_dict['aws'])
-            self.target = data_dict['target']
+            
         
     def update_general_constants_from_config(self):
         """Update general constants from the config file"""
@@ -292,6 +293,7 @@ class MySubDataLogger(MyDataLogger):
         self.formulation = DECODING_FORMULATION
         self.layers= NUM_LAYERS
         self.cache_max_size = CACHE_MAX_SIZE
+        self.target = TARGET
 
     def update_quantum_constants_from_config(self):
         """Update constants needed for quantum from config file"""
@@ -305,7 +307,6 @@ class MySubDataLogger(MyDataLogger):
         self.noise = SIMULATE_NOISE
         self.mps = MPS
         self.aws = AWS
-        self.target = TARGET
 
     def update_ml_constants_from_config(self):
         """Update constants needed for ML from config file"""
