@@ -480,7 +480,7 @@ def update_parameters_using_gradient(
             #Force flush to push to Cloudwatch quickly
             print(f'For iteration {i} using the best {average_slice*100} percent of the results', flush=True)
             print(f'The average cost from the sample is {average:.3f} and the top-sliced average of the best results is {cost:.3f}', flush=True)
-            print(f'The lowest cost from the sample is {lowest:.3f}, flush=True')
+            print(f'The lowest cost from the sample is {lowest:.3f}', flush=True)
             print(f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date}', flush=True)
             print(f'and route {route_list}')
             #AWS hybrid job
@@ -711,6 +711,7 @@ def my_gradient(noise:bool,
     qubits: int
         The number of qubits in the circuit
     mode: int
+
         Controls setting the circuit up in different modes
     noise: bool
         Controls if noise is included in the circuit
@@ -849,12 +850,12 @@ def my_gradient(noise:bool,
 
     return qc"""
 
-def create_initial_rotations(qubits: int,
-                             num_params: int,
-                             mode: int,
-                             layers:int,
-                             hot_start:bool=False,
-                             bin_hot_start_list: list=False,)-> np.ndarray: 
+#def create_initial_rotations(qubits: int,
+#                             num_params: int,
+#                             mode: int,
+#                             layers:int,
+#                             hot_start:bool=False,
+#                             bin_hot_start_list: list=False,)-> np.ndarray: 
     """Initialise parameters with random weights, or hot start list
 
     Parameters
@@ -876,18 +877,18 @@ def create_initial_rotations(qubits: int,
         initial rotations
     
     """
-    if hot_start:
-        if layers in [1]:
-            raise Exception('Cannot use a hot start for mode {mode}')
-        init_rots = [0 for i in range(num_params)]
-        for i, item in enumerate(bin_hot_start_list):
-            if item == 1:
-                init_rots[qubits-i-1] = np.pi 
-                #need to reverse order because of qiskit convention
-    else:
-        init_rots= [random.random() * 2 * math.pi for i in range(num_params)]
-    init_rots_array = np.array(init_rots)
-    return(init_rots_array)
+#    if hot_start:
+#        if layers in [1]:
+#            raise Exception('Cannot use a hot start for mode {mode}')
+#        init_rots = [0 for i in range(num_params)]
+#        for i, item in enumerate(bin_hot_start_list):
+#            if item == 1:
+#                init_rots[qubits-i-1] = np.pi 
+#                #need to reverse order because of qiskit convention
+#    else:
+#        init_rots= [random.random() * 2 * math.pi for i in range(num_params)]
+#    init_rots_array = np.array(init_rots)
+#    return(init_rots_array)
 
 #def detect_quantum_GPU_support()-> bool:
 #    """Detect if a GPU is available for quantum simulations"""

@@ -1,4 +1,7 @@
 #helper functions for quantum circuit construction and evaluation
+import math
+import random
+
 from braket.circuits import Circuit
 from braket.parametric import FreeParameter
 from qiskit.circuit import Parameter
@@ -201,3 +204,53 @@ def define_parameters(
             case _:
                 raise Exception(f'Mode {mode} has not been coded for')
     return params
+
+def create_initial_rotations(qubits: int,
+                             num_params: int,
+                             #mode: int,
+                             #layers:int,
+                             target:str,
+                             hot_start:bool=False,
+                             bin_hot_start_list: list=False,)-> np.ndarray: 
+    """Initialise parameters with random weights, or hot start list
+
+    Parameters
+    ----------
+    qubits : int
+        The number of qubits in the circuit
+    mode : int
+        Controls setting the circuit up in different modes
+    layers : int
+        The number of layers
+    target : str
+        The target quantum device
+    hot_start : bool
+        If true hot start values are used
+    bin_hot_start_list : list
+        Binary list containing the hot start values
+
+    Returns
+    -------
+    init_rots: array
+        initial rotations
+    
+    """
+    circuit_sdk = find_sdk(target)
+    if hot_start:
+        #if layers in [1]:
+        #    raise Exception('Cannot use a hot start for mode {mode}')
+        init_rots = [0 for i in range(num_params)]
+        for i, item in enumerate(bin_hot_start_list):
+            if item == 1:
+                match circuit_sdk:
+                    case 'aws':
+                        init_rots[i] = np.pi 
+                    case 'qiskit':  
+                        init_rots[qubits-i-1] = np.pi 
+                #need to reverse order because of qiskit convention
+    elif not hot_start:
+        init_rots= [random.random() * 2 * math.pi for i in range(num_params)]
+    else:
+        raise Exception('Hot_start must be a boolean')
+    init_rots_array = np.array(init_rots)
+    return(init_rots_array)

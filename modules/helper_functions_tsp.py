@@ -1128,7 +1128,7 @@ def my_gradient(sdl,
         qc= transpile(qc, backend)
     return qc"""
 
-def create_initial_rotations(sdl, bin_hot_start_list: list=False,)-> np.ndarray: 
+#def create_initial_rotations(sdl, bin_hot_start_list: list=False,)-> np.ndarray: 
     """Initialise parameters with random weights
 
     Parameters
@@ -1150,7 +1150,7 @@ def create_initial_rotations(sdl, bin_hot_start_list: list=False,)-> np.ndarray:
     
     """
     
-    if sdl.mode in [1, 2, 3, 6, 7, ]:
+    """if sdl.mode in [1, 2, 3, 6, 7, ]:
         param_num = 2 * sdl.qubits * sdl.layers
     elif sdl.mode == 4:
         param_num = sdl.qubits * sdl.layers
@@ -1168,7 +1168,7 @@ def create_initial_rotations(sdl, bin_hot_start_list: list=False,)-> np.ndarray:
     else:
         init_rots= [random.random() * 2 * math.pi for i in range(param_num)]
     init_rots_array = np.array(init_rots)
-    return(init_rots_array)
+    return(init_rots_array)"""
 from typing import Callable
 
 #def bind_weights(params:list, rots:list, qc:Circuit) -> Circuit:

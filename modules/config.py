@@ -100,37 +100,45 @@ MODE_DISPATCH = {
     1: {'circuit':mode_1, #Qiskit rxgate, rygate, cnot gates
         'sdk': 'qiskit',
         'params_per_qubit': 2,
-        'hot_start_valid': False},
+        'hot_start_valid': False,
+        'allow_multiple_layers': True},
     2: {'circuit':mode_2, #Qiskit rxgate, XX gates -can be used with Hot Start
         'sdk': 'qiskit',
         'params_per_qubit': 2,
-        'hot_start_valid': True},
+        'hot_start_valid': True,
+        'allow_multiple_layers': True},
     3: {'circuit':mode_3, #Qiskit IQP based
         'sdk': 'qiskit',
         'params_per_qubit': 2,
-        'hot_start_valid': False},
+        'hot_start_valid': False,
+        'allow_multiple_layers': True},
     4: {'circuit':mode_4, #Qiskit rxgate
         'sdk': 'qiskit',
         'params_per_qubit': 1,
-        'hot_start_valid': True},
+        'hot_start_valid': True,
+        'allow_multiple_layers': False},
     5: {'circuit':mode_5, #Qiskit test mode
         'sdk': 'qiskit',
         'params_per_qubit': 2,
-        'hot_start_valid': False},
+        'hot_start_valid': False,
+        'allow_multiple_layers': True},
     6: {'circuit':mode_6, #Qiskit rxgate, ry gate
         'sdk': 'qiskit',
         'params_per_qubit': 2,
-        'hot_start_valid': False},
+        'hot_start_valid': False,
+        'allow_multiple_layers': True},
     7: {'circuit':mode_7, #AWS rz gates, iswap gates
         'sdk': 'aws',
         'params_per_qubit': 2,
-        'hot_start_valid': False},
+        'hot_start_valid': False,
+        'allow_multiple_layers': True},
     8: {'sdk': 'ml'}, #input is all zeros - with sine activation
     9: {'sdk': 'ml'}, #input is 0.5 - with sine activation
     13: {'circuit':mode_13,#AWS IQP with only RX, RZ and CZ
         'sdk': 'aws',
         'params_per_qubit': 2,
-        'hot_start_valid': False},
+        'hot_start_valid': False,
+        'allow_multiple_layers': True},
     18: {'sdk': 'ml'}, #input is all zeros - with sigmoid activation    
     19: {'sdk': 'ml'}, #input is 0.5 - with sigmoid activation
 }
