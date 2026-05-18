@@ -151,19 +151,27 @@ class MySubDataLogger(MyDataLogger):
         """Calculate the number of parameters in a variational quantum circuit"""
 
         #if self.mode in [1, 2, 3, 6, 7,] :
-        if self.mode in [1, 2, 3, 6, 12] :
-            num_params = 2 * self.qubits * self.layers
-        elif self.mode == 4:
-            num_params = self.qubits * self.layers
-        elif self.mode in [7, 13,]:
-            qubits_measured = find_qubits_measured(self.qubits, self.target)
-            num_params = 2 * qubits_measured * self.layers
-        else:
-            raise Exception(f'Mode {self.mode} has not been coded for')
+        num_params_per_qubit = MODE_DISPATCH[self.mode]['params_per_qubit']
+        targets_sdk = MODE_DISPATCH[self.mode]['sdk']
+        #if self.mode in [1, 2, 3, 6, 12] :
+        #    num_params = 2 * self.qubits * self.layers
+        #elif self.mode == 4:
+        #    num_params = self.qubits * self.layers
+        #elif self.mode in [7, 13,]:
+        match targets_sdk:
+            case 'aws':
+                qubits_measured = find_qubits_measured(self.qubits, self.target)
+                num_params =  num_params_per_qubit * qubits_measured * self.layers
+            case 'qiskit':
+                num_params = num_params_per_qubit * self.qubits * self.layers
+            case _:
+                raise Exception(f'Mode {self.mode} has not been coded for')
         return num_params
 
     def validate_input(self):
         """Validate the input fields"""
+        targets_sdk = MODE_DISPATCH[self.mode]['sdk']
+        allow_multiple_layers = MODE_DISPATCH[self.mode]['allow_multiple_layers']
         if not isinstance(self.quantum, bool):
             raise Exception(f'Input field quantum is not boolean')
         if not isinstance(self.gray, bool):
@@ -176,9 +184,11 @@ class MySubDataLogger(MyDataLogger):
             raise Exception(f'Input field noise is not boolean')
         if self.quantum:
             validate_gradient_type(self.gradient_type)
-            if self.mode not in [1, 2, 3, 4, 6, 7, 12, 13]:
+            if targets_sdk not in ['aws', 'qiskit']:
+            #if self.mode not in [1, 2, 3, 4, 6, 7, 12, 13]:
                 raise Exception(f'mode = {self.mode} is not permitted for quantum')
-            if self.mode == 4 and self.layers> 1:
+            if not allow_multiple_layers and self.layers > 1:
+            #if self.mode == 4 and self.layers> 1:
                 raise Exception(f'mode = {self.mode} is only for 1 layer')
             if self.mps and self.aws:
                 raise Exception(f'MPS and AWS cannot both be true')
@@ -195,16 +205,17 @@ class MySubDataLogger(MyDataLogger):
         else:
             if self.gradient_type not in ['SGD', 'SGD+X', 'Adam', 'Adam+X', 'RMSprop',]:
                 raise Exception(f'Only certain gradient type are allowed for non quantum, not {self.gradient_type}')
-            if self.mode not in [8, 9, 18, 19]:
-                raise Exception(f'mode = {self.mode} is not permitted for non quantum')
+            #if self.mode not in [8, 9, 18, 19]:
+            if targets_sdk != 'ml':
+                raise Exception(f'mode = {self.mode} is not permitted for ml')
             if self.gradient_type in ['SGD+X', 'Adam+X'] and self.start:
                 if self.hot_start:
-                    raise Exception(f'Hot start is not allowed with SGD+X')
+                    raise Exception(f'Hot start is not allowed with SGD+X and AdamX')
             if self.mps is True:
                 raise Exception(f'MPS simulator is only for quantum runs')
             if self.aws is True:
                 raise Exception(f'AWS is only for quantum runs')
-            if self.target is not 'ml':
+            if self.target != 'ml':
                 raise Exception(f'{self.target=} and should be ml for non quantum runs')
     
     def save_results_to_csv(self):
