@@ -207,8 +207,6 @@ def define_parameters(
 
 def create_initial_rotations(qubits: int,
                              num_params: int,
-                             #mode: int,
-                             #layers:int,
                              target:str,
                              hot_start:bool=False,
                              bin_hot_start_list: list=False,)-> np.ndarray: 
