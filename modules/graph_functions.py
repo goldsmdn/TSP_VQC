@@ -109,7 +109,7 @@ def cost_graph_multi(filename: str,
         axs[i,j].legend(fontsize=6, loc='upper right')
     fig.tight_layout()
     fig.savefig(filename)
-    plt.close(fig)
+    #plt.close(fig)
 
 def plot_shortest_routes(points: list, 
                          route1:list, 

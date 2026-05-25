@@ -2,13 +2,12 @@ from qiskit.circuit import QuantumCircuit, QuantumRegister, Parameter
 
 from classes.MyDataLogger import MyDataLogger, MySubDataLogger
 
-from modules.helper_functions_tsp import (#vqc_circuit, 
-                                          cost_func_evaluate, 
-                                          my_gradient, 
-                                          cost_fn_fact
-                                          )
-
-from modules.helper_functions_quantum import vqc_circuit
+from modules.helper_functions_tsp import (
+    vqc_circuit, 
+    cost_func_evaluate, 
+    my_gradient, 
+    cost_fn_fact
+    )
 
 import numpy as np
 import pytest as py
@@ -25,171 +24,173 @@ def my_cost_function1(bit_string_list:list) -> int:
     else:
         raise Exception('Invalid bit string list')
 
-def test_gradient_1():
-    """Test a circuit with one parameter"""
-    if AWS:
-        pass
-    else:
-        datalogger = MyDataLogger()
-        sdl = MySubDataLogger(runid = datalogger.runid)
-        sdl.quantum = True
-        sdl.noise = False
-        sdl.s = 0.5
-        sdl.shots = 1024
-        sdl.gradient_type = 'parameter_shift'
-        a = Parameter('a')
-        q = QuantumRegister(1)
-        qc = QuantumCircuit(q)
-        qc.rx(a, q[0])
-        qc.measure_all()
-        init_rots = [0]
-        params = [a]
-        actual_results = my_gradient(sdl,
-                                     my_cost_function1,
-                                     qc,
-                                     params,
-                                     init_rots,
-                                     average_slice = 1,
-                                     )
-        expected_results = np.array([0])
-        assert actual_results == py.approx(expected_results, abs=0.1)
+def test_gradient_1_():
+    """Test a circuit with one parameter_qiskit"""
+    s = 0.5
+    shots = 1024
+    target = 'local_qiskit'
+    mps=False
+    gradient_type = 'parameter_shift'        
+    a = Parameter('a')
+    q = QuantumRegister(1)
+    qc = QuantumCircuit(q)
+    qc.rx(a, q[0])
+    qc.measure_all()
+    init_rots = [0]
+    params = [a]
+    actual_results = my_gradient(
+        noise_bool=False,
+        shots=shots,
+        s=s,
+        gradient_type=gradient_type,
+        cost_fn=my_cost_function1,
+        qc=qc,
+        params=params,
+        rots=init_rots,
+        average_slice=1,
+        target=target,
+        mps=mps,
+    )
+    expected_results = np.array([0])
+    assert actual_results == py.approx(expected_results, abs=0.1)
 
 def test_gradient_2():
     """Test a circuit with one parameter"""
-    if AWS:
-        pass
-    else:
-        datalogger = MyDataLogger()
-        sdl = MySubDataLogger(runid = datalogger.runid)
-        sdl.quantum = True
-        sdl.noise = False
-        sdl.s = 0.5
-        sdl.shots = 1024
-        sdl.gradient_type = 'parameter_shift'
-        a = Parameter('a')
-        q = QuantumRegister(1)
-        qc = QuantumCircuit(q)
-        qc.rx(a, q[0])
-        qc.measure_all()
-        init_rots = [np.pi]
-        params = [a]
-        actual_results = my_gradient(sdl,
-                                    my_cost_function1,
-                                    qc,
-                                    params,
-                                    init_rots,
-                                    average_slice = 1,
-                                     )
-        expected_results = np.array([0])
-        assert actual_results == py.approx(expected_results, abs=0.1)
+    noise_bool = False
+    shots = 1024
+    s = 0.5
+    gradient_type = 'parameter_shift'
+    target = 'local_qiskit'
+    mps=False
+    a = Parameter('a')
+    q = QuantumRegister(1)
+    qc = QuantumCircuit(q)
+    qc.rx(a, q[0])
+    qc.measure_all()
+    init_rots = [np.pi]
+    params = [a]
+    actual_results = my_gradient(
+        noise_bool=noise_bool,
+        shots=shots,
+        s=s,    
+        gradient_type=gradient_type,
+        cost_fn=my_cost_function1,
+        qc=qc,
+        params=params,
+        rots=init_rots,
+        average_slice=1,
+        target=target,
+        mps=mps,    
+    )
+    expected_results = np.array([0])
+    assert actual_results == py.approx(expected_results, abs=0.1)
 
 def test_gradient_3():
     """Test a circuit with one parameter"""
-    if AWS:
-        pass
-    else:
-        datalogger = MyDataLogger()
-        sdl = MySubDataLogger(runid = datalogger.runid)
-        sdl.quantum = True
-        sdl.noise = False
-        sdl.s = 0.5
-        sdl.shots = 1024
-        sdl.gradient_type = 'parameter_shift'
-        a = Parameter('a')
-        q = QuantumRegister(1)
-        qc = QuantumCircuit(q)
-        qc.rx(a, q[0])
-        qc.measure_all()
-        init_rots = [np.pi/2]
-        params = [a]
-        actual_results = my_gradient(sdl,
-                                my_cost_function1,
-                                qc,
-                                params,
-                                init_rots,
-                                average_slice = 1,
-                                )
-        expected_results = np.array([0.5])
-        assert actual_results == py.approx(expected_results, abs=0.1)
+    noise_bool = False
+    shots = 1024
+    s = 0.5
+    gradient_type = 'parameter_shift'
+    target = 'local_qiskit'
+    mps=False
+    a = Parameter('a')
+    q = QuantumRegister(1)
+    qc = QuantumCircuit(q)
+    qc.rx(a, q[0])
+    qc.measure_all()
+    init_rots = [np.pi/2]
+    params = [a]
+    actual_results = my_gradient(
+        noise_bool=noise_bool,
+        shots=shots,        
+        s=s,
+        gradient_type=gradient_type,
+        cost_fn=my_cost_function1,
+        qc=qc,
+        params=params,  
+        rots=init_rots,
+        average_slice=1,
+        target=target,
+        mps=mps,
+        )
+    expected_results = np.array([0.5])
+    assert actual_results == py.approx(expected_results, abs=0.1)
 
 def test_gradient_4():
     """Test a circuit with two parameters and compare to qiskit results"""
-    if AWS:
-        pass
-    else:
-        datalogger = MyDataLogger()
-        sdl = MySubDataLogger(runid = datalogger.runid)
-        sdl.quantum = True
-        sdl.noise = False
-        sdl.s = 0.5
-        sdl.shots = 1024
-        sdl.gradient_type = 'parameter_shift'
-        a = Parameter('a')
-        b = Parameter('b')
-        q = QuantumRegister(1)
-        qc = QuantumCircuit(q)
-        qc.h(q)
-        qc.rz(a, q[0])
-        qc.rx(b, q[0])
-        qc.measure_all() 
-        init_rots = [np.pi / 4, np.pi / 2]
-        params = [a, b]
-        actual_results = my_gradient(sdl,
-                            my_cost_function1,
-                            qc,
-                            params,
-                            init_rots,
-                            average_slice = 1,
-                            )
-        expected_results = np.array([-0.353, 0.0]) #qiskit results
-        assert actual_results == py.approx(expected_results, abs=0.1)
+    noise_bool = False
+    shots = 1024
+    s = 0.5
+    gradient_type = 'parameter_shift'
+    target = 'local_qiskit'
+    mps=False
+    a = Parameter('a')
+    b = Parameter('b')
+    q = QuantumRegister(1)
+    qc = QuantumCircuit(q)
+    qc.h(q)
+    qc.rz(a, q[0])
+    qc.rx(b, q[0])
+    qc.measure_all() 
+    init_rots = [np.pi / 4, np.pi / 2]
+    params = [a, b]
+    actual_results = my_gradient(
+        noise_bool=noise_bool,
+        shots=shots,
+        s=s,
+        gradient_type=gradient_type,
+        cost_fn=my_cost_function1,
+        qc=qc,
+        params=params,
+        rots=init_rots,
+        average_slice=1,
+        target=target,
+        mps=mps,
+        )
+    expected_results = np.array([-0.353, 0.0]) #qiskit results
+    assert actual_results == py.approx(expected_results, abs=0.1)
 
 def test_simple_circuit():
     """Test a simple circuit with known output"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
-    sdl.quantum = True
-    sdl.qubits = 5
-    sdl.shots = 1024
-    params = []
-    sdl.mode = 5
-    sdl.locations = 5
-    sdl.gray = True
-    sdl.formulation = 'original'
+    shots = 1024
     qubits = 5
     params = []
     mode = 5
     locations = 5
     gray = True
+    noise_bool = False
     formulation = 'original'
+    target = 'local_qiskit'
     file = 'five_d.txt'
     filename = Path(NETWORK_DIR).joinpath(file)
     distance_array = np.genfromtxt(filename)
-    #cost_fn = cost_fn_fact(sdl, distance_array,)
     cost_fn = cost_fn_fact(
         locations=locations,
         qubits=qubits,
         gray=gray,
         formulation=formulation,
         distance_array=distance_array,
-        target='local_qiskit'
+        target=target
         )
     
-    #qc = vqc_circuit(sdl, params) 
     qc = vqc_circuit(
         qubits=qubits,
         mode=mode,
-        noise=False,
+        noise_bool=False,
         layers=1,
         params=params,
-        target='local_qiskit'
-    )
+        target=target
+        )
 
-    actual_result, _ , _ = cost_func_evaluate(sdl,
-                                              cost_fn, 
-                                              qc, 
-                                              average_slice=1,
-                                              )
+    actual_result, _ , _ = cost_func_evaluate(
+        noise_bool=noise_bool,
+        shots=shots,
+        cost_fn=cost_fn, 
+        model=qc, 
+        target=target,
+        mps=False,
+        average_slice=1,
+        )
     expected_result = 21.0
     assert actual_result == expected_result
 

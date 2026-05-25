@@ -2,16 +2,15 @@ import torch
 from pathlib import Path
 import numpy as np
 
-from classes.MyDataLogger import MyDataLogger, MySubDataLogger
-
 from classes.MyModel import estimate_cost_fn_gradient
 from modules.helper_ML_functions import find_device
-from modules.helper_functions_tsp import (find_problem_size, load_dict_from_json, 
-                                          read_file_name,
-                                          validate_distance_array,
-                                          cost_fn_fact, 
-                                          cost_fn_tensor,
-                                          )
+from modules.helper_functions_tsp import (
+    find_problem_size, load_dict_from_json, 
+    read_file_name,
+    validate_distance_array,
+    cost_fn_fact, 
+    cost_fn_tensor,
+    )
 
 from modules.config import NETWORK_DIR, DATA_SOURCES
 
@@ -38,7 +37,7 @@ def test_estimate_gradient():
         gray=gray,
         formulation=formulation,
         distance_array=distance_array,
-        target='local_aws'
+        target='ml'
         )
     output = cost_fn_tensor(my_input, cost_fn).to(device)
     actual_result = estimate_cost_fn_gradient(my_input, output, cost_fn).float().to(device)
@@ -69,7 +68,7 @@ def test_estimate_gradient_2():
         gray=gray,
         formulation=formulation,
         distance_array=distance_array,
-        target='local_aws'
+        target='ml'
         )
     output = cost_fn_tensor(my_input, cost_fn).to(device)
     actual_result = estimate_cost_fn_gradient(my_input, output, cost_fn).float().to(device)
@@ -102,7 +101,7 @@ def test_estimate_gradient_3():
         gray=gray,
         formulation=formulation,
         distance_array=distance_array,
-        target='local_aws'
+        target='ml'
         )
     output = cost_fn_tensor(my_input, cost_fn).to(device)
     actual_result = estimate_cost_fn_gradient(my_input, output, cost_fn).float().to(device)

@@ -1,6 +1,70 @@
 #General helper functions that could be used for other projects, not just Travelling Salesman Problem (TSP)
 
+import json
+import csv
+
+from itertools import count
+
 from modules.config import VALID_QUBIT_LOOPS
+
+def format_boolean(string_input: str)->bool:
+    """Convert a string to a boolean value"""
+    if string_input == 'TRUE':
+        output = True
+    elif string_input == 'FALSE':
+        output = False
+    else:
+        raise Exception(f'Unexpected boolean value {string_input}')
+    return output 
+
+def binary_string_format(binary_string: str, bin_len: str) -> str:
+    """Format a binary string to remove the 0b prefix
+    
+    Parameters
+    ----------
+    binary_string : str
+        A binary string
+    bin_len : str
+        Length of the binary string
+
+    Returns
+    -------
+    formatted_string: str
+        The binary string with the 0b prefix removed
+    """
+    formatted_string = binary_string[2:]
+    formatted_string = formatted_string.zfill(bin_len)
+
+    return(formatted_string)    
+
+def load_dict_from_json(filename: str) -> dict:
+    """Loads a dictionary from a JSON file"""
+    with open(filename, 'r') as f:
+        return json.load(f)
+    
+def read_index(filename: str, encoding: str) -> dict:
+    """Reads CSV file and returns a dictionary
+     
+    Parameters
+    ----------
+    filename : str
+        The filename of the CSV file.  
+    encoding : str
+        The expected coding.  If this is missed 
+        get odd charactors at start of the file
+
+    Returns
+    -------
+    dict : dict
+        A dictionary with the contents on the CSV file
+    """
+    dict = {}
+    index = count()
+    with open( filename, 'r', encoding=encoding) as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        for row in csv_reader:
+            dict[next(index)] = row
+    return(dict)
 
 def validate_list_for_duplicates(input_list:list) -> bool:
     """Validate that a list does not contain duplicates"""

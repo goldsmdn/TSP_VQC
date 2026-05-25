@@ -1,72 +1,69 @@
-import numpy as np
+#helper functions for quantum circuit construction and evaluation
 import math
+import random
 import copy
 import graycode
-import csv
-from itertools import count
-
-from qiskit.circuit import Parameter
-from qiskit import QuantumCircuit, transpile
-from qiskit_aer import AerSimulator
-from qiskit_ibm_runtime.fake_provider import FakeAuckland
-from qiskit_aer.primitives import SamplerV2
-
-from modules.helper_functions_quantum import bind_weights
-
-from modules.helper_functions_general import (
-    find_logical_to_physical_dictionary,
-    convert_physical_to_logical_bit_string,
-)
-
-
-import random
-import json
 import torch
-from typing import Callable # Import Callable for type hinting
+
 from pathlib import Path
 
-from modules.config import (NETWORK_DIR, 
-                            DATA_SOURCES, 
-                            PRINT_FREQUENCY,
-                            )
+from braket.circuits import Circuit
+from braket.parametric import FreeParameter
+from braket.jobs.metrics import log_metric
+
+from qiskit.circuit import Parameter
+from qiskit import transpile
+from qiskit_aer import AerSimulator
+from qiskit_ibm_runtime.fake_provider import FakeAuckland
+
+from typing import Callable
+
+from torch import mps # Import Callable for type hinting
+
+from modules.helper_functions_general import (
+    find_logical_to_physical_dictionary, 
+    find_qubits_measured, 
+    find_valid_device_loop,
+    convert_physical_to_logical_bit_string,
+    binary_string_format,
+    load_dict_from_json,
+    )
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
-from braket.jobs.metrics import log_metric
+from modules.quantum_circuits import (
+    mode_1,
+    mode_2,
+    mode_3,
+    mode_4,
+    mode_5,
+    mode_6,
+    mode_7,
+    mode_13,
+    )
 
-def load_dict_from_json(filename: str) -> dict:
-    """Loads a dictionary from a JSON file"""
-    with open(filename, 'r') as f:
-        return json.load(f)
+from modules.config import (
+    MODE_DISPATCH, 
+    TARGETS,
+    PRINT_FREQUENCY,
+    NETWORK_DIR,
+    DATA_SOURCES,
+    )
 
-def read_index(filename: str, encoding: str) -> dict:
-    """Reads CSV file and returns a dictionary
-     
-    Parameters
-    ----------
-    filename : str
-        The filename of the CSV file.  
-    encoding : str
-        The expected coding.  If this is missed 
-        get odd charactors at start of the file
+import numpy as np
 
-    Returns
-    -------
-    dict : dict
-        A dictionary with the contents on the CSV file
-    """
-    dict = {}
-    index = count()
-    with open( filename, 'r', encoding=encoding) as csv_file:
-        csv_reader = csv.DictReader(csv_file)
-        for row in csv_reader:
-            dict[next(index)] = row
-    return(dict)
+def find_bin_length(i: int) -> int:
+    """find the length of a binary string to represent integer i"""
+    if i <= 0:
+        raise ValueError("n must be a positive integer")
+    bin_len = math.ceil((math.log2(i)))
+    return(bin_len) 
 
-def read_file_name(locations: int, 
-                   data_sources: dict,
-                   file_type:str='file'
-                   ) -> str:
+def read_file_name(
+        locations: int, 
+        data_sources: dict,
+        file_type:str='file'
+        ) -> str:
     """Find the filename for a certain number of locations
     
     Parameters
@@ -75,8 +72,8 @@ def read_file_name(locations: int,
         Number of locations, or vertices
     data_sources : dict
         Dictionary listing the filename for each problem size
-    source : str
-        Source of data - only sim has 
+    file_type : str
+        Type of file to read - either 'file' or 'points'
 
     Returns
     ----------
@@ -92,7 +89,7 @@ def read_file_name(locations: int,
         print(f'Reading co-ordinate data')
     else:
         raise Exception(f'File type {file_type} is not coded for')
-    return(filename)       
+    return(filename)    
 
 def validate_distance_array(array :np.ndarray, locs: int):
     """Validates the distance array and raises an Exception if the 
@@ -118,11 +115,12 @@ def validate_distance_array(array :np.ndarray, locs: int):
             if array[i,j] != array[j,i]:
                 raise Exception('The array is not symmetrical')
 
-def find_distance(loc1: int, 
-                  loc2: int, 
-                  distance_array: np.ndarray,
-                  verbose: bool=False,
-                  ) -> float:
+def find_distance(
+        loc1: int, 
+        loc2: int, 
+        distance_array: np.ndarray,
+        verbose: bool=False,
+        ) -> float:
     """Finds the distance between locations using the distance matrix
     
     Parameters
@@ -147,14 +145,6 @@ def find_distance(loc1: int,
         print(f'The distance from location {loc1} to location {loc2} is {distance}')
     return(distance)
 
-def find_bin_length(i: int) -> int:
-    """find the length of a binary string to represent integer i"""
-    if i <= 0:
-        raise ValueError("n must be a positive integer")
-    bin_len = math.ceil((math.log2(i)))
-    return(bin_len) 
-
-#def find_problem_size(sdl) -> int:
 def find_problem_size(
     locations: int,
     formulation: str
@@ -174,23 +164,21 @@ def find_problem_size(
     pb_dim : int
         Length of the bit string needed to store the problem
     """
-    #if sdl.formulation == 'original':
     if formulation == 'original':
         pb_dim = 0
-    #    for i in range(1, sdl.locations):
         for i in range(1, locations):
             bin_len = find_bin_length(i)
             pb_dim += bin_len
     elif formulation == 'new':
-    #    f = math.factorial(sdl.locations)
         f = math.factorial(locations)
         pb_dim = find_bin_length(f)
     else:
-    #    raise Exception(f'Unknown method {sdl.formulation}')
         raise ValueError(f'Unknown method {formulation}')
     return(pb_dim)
 
-def convert_binary_list_to_integer(binary_list: list, gray:bool=False)->int:
+def convert_binary_list_to_integer(
+        binary_list: list, 
+        gray:bool=False)->int:
     """Converts list of binary numbers to an integer
     
     Parameters
@@ -213,7 +201,10 @@ def convert_binary_list_to_integer(binary_list: list, gray:bool=False)->int:
         result = graycode.gray_code_to_tc(result)
     return(result)
 
-def convert_integer_to_binary_list(integer: int, length: int, gray:bool=False)->list:
+def convert_integer_to_binary_list(
+        integer: int, 
+        length: int, 
+        gray:bool=False)->list:
     """Converts an integer to a list of binary numbers
     
     Parameters
@@ -288,10 +279,11 @@ def augment_loc_list(loc_list:list, locs:int)-> list:
     loc_list.append(add_item)
     return(loc_list)
 
-def find_total_distance(int_list: list, 
-                        locs: int, 
-                        distance_array :np.ndarray
-                        )-> float:
+def find_total_distance(
+        int_list: list, 
+        locs: int, 
+        distance_array :np.ndarray
+        )-> float:
     """Finds the total distance for a valid formatted bit string representing a cycle.
     
     Parameters
@@ -324,190 +316,400 @@ def find_total_distance(int_list: list,
         total_distance += distance
     return total_distance
 
-#def cost_fn_fact(sdl, distance_array: np.ndarray, ) -> Callable[[list], int]:
-def cost_fn_fact(locations:int,
-                 qubits,
-                 gray:bool, 
-                 formulation:str, 
-                 distance_array: np.ndarray, 
-                 target: str
-                 ) -> Callable[[list], int]:    
-    """ Returns a cost function inside a decorator,
+def find_device_string(target):
+    device_arn = TARGETS[target]['arn']
+    return(device_arn)
+
+def find_device(target):
+    """
+    Lazily create and return a Braket device.
+    This function is hybrid-job safe.
+    This code also work with qiskit
+    """
+    from braket.aws import AwsDevice
+    from braket.devices import LocalSimulator
+
+    cfg = TARGETS[target]
+    # Local simulator
+    if cfg['type'] == 'local_aws':
+        return LocalSimulator()
+    # AWS device
+    device = AwsDevice(cfg['arn'])
+    return device
+
+def find_sdk(target:str) -> str:
+    """Find the SDK (braket or qiskit) for a given target
 
     Parameters
     ----------
-    locations: int
-        The number of locations in the problem
-    qubits:int
-        The number of qubits required
-    gray: bool
-        If True Gray codes are used
-    formulation: str
-        'original' => method from Goldsmith D, Day-Evans J.
-        'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
-    distance_array: array
-        Numpy symmetric array with distances between locations
-    
+    target: str
+        The target to find the sdk for.  This is a key in the TARGETS dictionary in config.py
+
     Returns
     -------
-    cost_fn: cost function
-        A function of a bit string evaluating a distance for that bit string
-    
+    sdk: str
+        The sdk for the given target, either 'braket' or 'qiskit' that determines subsequent processing.
     """
-    @LRUCacheUnhashable
-    def cost_fn(bit_string_input: list) -> float:
-        """Returns the value of the objective function for a bit_string"""
-        if isinstance(bit_string_input, list):
-            if target == 'ml':
-                #no need to convert from physical to logical bit string as 
-                #the input is not from a quantum computer
-                bit_string = bit_string_input
+    from modules.config import TARGETS
+    return TARGETS[target]['sdk']
+
+def find_type(target:str) -> str: 
+    """Find the type (local_AWS, local_qiskit or aws) for a given target
+
+    Parameters
+    ----------
+    target: str
+        The target to find the type for.  This is a key in the TARGETS dictionary in config.py
+
+    Returns
+    -------
+    type: str
+        The type for  given target, that determines subsequent processing.
+    """
+
+def detect_quantum_GPU_support(target:str)-> bool:
+    """Detect if a GPU is available for quantum simulations"""
+    sdk_type = find_sdk(target)
+    match sdk_type:
+        case 'aws':
+            #currently no GPU support for AWS simulators, but could be added in the future
+            return False
+        case 'qiskit':
+            devices = AerSimulator().available_devices()
+            if 'GPU' in devices:
+                return True
             else:
-                bit_string = convert_physical_to_logical_bit_string(
-                    input_bitstring = bit_string_input, 
-                    qubits=qubits, 
-                    target=target
-                    )
-            #full_list_of_locs = convert_bit_string_to_cycle(bit_string, 
-            #                                                sdl.locations, 
-            #                                                sdl.gray, 
-            #                                                sdl.formulation
-            #                                                )
-            full_list_of_locs = convert_bit_string_to_cycle(
-                bit_string=bit_string,
-                locs=locations,
-                gray=gray,
-                method=formulation
-            )
-            #total_distance = find_total_distance(full_list_of_locs, 
-            #                                     sdl.locations, 
-            #                                     distance_array
-            #                                     )
-            total_distance = find_total_distance(
-                int_list=full_list_of_locs, 
-                locs=locations, 
-                distance_array=distance_array
-                )
-
-            #valid = check_loc_list(full_list_of_locs,
-            #                       sdl.locations
-            #                       )
-            valid = check_loc_list(
-                loc_list=full_list_of_locs,
-                locs=locations
-                )
-            if not valid:
-                raise Exception('Algorithm returned incorrect cycle')  
-            return total_distance
-        else:
-            raise Exception(f'bit_string {bit_string_input} is not a list or a tensor')
-    return cost_fn
-
-def cost_fn_tensor(input: torch.tensor, 
-                   cost_fn: Callable)-> torch.Tensor:
-
-    """ Find the distance for each bit string input using cost_fn
+                return False
+        case _:
+            raise Exception(f'SDK {sdk_type} has not been coded for')
+    
+def bind_weights(
+        params:list, 
+        rots:list, 
+        qc:Circuit,
+        target:str) -> Circuit:
+    """Bind parameters to rotations and return a bound quantum circuit
 
     Parameters
     ----------
-    input : torch.tensor
-        Torch array with n bit strings for analysis
-    cost_fn : function
-        maps a bit_list to a distance
+    params: list
+        A list of parameters (the texts)
+    rots: list
+        The exact values for the parameters, which are rotations of quantum gates
+    qc: Circuit
+        A quantum circuit without bound weights  
+    target: str
+        This is a key in the TARGETS dictionary
+
+    Returns
+    -------
+    bc: Quantum Circuit
+        A quantum circuit with including bound weights, ready to run an evaluation
+    """
+    circuit_sdk = find_sdk(target)
+    binding_dict = {}
+    for i, rot in enumerate(rots):
+        param_name = str(params[i])
+        binding_dict[param_name] = rot
+    match circuit_sdk:
+        case 'aws':
+            bc = qc.make_bound_circuit(binding_dict)
+        case 'qiskit':
+            bc = qc.assign_parameters(binding_dict)
+        case _:
+            raise Exception(f'SDK {circuit_sdk} has not been coded for')
+    return(bc)
+
+def define_parameters(            
+        mode:int, 
+        num_params:int,
+        target:str) -> list:
+    """Set up parameters and initialise text
+    
+    Parameters
+    ----------
+    #qubits: int - The number of qubits in the circuit
+    mode: int - Controls setting the circuit up in different modes
+    num_params: int - The number of parameters to be defined
+    target: str - This is a key in the TARGETS dictionary
+
+    Returns
+    -------
+    params: list
+        A list of parameters (the texts)
+
+    """
+    circuit_sdk = find_sdk(target)
+    params = []
+
+    for i in range(num_params):
+        text = "param_" + str(i)
+        match circuit_sdk:
+            case 'aws':
+                params.append(FreeParameter(text))
+            case 'qiskit':
+                params.append(Parameter(text))
+            case _:
+                raise Exception(f'Mode {mode} has not been coded for')
+    return params
+    
+def vqc_circuit(
+        qubits: int,
+        mode:int,
+        noise_bool:bool,
+        layers:int,
+        params:list,
+        target:str) -> Circuit:
+    """Set up a variational quantum circuit
+
+    Parameters
+    ----------
+    A sub data logger holding the parameters for the run with key fields:
+    qubits: int
+        The number of qubits in the circuit
+    mode: int
+        Controls setting the circuit up in different modes
+    noise: bool
+        Controls if noise is included in the circuit
+    layers: int
+        The numnber of layers
+    params: list
+        A list of parameters (the texts)
+
+    Returns
+    -------
+    qc: Quantum Circuit
+        A quantum circuit without bound weights
+    """
+
+    circuit_sdk = find_sdk(target)
+    qubit_dict = find_logical_to_physical_dictionary(qubits, target)
+    qubits_measured = find_qubits_measured(qubits, target)
+    
+    context_dict = {
+        'qubits': qubits,
+        'params': params,
+        'layers': layers,   
+        'qubit_dict': qubit_dict,
+        'qubits_measured': qubits_measured,
+        }
+    
+    qc = MODE_DISPATCH[mode]['circuit'](context_dict)
+        
+    # only measure the qubits in the sorted list
+    valid_device_loop = find_valid_device_loop(qubits, target)
+    sorted_list = sorted(valid_device_loop)
+    match circuit_sdk:
+        case 'aws':
+            qc.measure(sorted_list)
+        case 'qiskit':            
+            qc.measure(sorted_list, sorted_list)
+        case _:
+            raise Exception(f'SDK {circuit_sdk} has not been coded for')
+    print(f'After measurement, the following qubits are measured {sorted_list}') 
+
+    if noise_bool:
+        backend = FakeAuckland()
+        qc = transpile(qc, backend=backend)
+    return qc
+
+#def define_parameters(                
+#        mode:int, 
+#        num_params:int
+#        ) -> list:
+    """Set up parameters and initialise text
+    
+    Parameters
+    ----------
+        mode: int - Controls setting the circuit up in different modes
+
+    Returns
+    -------
+    params: list
+        A list of parameters (the texts)
+
+    """
+    """params = []
+    circuit_sdk = MODE_DISPATCH[mode]['sdk']
+         
+    for i in range(num_params):
+        text = "param_" + str(i)
+        match circuit_sdk:
+            case 'aws':
+                params.append(FreeParameter(text))
+            case 'qiskit':
+                params.append(Parameter(text)) 
+            case _:
+                raise Exception(f'Mode {mode} has not been coded for')
+    return params"""
+
+def create_initial_rotations(
+        qubits: int,
+        num_params: int,
+        target:str,
+        hot_start:bool=False,
+        bin_hot_start_list: list=False,)-> np.ndarray: 
+    """Initialise parameters with random weights, or hot start list
+
+    Parameters
+    ----------
+    qubits : int
+        The number of qubits in the circuit
+    mode : int
+        Controls setting the circuit up in different modes
+    layers : int
+        The number of layers
+    target : str
+        The target quantum device
+    hot_start : bool
+        If true hot start values are used
+    bin_hot_start_list : list
+        Binary list containing the hot start values
+
+    Returns
+    -------
+    init_rots: array
+        initial rotations
+    
+    """
+    circuit_sdk = find_sdk(target)
+    if hot_start:
+        init_rots = [0 for i in range(num_params)]
+        for i, item in enumerate(bin_hot_start_list):
+            if item == 1:
+                match circuit_sdk:
+                    case 'aws':
+                        init_rots[i] = np.pi 
+                    case 'qiskit':  
+                        init_rots[qubits-i-1] = np.pi 
+                #need to reverse order because of qiskit convention
+    elif not hot_start:
+        init_rots= [random.random() * 2 * math.pi for i in range(num_params)]
+    else:
+        raise Exception('Hot_start must be a boolean')
+    init_rots_array = np.array(init_rots)
+    return(init_rots_array)
+
+def cost_func_evaluate(
+        noise_bool:bool,
+        shots:int,
+        cost_fn:Callable,
+        model,
+        target,
+        mps,
+        average_slice:float=1,
+        ) -> tuple[float, float, list[int]]:             
+                       
+    """Evaluate cost function on a quantum computer
+    
+    Parameters
+    ----------
+    noise: bool
+        If True a noisy quantum computer is used
+    quantum: bool
+        If True a quantum computer is used.  If False a classical model is used
+    shots: int
+        The number of shots for which the quantum circuit is to be run  
+    cost_fn: function
+        A function of a bit string evaluating a distance for that bit string
+    model : a model to evalulate an output bit string given weights eg
+        Circuit
+            A quantum circuit with bound weights for which the energy is to be found
+        Classical Model
+            A classical model with bound weights for which the energy is to be found
+    average_slice: float
+        average over this slice of the energy.  For example:
+        If average_slice = 1 then average over all energies.  
+        If average_slice = 0.2 then average over the bottom 20% of energies
     
     Returns
     -------
-    distance_tensor : torch.tensor
-        a Torch array with one distance entry for each input
-
+    cost: float
+        The average cost evaluated
+    lowest: float
+        The lowest cost found
+    lowest_energy_bit_string: string
+        A list of the bits for the lowest energy bit string
     """
 
-    if isinstance(input, torch.Tensor):
-        if input.dim() != 2:
-            raise Exception(f'input= {input} is a Torch tensor but does not have dimension 2')
-        rows = input.size(0)
-        distance_tensor = torch.zeros(rows)
-        for i in range(rows):
-            row = input[i]
-            bit_string = row.int().tolist()
-            distance = cost_fn(bit_string)
-            distance_tensor[i] = distance
-        return distance_tensor
+    sdk_type = find_sdk(target)
+    match sdk_type:
+        case 'aws':
+            device = find_device(target)
+            job = device.run(model, shots=shots)    
+            result = job.result()
+            counts = result.measurement_counts 
+        case 'qiskit':
+            if noise_bool:
+                backend = FakeAuckland()
+                job = backend.run(model, shots=shots)     
+                counts = job.result().get_counts()
+            elif mps:
+                simulator = AerSimulator(method='matrix_product_state')
+                results = simulator.run(model).result()
+                counts = results.get_counts(model)
+            else:
+                if detect_quantum_GPU_support(target):
+                    simulator = AerSimulator(
+                        method='statevector', 
+                        device='GPU'
+                        )
+                    results = simulator.run(model).result()
+                    counts = results.get_counts(model)
+                else:
+                    simulator = AerSimulator(method='statevector')
+                    results = simulator.run(model).result()
+                    counts = results.get_counts(model)
+        case _:
+            raise Exception(f'SDK {sdk_type} has not been coded for')
+
+    cost, lowest, lowest_energy_bit_string = find_stats(
+        cost_fn=cost_fn, 
+        counts=counts, 
+        shots=shots, 
+        average_slice=average_slice
+    )
+    return(cost, lowest, lowest_energy_bit_string)
+
+def is_even(n):
+    return n % 2 == 0
+
+def validate_qubit_loops(qubits, loop_dict, target):
+    device = find_device(target=target)
+    print(f'Found device as {device}')
+    if not hasattr(device, "properties"):
+        #handle local emulators
+        print("Local device detected — skipping connectivity check.")
+        return
     else:
-        raise Exception(f'bit_string {input} is not a tensor')
-    
-def convert_bit_string_to_cycle(bit_string: list, 
-                                locs: int, 
-                                gray: bool=False, 
-                                method: str='original') -> list:
-    """Converts a bit string to a cycle.
-    
-    Parameters
-    ----------
-    bit_string : list
-        A list of zeros and ones produced by the quantum computer
-    locs: int
-        The number of locations
-    gray: bool
-        If True Gray codes are used
-    method: str
-        'original' => method from Goldsmith D, Day-Evans J. 
-        'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
+        connectivity_dict = device.properties.dict()['paradigm']['connectivity']
+        loop_list = loop_dict[target][qubits]
+        set_list = set(loop_list)
+        if len(set_list) != len(loop_list):
+            raise Exception(f'The loop list {loop_list} contains duplicates')
+        for index, qubit in enumerate(loop_list):
+            last_valid_index = len(loop_list) - 1
+            if index < last_valid_index:
+                next_qubit = loop_list[index+1]
+            else:
+                next_qubit = loop_list[0]
+            connected_qubits = connectivity_dict['connectivityGraph'][str(qubit)]
+            if str(next_qubit) not in connected_qubits:
+                raise Exception(f'qubits{qubit} and {next_qubit} are not connected')
+        loop_length = len(loop_list)
+        if is_even(qubits) and loop_length != qubits:
+            raise Exception(f'{len(loop_list)=} and {qubits=} for {target=}')
+        if not is_even(qubits) and (loop_length - qubits) !=1:
+            raise Exception(f'{len(loop_list)=} and {qubits=} for {target=}')
+        print(f'No errors found for {target=} {qubits=} \n')
+    return
 
-    Returns
-    ----------
-    end_cycle_list : list
-        A list of integers showing a cycle.  The bit string is processed from left to right
-    """
-
-    end_cycle_list = []
-    start_cycle_list = [i for i in range(locs)]
-
-    if method == 'original':
-        #need to avoid changing the original bit_string
-        bit_string_copy = copy.deepcopy(bit_string)
-        end_cycle_list.append(start_cycle_list.pop(0)) #end point of cycle is always 0
-
-        for i in range(locs-1, 1, -1):
-            bin_len = find_bin_length(i)
-            bin_string = []
-            for count in range(bin_len):
-                bin_string.append(bit_string_copy.pop(0)) #pop the most left hand item
-            position = convert_binary_list_to_integer(bin_string, gray=gray)
-            index = position % i    
-            end_cycle_list.append(start_cycle_list.pop(index))
-        end_cycle_list.append(start_cycle_list.pop(0))
-        if start_cycle_list != []:
-            raise Exception('Cycle returned may not be complete')
-        if bit_string_copy != []:
-            raise Exception(f'bit_string not consumed {bit_string_copy} left')
-        return(end_cycle_list)
-    elif method == 'new':
-        f = math.factorial(locs)
-        bit_string_length = math.ceil(math.log2(f))
-        if len(bit_string) != bit_string_length:
-            raise Exception(f'bit_string length {len(bit_string)} does not match {bit_string_length}')
-        x = convert_binary_list_to_integer(bit_string, gray=gray)
-        y = x % f
-        i = 0
-        while i < locs:
-            f = int(f / (locs - i))
-            #correcting mistype in paper
-            k = math.floor(y / f)
-            end_cycle_list.append(start_cycle_list[k])
-            start_cycle_list.remove(start_cycle_list[k])
-            #correcting mistype in paper
-            y -= k * f
-            i += 1
-        return end_cycle_list
-    else:
-        raise Exception(f'Unknown method {method}')
-
-def find_stats(cost_fn: Callable,
-               counts: dict, 
-               shots: int, 
-               average_slice: float=1, 
-               )-> tuple[float, float, list[int]]:
+def find_stats(
+        cost_fn: Callable,
+        counts: dict, 
+        shots: int, 
+        average_slice: float=1, 
+        )-> tuple[float, float, list[int]]:
     """Finds the average energy of the relevant counts, and the lowest energy
     
     Parameters
@@ -584,169 +786,61 @@ def find_stats(cost_fn: Callable,
 
     return(average_energy, lowest_energy, lowest_energy_bit_string)
 
-def hot_start(sdl, distance_array: np.ndarray) -> list:
-    """Finds a route from a distance array where the distance to the next point is the shortest available
-    
-    Parameters
-    ----------
-    sdl : SubDataLogger object containing key parameters:
-        sdl.locations: int
-            The number of locations in the problem
-    distance_array: array
-        Numpy symmetric array with distances between locations
-
-    Returns
-    -------
-    end_cycle_list: list
-        A list of integers showing the an estimate of the lowest cycle
-    
-    """
-    validate_distance_array(distance_array, sdl.locations)
-    remaining_cycle_list = [i for i in range(sdl.locations)]
-    end_cycle_list = []
-    end_cycle_list.append(remaining_cycle_list.pop(0)) #start point of cycle is always 0
-    next_row = 0
-    for i in range(sdl.locations-1):
-        for j, column in enumerate(remaining_cycle_list):
-            distance = distance_array[next_row][column]
-            if j == 0:
-                arg_min = j
-                lowest_distance = distance
-            else:
-                if distance < lowest_distance:
-                    arg_min = j
-                    lowest_distance = distance
-        next_row = remaining_cycle_list.pop(arg_min)
-        end_cycle_list.append(next_row)
-    return(end_cycle_list)
-
-def binary_string_format(binary_string: str, bin_len: str) -> str:
-    """Format a binary string to remove the 0b prefix
-    
-    Parameters
-    ----------
-    binary_string : str
-        A binary string
-    bin_len : str
-        Length of the binary string
-
-    Returns
-    -------
-    formatted_string: str
-        The binary string with the 0b prefix removed
-    """
-    formatted_string = binary_string[2:]
-    formatted_string = formatted_string.zfill(bin_len)
-
-    return(formatted_string)    
-    
-def hot_start_list_to_string(sdl, hot_start_list: list) -> list:
-    """Invert the hot start integer list into a string
-    
-    Parameters:
-    -----------
-
-    sdl : SubDataLogger object containing key parameters:
-        sdl.locations: int 
-            The number of location in the problem
-        sdl.gray: bool
-            If True Gray codes are used
-        sdl.formulation: str
-            'original' => method from Goldsmith D, Day-Evans J.
-            'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
-    hot_start_list: list
-        A list of integers showing an estimate of the lowest cycle
-
-    Returns
-    -------
-    result_list: list
-        A list of bits that represents the bit string for the lowest cycle
-    
-    """
-    
-    if sdl.formulation == 'original':
-        if len(hot_start_list) != sdl.locations:
-            raise Exception(f'The hot start list should be length {sdl.locations}')
-        
-        first_item = hot_start_list.pop(0)
-        #remove the first item for the list which should be zero
-        if first_item != 0:
-            raise Exception(f'The first item of the list must be zero')
-        
-        initial_list = [i for i in range(1, sdl.locations)]    
-        total_binary_string = ''
-        result_list = []
-        
-        for i, integer in enumerate(hot_start_list):
-            bin_len = find_bin_length(len(initial_list))
-            if bin_len > 0:
-            #find the index of integer in hot start list
-                index = initial_list.index(integer)
-                if sdl.gray:
-                    binary_string = bin(graycode.tc_to_gray_code(index))
-                else:
-                    binary_string = bin(index)
-                binary_string = binary_string_format(binary_string, bin_len)
-                total_binary_string += binary_string
-                initial_list.pop(index)
-        for i in range(len(total_binary_string)):
-            result_list.append(int(total_binary_string[i]))
-        return(result_list)
-    elif sdl.formulation == 'new':
-        #dim = find_problem_size(sdl)
-        dim = find_problem_size(
-            locations=sdl.locations,
-            formulation=sdl.formulation
-        )    
-        f = math.factorial(sdl.locations)
-        y = 0
-        i = 0
-        start_cycle_list = [i for i in range(sdl.locations)]
-        while i < sdl.locations:
-            f = int(f / (sdl.locations - i))
-            m = hot_start_list[i]
-            j = start_cycle_list.index(m)
-            start_cycle_list.remove(m)  
-            y += j * f
-            i += 1
-
-        result_list = convert_integer_to_binary_list(y, dim, gray=sdl.gray)
-        return result_list
-    else:
-        raise Exception(f'Unknown method {sdl.formulation}')
-
-def validate_gradient_type(gradient_type):
-    """Check that the gradient type is valid"""
-    allowed_types = ['parameter_shift', 'SPSA']
-    if gradient_type not in allowed_types:
-        raise Exception (f'Gradient type {gradient_type} is not coded for')
-
-def update_parameters_using_gradient(sdl,
-                                     params: list,
-                                     rots: np.ndarray,
-                                     cost_fn: Callable,
-                                     qc: QuantumCircuit,
-                                     #qc: Circuit, # aws
-                                     print_results: str=False,
-                                     ):
+def update_parameters_using_gradient(
+        locations:int,
+        qubits:int,
+        average_slice:float,
+        shots:int,
+        mode:int,
+        iterations:int,
+        gray:bool,
+        hot_start:bool,
+        gradient_type:str,
+        formulation:str,
+        layers:int,
+        alpha:float,     
+        big_a:float,
+        c:float,
+        eta:float,
+        gamma:float,
+        s:float,
+        noise_bool:bool,                                 
+        params: list,
+        rots: np.ndarray,
+        cost_fn: Callable,
+        qc: Circuit,
+        target: str,
+        mps: bool,
+        print_results: str=True,
+        ):
     """Updates parameters using SPSA or parameter shift gradients"""
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
     parameter_list, average_list = [], []
 
-    validate_gradient_type(sdl.gradient_type)
+    validate_gradient_type(gradient_type)
 
-    if sdl.gradient_type == 'SPSA':
+    if gradient_type == 'SPSA':
         #define_parameters
         # A is <= 10% of the number of iterations normally, but here the number of iterations is lower.
         # order of magnitude of first gradients
-        abs_gradient = np.abs(my_gradient(sdl, 
-                                          cost_fn, 
-                                          qc, 
-                                          params, 
-                                          rots, 
-                                          average_slice=sdl.slice,
-                                          )
-                                )
+
+        if any(x is None for x in (s, eta, big_a, alpha)):
+            raise Exception(f'{s=}, {eta=}, {big_a=}, {alpha=}')
+        
+        abs_gradient = np.abs(my_gradient(
+            noise_bool=noise_bool,
+            shots=shots,
+            s=s,
+            gradient_type=gradient_type,
+            cost_fn=cost_fn, 
+            qc=qc, 
+            params=params, 
+            rots=rots, 
+            average_slice=average_slice,
+            target=target,
+            mps=mps,
+            )
+        )
         
         magnitude_g0 = abs_gradient.mean()
  
@@ -754,25 +848,34 @@ def update_parameters_using_gradient(sdl,
         # stop div by zero error
             a = 999
         else:
-            a = sdl.eta*((sdl.big_a+1)**sdl.alpha)/magnitude_g0
+            a = eta*((big_a+1)**alpha)/magnitude_g0
 
-    for i in range(0, sdl.iterations):
-        #if detect_quantum_GPU_support:
-        #    bc = qc.assign_parameters({params: rot for params, rot in zip(params, rots)})
-        #else:
-        #    bc = bind_weights(params, rots, qc)
-        bc = bind_weights(params, rots, qc)
-        cost, lowest, lowest_energy_bit_string = cost_func_evaluate(sdl,
-                                                                    cost_fn, 
-                                                                    bc, 
-                                                                    average_slice= sdl.slice, 
-                                                                    )
+    for i in range(0, iterations):
+        bc = bind_weights(
+            params=params, 
+            rots=rots, 
+            qc=qc,
+            target=target,
+            )
+        cost, lowest, lowest_energy_bit_string = cost_func_evaluate(
+            noise_bool=noise_bool,
+            shots=shots,
+            cost_fn=cost_fn, 
+            model=bc,
+            target=target,
+            mps=mps,
+            average_slice=average_slice, 
+            )
         #cost is the top-sliced energy
-        average, _ , _ = cost_func_evaluate(sdl,
-                                            cost_fn, 
-                                            bc, 
-                                            average_slice=1, 
-                                            )
+        average, _ , _ = cost_func_evaluate(
+            noise_bool=noise_bool,
+            shots=shots,
+            cost_fn=cost_fn, 
+            model=bc, 
+            target=target,
+            mps=mps,
+            average_slice=1, 
+            )
         #average is the average energy with no top slicing
         if i == 0:
             lowest_string_to_date = lowest_energy_bit_string
@@ -781,150 +884,101 @@ def update_parameters_using_gradient(sdl,
             if lowest < lowest_to_date:
                 lowest_to_date = lowest
                 lowest_string_to_date = lowest_energy_bit_string
-        route_list = convert_bit_string_to_cycle(lowest_string_to_date, 
-                                                 sdl.locations, 
-                                                 sdl.gray, 
-                                                 sdl.formulation,
-                                                 )
+        lowest_string_to_date = convert_physical_to_logical_bit_string(lowest_string_to_date, qubits, target)
+        route_list = convert_bit_string_to_cycle(
+            lowest_string_to_date, 
+            locations, 
+            gray, 
+            formulation,
+            )
         index_list.append(i)
         cost_list.append(cost)
         lowest_list.append(lowest_to_date)
         average_list.append(average)
         parameter_list.append(rots)
-        if sdl.gradient_type == 'parameter_shift':
-            gradient = my_gradient(sdl, 
-                                   cost_fn, 
-                                   qc, 
-                                   params, 
-                                   rots, 
-                                   average_slice=sdl.slice,
-                                   )
+        if gradient_type == 'parameter_shift':
+            gradient = my_gradient(
+                noise_bool=noise_bool,
+                shots=shots,
+                s=s,
+                gradient_type=gradient_type,
+                cost_fn=cost_fn, 
+                qc=qc, 
+                params=params, 
+                rots=rots,
+                average_slice=average_slice,
+                target=target,
+                mps=mps,
+                ck=ck,
+                )
             
-            rots = rots - sdl.eta * gradient
-        elif sdl.gradient_type == 'SPSA':
-            ak = a/((i+1+sdl.big_a)**(sdl.alpha))
-            ck = sdl.c/((i+1)**(sdl.gamma))
-            gradient = my_gradient(sdl,
-                                   cost_fn, 
-                                   qc, 
-                                   params, 
-                                   rots, 
-                                   average_slice=sdl.slice,
-                                   ck=ck,
-                                   )
+            rots = rots - eta * gradient
+        elif gradient_type == 'SPSA':
+            ak = a/((i+1+big_a)**(alpha))
+            ck = c/((i+1)**(gamma))
+            gradient = my_gradient(
+                noise_bool=noise_bool,
+                shots=shots,
+                s=s,
+                gradient_type=gradient_type,
+                cost_fn=cost_fn, 
+                qc=qc, 
+                params=params, 
+                rots=rots, 
+                average_slice=average_slice,
+                target=target,
+                mps=mps,
+                ck=ck,
+                )
             rots = rots - ak * gradient
         else:
-            raise Exception(f'Error found when calculating gradient. {sdl.gradient_type} is not an allowed gradient type')
+            raise Exception(f'Error found when calculating gradient. {gradient_type} is not an allowed gradient type')
         gradient_list.append(gradient.tolist())
-        if print_results:
-            if i % PRINT_FREQUENCY == 0:  
-                print(f'For iteration {i} using the best {sdl.average_slice*100} percent of the results')
-                print(f'The average cost from the sample is {average:.3f} and the top-sliced average of the best results is {cost:.3f}')
-                print(f'The lowest cost from the sample is {lowest:.3f}')
-                print(f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date} ')
-                print(f'and route {route_list}')
-                #AWS hybrid job
-                log_metric(metric_name="average_sample_cost", iteration_number=i, value=average)
-                log_metric(metric_name="top_sliced_sample_cost", iteration_number=i, value=cost)
-                log_metric(metric_name="lowest_sample_cost", iteration_number=i, value=lowest)
-                log_metric(metric_name="lowest_to_date", iteration_number=i, value=lowest_to_date)
-                log_metric(metric_name="lowest_string_to_date", iteration_number=i, value=lowest_string_to_date)
-                log_metric(metric_name="route_list", iteration_number=i, value=route_list)
+        if print_results and i % PRINT_FREQUENCY == 0:  
+            #Force flush to push to Cloudwatch quickly
+            print(f'For iteration {i} using the best {average_slice*100} percent of the results', flush=True)
+            print(f'The average cost from the sample is {average:.3f} and the top-sliced average of the best results is {cost:.3f}', flush=True)
+            print(f'The lowest cost from the sample is {lowest:.3f}', flush=True)
+            print(f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date}', flush=True)
+            print(f'and route {route_list}')
+            #AWS hybrid job
+            log_metric(metric_name="average_sample_cost", iteration_number=i, value=average)
+            log_metric(metric_name="top_sliced_sample_cost", iteration_number=i, value=cost)
+            log_metric(metric_name="lowest_sample_cost", iteration_number=i, value=lowest)
+            log_metric(metric_name="lowest_to_date", iteration_number=i, value=lowest_to_date)
                 
     return index_list, cost_list, lowest_list, gradient_list, average_list, parameter_list 
     
-def cost_func_evaluate(sdl,
-                       cost_fn: Callable,
-                       model,
-                       average_slice: float=1,
-                       ) -> tuple[float, float, list[int]]:             
-                       
-    """Evaluate cost function on a quantum computer
-    
-    Parameters
-    ----------
-    sdl: SubDataLogger object containing key parameters:
-        sdl.noise: bool
-            If True a noisy quantum computer is used
-        sdl.quantum: bool
-            If True a quantum computer is used.  If False a classical model is used
-        sdl.shots: int
-            The number of shots for which the quantum circuit is to be run  
-    cost_fn: function
-        A function of a bit string evaluating a distance for that bit string
-    model : a model to evalulate an output bit string given weights eg
-        Circuit
-            A quantum circuit with bound weights for which the energy is to be found
-        Classical Model
-            A classical model with bound weights for which the energy is to be found
-    average_slice: float
-        average over this slice of the energy.  For example:
-        If average_slice = 1 then average over all energies.  
-        If average_slice = 0.2 then average over the bottom 20% of energies
-    
-    Returns
-    -------
-    cost: float
-        The average cost evaluated
-    lowest: float
-        The lowest cost found
-    lowest_energy_bit_string: string
-        A list of the bits for the lowest energy bit string
-    """
-    if sdl.quantum:
-        if sdl.noise:
-            backend = FakeAuckland()
-            job = backend.run(model, shots=sdl.shots)     
-            counts = job.result().get_counts()
-        elif sdl.mps:
-            simulator = AerSimulator(method='matrix_product_state')
-            results = simulator.run(model).result()
-            counts = results.get_counts(model)
-        else:
-            if detect_quantum_GPU_support():
-                simulator = AerSimulator(method='statevector', device='GPU')
-                results = simulator.run(model).result()
-                counts = results.get_counts(model)
-            else:
-                #sampler = SamplerV2()
-                #job = sampler.run([model], shots=sdl.shots)
-                #results = job.result()
-                #counts = results[0].data.meas.get_counts()
-                #counts = results[0].data.get_counts()
-                simulator = AerSimulator(method='statevector')
-                results = simulator.run(model).result()
-                counts = results.get_counts(model)
-    else:
-        raise Exception('Classical model not yet coded for')
-    cost, lowest, lowest_energy_bit_string = find_stats(cost_fn, counts, sdl.shots, average_slice, )
-    return(cost, lowest, lowest_energy_bit_string)
-
-def my_gradient(sdl,
-                cost_fn, 
-                qc:QuantumCircuit, 
-                #qc:Circuit,
-                params:list, 
-                rots:np.ndarray, 
-                average_slice:float, 
-                ck:float=1e-2,
-                ) -> np.ndarray:
+def my_gradient(
+    noise_bool:bool,
+    shots:int,
+    s:float,
+    gradient_type:str,
+    cost_fn,
+    qc:Circuit,
+    params:list, 
+    rots:np.ndarray, 
+    average_slice:float,
+    target:str, 
+    mps:bool,
+    ck:float=1e-2,
+    ) -> np.ndarray:
     """Calculate gradient for a quantum circuit with parameters and rotations
     
     Parameters
     ----------
-    sdl: SubDataLogger object containing key parameters, for example:
-        sdl.noise: bool
-            If True a noisy quantum computer is used
-        sdl.shots: int
-            The number of shots for which the quantum circuit is to be run  
-        sdl.s: float
-            Parameter shift parameter
-        sdl.gradient_type: str
-            controls the optimiser to be used.
-            if 'parameter shift'  uses analytical expression
-            if 'SPSA' uses a stochastical method
-        sdl.ck: float
-            SPSA parameter, small number controlling perturbations
+    noise: bool
+        If True a noisy quantum computer is used
+    shots: int
+        The number of shots for which the quantum circuit is to be run  
+    s: float
+        Parameter shift parameter
+    gradient_type: str
+        controls the optimiser to be used.
+        if 'parameter shift'  uses analytical expression
+        if 'SPSA' uses a stochastical method
+    ck: float
+        SPSA parameter, small number controlling perturbations
     cost_fn: function
         A function of a bit string evaluating an energy (distance) for that bit string
     qc: Circuit
@@ -943,30 +997,46 @@ def my_gradient(sdl,
         The gradient for each parameter
     """
     new_rots = copy.deepcopy(rots)  
-    if sdl.gradient_type == 'parameter_shift':
+    if gradient_type == 'parameter_shift':
         gradient_list = []
         for i, theta in enumerate(rots):
-            new_rots[i] = theta + np.pi/(4*sdl.s)
-            bc = bind_weights(params, new_rots, qc)
-            #bc = RemoveBarriers()(bc)
-            cost_plus, _, _ = cost_func_evaluate(sdl,
-                                                 cost_fn, 
-                                                 bc, 
-                                                 average_slice, 
-                                                 )
+            new_rots[i] = theta + np.pi/(4*s)
+            bc = bind_weights(
+                params=params, 
+                rots=new_rots, 
+                qc=qc,
+                target=target,
+                )
+            cost_plus, _, _ = cost_func_evaluate(
+                noise_bool=noise_bool,
+                shots=shots,
+                cost_fn=cost_fn, 
+                model=bc, 
+                target=target,
+                mps=mps,
+                average_slice=average_slice, 
+                )
             
-            new_rots[i] = theta - np.pi/(4*sdl.s)
-            bc = bind_weights(params, new_rots, qc)
-            #bc = RemoveBarriers()(bc)
-            cost_minus, _, _ = cost_func_evaluate(sdl,
-                                                  cost_fn, 
-                                                  bc, 
-                                                  average_slice, 
-                                                  )
-            delta = sdl.s * (cost_plus - cost_minus)
+            new_rots[i] = theta - np.pi/(4*s)
+            bc = bind_weights(
+                params=params, 
+                rots=new_rots, 
+                qc=qc,
+                target=target,
+                )
+            cost_minus, _, _ = cost_func_evaluate(
+                noise_bool=noise_bool,
+                shots=shots,
+                cost_fn=cost_fn, 
+                model=bc, 
+                target=target,
+                mps=mps,
+                average_slice=average_slice, 
+                )
+            delta = s * (cost_plus - cost_minus)
             gradient_list.append(delta)
         gradient_array = np.array(gradient_list)
-    elif sdl.gradient_type == 'SPSA':
+    elif gradient_type == 'SPSA':
         # number of parameters
         length = len(rots)
         # bernoulli-like distribution
@@ -975,229 +1045,343 @@ def my_gradient(sdl,
         # simultaneous perturbations
         ck_deltak = ck * deltak
         new_rots = rots + ck_deltak
-        # gradient approximation]
-        bc = bind_weights(params, new_rots, qc)
-        #bc = RemoveBarriers()(bc)
-        cost_plus, _, _ = cost_func_evaluate(sdl,
-                                             cost_fn, 
-                                             bc, 
-                                             average_slice, 
-                                             )
+        
+        # gradient approximation
+        bc = bind_weights(
+            params=params, 
+            rots=new_rots,
+            qc=qc,
+            target=target,
+            )
+        cost_plus, _, _ = cost_func_evaluate(
+            noise_bool=noise_bool,
+            shots=shots,
+            cost_fn=cost_fn, 
+            model=bc, 
+            target=target,
+            mps=mps,
+            average_slice=average_slice, 
+            )
 
         new_rots = rots - ck_deltak
-        bc = bind_weights(params, new_rots, qc)
-        #bc = RemoveBarriers()(bc)
-        cost_minus, _, _ = cost_func_evaluate(sdl,
-                                              cost_fn, 
-                                              bc, 
-                                              average_slice, 
-                                              )
+        bc = bind_weights(
+            params=params, 
+            rots=new_rots,
+            qc=qc,
+            target=target,
+            )
+        cost_minus, _, _ = cost_func_evaluate(
+            noise_bool=noise_bool,
+            shots=shots,
+            cost_fn=cost_fn, 
+            model=bc, 
+            target=target,
+            mps=mps,
+            average_slice=average_slice, 
+            )
 
         delta = cost_plus - cost_minus
         gradient_array = delta / (2 * ck_deltak)
         #need to return an array to match parameter shift
     else:
-        raise Exception(f'Gradient type {sdl.gradient_type} is not an allowed choice')
+        raise Exception(f'Gradient type {gradient_type} is not an allowed choice')
     return gradient_array   
+
+def validate_gradient_type(gradient_type):
+    """Check that the gradient type is valid"""
+    allowed_types = ['parameter_shift', 'SPSA']
+    if gradient_type not in allowed_types:
+        raise Exception (f'Gradient type {gradient_type} is not coded for')
     
-#def define_parameters(sdl) -> list:
-    """Set up parameters and initialise text
+def convert_bit_string_to_cycle(
+        bit_string: list, 
+        locs: int, 
+        gray: bool=False, 
+        method: str='original') -> list:
+    """Converts a bit string to a cycle.
     
     Parameters
     ----------
-    sdl: MySubDataLogger
-        A sub data logger holding the parameters for the run with key fields: 
-        sdl.qubits: int - The number of qubits in the circuit
-        sdl.mode: int - Controls setting the circuit up in different modes
+    bit_string : list
+        A list of zeros and ones produced by the quantum computer
+    locs: int
+        The number of locations
+    gray: bool
+        If True Gray codes are used
+    method: str
+        'original' => method from Goldsmith D, Day-Evans J. 
+        'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
 
     Returns
-    -------
-    params: list
-        A list of parameters (the texts)
-
+    ----------
+    end_cycle_list : list
+        A list of integers showing a cycle.  The bit string is processed from left to right
     """
-    """params = []
-    if sdl.mode in [1, 2, 3, 4, 6, 7, 13]:
-        for i in range(sdl.num_params):
-            text = "param " + str(i)
-            params.append(Parameter(text)) 
-            #params.append(FreeParameter(text)) #AWS
-        return params
-    else:   
-        raise Exception(f'Mode {sdl.mode} has not been coded for')"""
+
+    end_cycle_list = []
+    start_cycle_list = [i for i in range(locs)]
+
+    if method == 'original':
+        #need to avoid changing the original bit_string
+        bit_string_copy = copy.deepcopy(bit_string)
+        end_cycle_list.append(start_cycle_list.pop(0)) #end point of cycle is always 0
+
+        for i in range(locs-1, 1, -1):
+            bin_len = find_bin_length(i)
+            bin_string = []
+            for count in range(bin_len):
+                bin_string.append(bit_string_copy.pop(0)) #pop the most left hand item
+            position = convert_binary_list_to_integer(bin_string, gray=gray)
+            index = position % i    
+            end_cycle_list.append(start_cycle_list.pop(index))
+        end_cycle_list.append(start_cycle_list.pop(0))
+        if start_cycle_list != []:
+            raise Exception('Cycle returned may not be complete')
+        if bit_string_copy != []:
+            raise Exception(f'bit_string not consumed {bit_string_copy} left')
+        return(end_cycle_list)
+    elif method == 'new':
+        f = math.factorial(locs)
+        bit_string_length = math.ceil(math.log2(f))
+        if len(bit_string) != bit_string_length:
+            raise Exception(f'bit_string length {len(bit_string)} does not match {bit_string_length}')
+        x = convert_binary_list_to_integer(bit_string, gray=gray)
+        y = x % f
+        i = 0
+        while i < locs:
+            f = int(f / (locs - i))
+            #correcting mistype in paper
+            k = math.floor(y / f)
+            end_cycle_list.append(start_cycle_list[k])
+            start_cycle_list.remove(start_cycle_list[k])
+            #correcting mistype in paper
+            y -= k * f
+            i += 1
+        return end_cycle_list
+    else:
+        raise Exception(f'Unknown method {method}')
     
-#def vqc_circuit(sdl, params: list) -> Circuit:
-#def vqc_circuit(sdl, params: list) -> QuantumCircuit:
-    """Set up a variational quantum circuit
+def cost_fn_fact(
+    locations:int,
+    qubits,
+    gray:bool, 
+    formulation:str, 
+    distance_array: np.ndarray, 
+    target: str
+    ) -> Callable[[list], int]:    
+    """ Returns a cost function inside a decorator,
 
     Parameters
     ----------
-    sdl: MySubDataLogger
-        A sub data logger holding the parameters for the run with key fields:
-        sdl.qubits: int - The number of qubits in the circuit
-        sdl.mode: int - Controls setting the circuit up in different modes
-        sdl.noise: bool- Controls if noise is included in the circuit
-    params: list
-        A list of parameters (the texts)
-
+    locations: int
+        The number of locations in the problem
+    qubits:int
+        The number of qubits required
+    gray: bool
+        If True Gray codes are used
+    formulation: str
+        'original' => method from Goldsmith D, Day-Evans J.
+        'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
+    distance_array: array
+        Numpy symmetric array with distances between locations
+    
     Returns
     -------
-    qc: Quantum Circuit
-        A quantum circuit without bound weights
+    cost_fn: cost function
+        A function of a bit string evaluating a distance for that bit string
+    
     """
-
-    #if len(params) != sdl.layers * sdl.qubits * 2:
-    #raise Exception(f"Expected {sdl.layers * sdl.qubits * 2} params, got {len(params)}")
-
-    #print(f'{params=}')
-    #qc = Circuit()
-    """qc = QuantumCircuit(sdl.qubits)
-    if sdl.mode == 1:
-        for layer in range(sdl.layers):
-            offset = layer * sdl.qubits * 2
-            for i in range(sdl.qubits):
-                qc.h(i)
-                qc.ry(params[i+offset], i)
-                qc.rx(params[sdl.qubits+i+offset], i)
-            for i in range(sdl.qubits):
-                if i < sdl.qubits-1:
-                    qc.cx(i,i+1)
-                else:
-                    qc.cx(i,0)
-    elif sdl.mode == 2:
-        for layer in range(sdl.layers):
-            offset = layer * sdl.qubits * 2
-            for i in range(sdl.qubits):
-                qc.rx(params[i+offset], i)
-            for i in range(sdl.qubits):
-                if i < sdl.qubits-1:
-                    qc.rxx(params[sdl.qubits+i+offset], i, i+1,)
-                else:
-                    qc.rxx(params[sdl.qubits+i+offset], i, 0,)
-    elif sdl.mode == 3:
-        if sdl.layers > 1:
-            raise Exception('Mode 3 is only coded for one layer')
-        offset = layer * sdl.qubits * 2
-        for i in range(sdl.qubits):
-            qc.h(i)
-            if i < sdl.qubits-1:
-                qc.rzz(params[sdl.qubits+i+offset], i, i+1,)
+    @LRUCacheUnhashable
+    def cost_fn(bit_string_input: list) -> float:
+        """Returns the value of the objective function for a bit_string"""
+        if isinstance(bit_string_input, list):
+            if target == 'ml':
+                #no need to convert from physical to logical bit string as 
+                #the input is not from a quantum computer
+                bit_string = bit_string_input
             else:
-                qc.rzz(params[sdl.qubits+i+offset], i, 0,)
-        for i in range(sdl.qubits):
-            qc.rz(params[i+offset], i)
-            qc.h(i)
-    elif sdl.mode == 4:
-        for layer in range(sdl.layers):
-            offset = layer * sdl.qubits
-            for i in range(sdl.qubits):
-                qc.rx(params[i+offset], i)
-    elif sdl.mode == 5:
-    #test mode
-        if sdl.qubits != 5:
-            raise Exception(f'test mode {sdl.mode} is only to be used with 5 qubits.  {sdl.qubits} qubits are specified')
-        qc.x(1)
-        qc.x(3)
-        qc.x(4)
+                bit_string = convert_physical_to_logical_bit_string(
+                    input_bitstring = bit_string_input, 
+                    qubits=qubits, 
+                    target=target
+                    )
+            full_list_of_locs = convert_bit_string_to_cycle(
+                bit_string=bit_string,
+                locs=locations,
+                gray=gray,
+                method=formulation
+            )
+            total_distance = find_total_distance(
+                int_list=full_list_of_locs, 
+                locs=locations, 
+                distance_array=distance_array
+                )
+            valid = check_loc_list(
+                loc_list=full_list_of_locs,
+                locs=locations
+                )
+            if not valid:
+                raise Exception('Algorithm returned incorrect cycle')  
+            return total_distance
+        else:
+            raise Exception(f'bit_string {bit_string_input} is not a list or a tensor')
+    return cost_fn
 
-    elif sdl.mode == 6:
-        for layer in range(sdl.layers):
-            offset = layer * sdl.qubits * 2
-            for i in range(sdl.qubits):
-                qc.h(i)
-                qc.ry(params[i+offset], i)
-                qc.rx(params[sdl.qubits+i+offset], i)
-    elif sdl.mode == 7:
-        for layer in range(sdl.layers):
-            offset = layer * sdl.qubits * 2
-            for i in range(sdl.qubits):
-                qc.rz(params[i+offset], i)
-                if i < sdl.qubits-1:
-                    qc.iswap(i,i+1)
-                else:
-                    qc.iswap(i,0)
-                qc.rz(params[sdl.qubits+i+offset],i)
-                #qc = Circuit().add_verbatim_box(inner)
-    else:
-        raise Exception(f'Mode {sdl.mode} has not been coded for')
-    
-    #qc.measure(range(sdl.qubits)) aws
-    qc.measure_all()
-    if sdl.noise:
-        backend = FakeAuckland()
-        qc= transpile(qc, backend)
-    return qc"""
+def cost_fn_tensor(input: torch.tensor, 
+                   cost_fn: Callable)-> torch.Tensor:
 
-def create_initial_rotations(sdl, bin_hot_start_list: list=False,)-> np.ndarray: 
-    """Initialise parameters with random weights
+    """ Find the distance for each bit string input using cost_fn
 
     Parameters
     ----------
-    sdl : Subdata logger with fields:
-        sdl.qubits : int
-            The number of qubits in the circuit
-        sdl.mode : int
-            Controls setting the circuit up in different modes
-        sdl.hot_start : bool
-            If true hot start values are used
-    bin_hot_start_list : list
-        Binary list containing the hot start values
+    input : torch.tensor
+        Torch array with n bit strings for analysis
+    cost_fn : function
+        maps a bit_list to a distance
+    
+    Returns
+    -------
+    distance_tensor : torch.tensor
+        a Torch array with one distance entry for each input
+
+    """
+
+    if isinstance(input, torch.Tensor):
+        if input.dim() != 2:
+            raise Exception(f'input= {input} is a Torch tensor but does not have dimension 2')
+        rows = input.size(0)
+        distance_tensor = torch.zeros(rows)
+        for i in range(rows):
+            row = input[i]
+            bit_string = row.int().tolist()
+            distance = cost_fn(bit_string)
+            distance_tensor[i] = distance
+        return distance_tensor
+    else:
+        raise Exception(f'bit_string {input} is not a tensor')
+    
+def hot_start_list_find(
+        locations: int, 
+        distance_array: np.ndarray) -> list:
+    """Finds a route from a distance array where the distance to the next point is the shortest available
+    
+    Parameters
+    ----------
+    locations : int
+        The number of locations in the problem
+    distance_array: array
+        Numpy symmetric array with distances between locations
 
     Returns
     -------
-    init_rots: array
-        initial rotations
+    end_cycle_list: list
+        A list of integers showing the an estimate of the lowest cycle
+    
+    """
+    validate_distance_array(distance_array, locations)
+    remaining_cycle_list = [i for i in range(locations)]
+    end_cycle_list = []
+    end_cycle_list.append(remaining_cycle_list.pop(0)) #start point of cycle is always 0
+    next_row = 0
+    for i in range(locations-1):
+        for j, column in enumerate(remaining_cycle_list):
+            distance = distance_array[next_row][column]
+            if j == 0:
+                arg_min = j
+                lowest_distance = distance
+            else:
+                if distance < lowest_distance:
+                    arg_min = j
+                    lowest_distance = distance
+        next_row = remaining_cycle_list.pop(arg_min)
+        end_cycle_list.append(next_row)
+    return(end_cycle_list)
+
+def hot_start_list_to_string(
+    locations: int,
+    gray: bool,
+    formulation: str,
+    hot_start_list: list) -> list:
+    """Invert the hot start integer list into a string
+    
+    Parameters:
+    -----------
+
+    locations: int
+        The number of locations in the problem
+    gray: bool
+        If True Gray codes are used
+    formulation: str
+        The formulation to use
+    hot_start_list: list
+        A list of integers showing an estimate of the lowest cycle
+
+    Returns
+    -------
+    result_list: list
+        A list of bits that represents the bit string for the lowest cycle
+        sdl.formulation: str
+            'original' => method from Goldsmith D, Day-Evans J.
+            'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
+    hot_start_list: list
+        A list of integers showing an estimate of the lowest cycle
+
+    Returns
+    -------
+    result_list: list
+        A list of bits that represents the bit string for the lowest cycle
     
     """
     
-    if sdl.mode in [1, 2, 3, 6, 7, ]:
-        param_num = 2 * sdl.qubits * sdl.layers
-    elif sdl.mode == 4:
-        param_num = sdl.qubits * sdl.layers
-    else:
-        raise Exception(f'Mode {sdl.mode} is not yet coded')
-    if sdl.hot_start:
-#        if sdl.layers in [1]:
-        if sdl.mode not in [2]:
-            raise Exception('Cannot use a hot start for mode {mode}')
-        init_rots = [0 for i in range(param_num)]
-        for i, item in enumerate(bin_hot_start_list):
-            if item == 1:
-                init_rots[sdl.qubits-i-1] = np.pi 
-                #need to reverse order because of qiskit convention
-    else:
-        init_rots= [random.random() * 2 * math.pi for i in range(param_num)]
-    init_rots_array = np.array(init_rots)
-    return(init_rots_array)
-from typing import Callable
+    if formulation == 'original':
+        if len(hot_start_list) != locations:
+            raise Exception(f'The hot start list should be length {locations}')
+        
+        first_item = hot_start_list.pop(0)
+        #remove the first item for the list which should be zero
+        if first_item != 0:
+            raise Exception(f'The first item of the list must be zero')
+        
+        initial_list = [i for i in range(1, locations)]    
+        total_binary_string = ''
+        result_list = []
+        
+        for i, integer in enumerate(hot_start_list):
+            bin_len = find_bin_length(len(initial_list))
+            if bin_len > 0:
+            #find the index of integer in hot start list
+                index = initial_list.index(integer)
+                if gray:
+                    binary_string = bin(graycode.tc_to_gray_code(index))
+                else:
+                    binary_string = bin(index)
+                binary_string = binary_string_format(binary_string, bin_len)
+                total_binary_string += binary_string
+                initial_list.pop(index)
+        for i in range(len(total_binary_string)):
+            result_list.append(int(total_binary_string[i]))
+        return(result_list)
+    elif formulation == 'new':
+        dim = find_problem_size(
+            locations=locations,
+            formulation=formulation
+        )    
+        f = math.factorial(locations)
+        y = 0
+        i = 0
+        start_cycle_list = [i for i in range(locations)]
+        while i < locations:
+            f = int(f / (locations - i))
+            m = hot_start_list[i]
+            j = start_cycle_list.index(m)
+            start_cycle_list.remove(m)  
+            y += j * f
+            i += 1
 
-#def bind_weights(params:list, rots:list, qc:Circuit) -> Circuit:
-#def bind_weights(params:list, rots:list, qc:QuantumCircuit) -> QuantumCircuit:
-#    """Bind parameters to rotations and return a bound quantum circuit#
-#
-#    Parameters
-#    ----------
-#    params: list
-#        A list of parameters (the texts)
-#    rots: list
-#        The exact values for the parameters, which are rotations of quantum gates
-#    qc: Quantum Circuit
-#        A quantum circuit without bound weights  #
-#
-#    Returns
-#    -------
-#    bc: Quantum Circuit
-#        A quantum circuit with including bound weights, ready to run an evaluation
-#    """
-
-    #binding_dict = {}
-    #for i, rot in enumerate(rots):
-    #    param_name = str(params[i])
-    #    #binding_dict[param_name] = rot #aws
-    #    binding_dict[str(params[i])] = rot
-    #bc = qc.assign_parameters(binding_dict)
-    #bc = qc.make_bound_circuit(binding_dict) #aws
-    #return(bc)"""
+        result_list = convert_integer_to_binary_list(y, dim, gray=gray)
+        return result_list
+    else:
+        raise Exception(f'Unknown method {formulation}')
 
 def find_run_stats(lowest_list:list)-> tuple[float, int]:
     """Finds the lowest energy and the iteration at which it was found
@@ -1237,31 +1421,14 @@ def find_distances_array(locations:int,
         print(f'It is known that the shortest distance is {best_dist}')
     distance_array = np.genfromtxt(filepath)
     validate_distance_array(distance_array, locations)
-    return distance_array, best_dist
+    return distance_array, best_dist 
 
-def format_boolean(string_input: str)->bool:
-    """Convert a string to a boolean value"""
-    if string_input == 'TRUE':
-        output = True
-    elif string_input == 'FALSE':
-        output = False
-    else:
-        raise Exception(f'Unexpected boolean value {string_input}')
-    return output 
-
-def detect_quantum_GPU_support()-> bool:
-    """Detect if a GPU is available for quantum simulations"""
-    #devices = AerSimulator().available_devices()
-    #if 'GPU' in devices:
-    #    return True
-    #else:
-    return False
-    
-def calculate_hot_start_data(sdl, 
-                             distance_array: np.ndarray, 
-                             cost_fn: Callable,
-                             print_results:bool=False,
-                             )-> tuple[list, float]:
+def calculate_hot_start_data(
+    sdl, 
+    distance_array: np.ndarray, 
+    cost_fn: Callable,
+    print_results:bool=False,
+    )-> tuple[list, float]:
     """Calculate hot start data from a distance array
     
     Parameters
@@ -1283,11 +1450,21 @@ def calculate_hot_start_data(sdl,
         The distance of the hot start cycle
 
     """
-    hot_start_list = hot_start(sdl, distance_array, )
-    bin_hot_start_list =  hot_start_list_to_string(sdl, hot_start_list)
+    hot_start_list = hot_start_list_find(
+        locations=sdl.locations, 
+        distance_array=distance_array, 
+        )
+    #bin_hot_start_list =  hot_start_list_to_string(sdl, hot_start_list)
+    bin_hot_start_list = hot_start_list_to_string(
+        locations=sdl.locations,
+        gray=sdl.gray,
+        formulation=sdl.formulation,
+        hot_start_list=hot_start_list,
+    )
     hot_start_distance = cost_fn(bin_hot_start_list)
     if print_results:
         print(f'The hot start location list is {hot_start_list}')
         print(f'This is equivalent to a binary list: {bin_hot_start_list}')
         print(f'The hot start distance is {hot_start_distance}, compared to a best distance of {sdl.best_dist}.')
-    return bin_hot_start_list, hot_start_distance
+        print(f'The hot start distance is {hot_start_distance}')
+    return bin_hot_start_list, hot_start_distance      
