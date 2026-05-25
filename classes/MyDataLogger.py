@@ -38,11 +38,14 @@ from modules.config import (RESULTS_DIR,
                             )
 
 from modules.graph_functions import cost_graph_multi
-from modules.helper_functions_tsp import (validate_gradient_type,
-                                          format_boolean,
-                                          )        
-from modules.helper_functions_general import find_qubits_measured
+from modules.helper_functions_tsp import (
+    validate_gradient_type,
+    )        
 
+from modules.helper_functions_general import (
+    find_qubits_measured,
+    format_boolean,
+)
 
 @dataclass
 class MyDataLogger:
@@ -171,24 +174,23 @@ class MySubDataLogger(MyDataLogger):
     def validate_input(self):
         """Validate the input fields"""
         targets_sdk = MODE_DISPATCH[self.mode]['sdk']
-        allow_multiple_layers = MODE_DISPATCH[self.mode]['allow_multiple_layers']
+        #allow_multiple_layers = MODE_DISPATCH[self.mode]['allow_multiple_layers']
         if not isinstance(self.quantum, bool):
             raise Exception(f'Input field quantum is not boolean')
-        if not isinstance(self.gray, bool):
-            raise Exception(f'Input field gray is not boolean')
         if not isinstance(self.hot_start, bool):
             raise Exception(f'Input field hot start is not boolean')
-        if self.formulation not in ['original', 'new']:
-            raise Exception(f'Value {self.formulation} is not allowed for formulation' )
-        if not isinstance(self.noise, bool):
-            raise Exception(f'Input field noise is not boolean')
         if self.quantum:
             validate_gradient_type(self.gradient_type)
+            allow_multiple_layers = MODE_DISPATCH[self.mode]['allow_multiple_layers']
+            if self.formulation not in ['original', 'new']:
+                raise Exception(f'Value {self.formulation} is not allowed for formulation' )
+            if not isinstance(self.gray, bool):
+                raise Exception(f'Input field gray is not boolean')
+            if not isinstance(self.noise, bool):
+                raise Exception(f'Input field noise is not boolean')
             if targets_sdk not in ['aws', 'qiskit']:
-            #if self.mode not in [1, 2, 3, 4, 6, 7, 12, 13]:
                 raise Exception(f'mode = {self.mode} is not permitted for quantum')
             if not allow_multiple_layers and self.layers > 1:
-            #if self.mode == 4 and self.layers> 1:
                 raise Exception(f'mode = {self.mode} is only for 1 layer')
             if self.mps and self.aws:
                 raise Exception(f'MPS and AWS cannot both be true')
@@ -205,7 +207,6 @@ class MySubDataLogger(MyDataLogger):
         else:
             if self.gradient_type not in ['SGD', 'SGD+X', 'Adam', 'Adam+X', 'RMSprop',]:
                 raise Exception(f'Only certain gradient type are allowed for non quantum, not {self.gradient_type}')
-            #if self.mode not in [8, 9, 18, 19]:
             if targets_sdk != 'ml':
                 raise Exception(f'mode = {self.mode} is not permitted for ml')
             if self.gradient_type in ['SGD+X', 'Adam+X'] and self.start:
@@ -290,6 +291,7 @@ class MySubDataLogger(MyDataLogger):
             self.noise = format_boolean(data_dict['noise'])
             self.mps = format_boolean(data_dict['mps'])
             self.aws = format_boolean(data_dict['aws'])
+            self.target = data_dict['target']
             
         
     def update_general_constants_from_config(self):

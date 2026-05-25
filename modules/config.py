@@ -1,8 +1,5 @@
-from collections.abc import Set
-
+#from collections.abc import Set
 import numpy as np
-#from qiskit import circuit
-#from torch import device
 
 from modules.quantum_circuits import (
     mode_1,
@@ -25,11 +22,11 @@ GRAPH_DIR = 'graphs'
 RESULTS_DIR = 'results'
 RESULTS_FILE = 'results.csv'
 ENCODING = 'utf-8-sig'              # Encoding of csv file
-AWS = True                          # Whether runs are on AWS or Qiskit.
+AWS = False                          # Whether runs are on AWS or Qiskit.
 
 CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
 
-TARGET = 'local_aws'                   # Options from TARGETS dictionary below.  This controls which 
+TARGET = 'local_qiskit'         # Options from TARGETS dictionary below.  This controls which 
                                 # quantum device is used and whether the emulator is used.
 
 TARGETS = {
@@ -73,13 +70,13 @@ PLOT_TITLE = False                  # Plot titles with graphs.  Not needed for p
 
 # configuration information used in ALL manual runs
 
-LOCATIONS = 4                       # number of locations to be visited          
+LOCATIONS = 15                      # number of locations to be visited          
 SHOTS = 1_024                       # shots used for each call of the quantum circuit
 
-ITERATIONS =  20                    # updates, or iterations
-PRINT_FREQUENCY = 5                 # how often results are printed out
+ITERATIONS =  250                   # updates, or iterations
+PRINT_FREQUENCY = 25                # how often results are printed out
 GRAY = False                        # Use Gray codes
-HOT_START = False                   # Make a hot start
+HOT_START = True                    # Make a hot start
 GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
                                     # quantum - 'parameter_shift' - default
                                     # quantum - 'SPSA' is a stochastic gradient descent
@@ -90,7 +87,7 @@ DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation f
 NUM_LAYERS = 1                      # number of layers in the model
 
 #information needed in QML manual runs:
-MODE = 13                           # See list of allowed modes in MODE_DISPATCH below.  
+MODE = 2                           # See list of allowed modes in MODE_DISPATCH below.  
 #This controls the structure of the variational quantum circuit used in the QML runs.  
 #The modes are described in the function that sets up the variational quantum circuit 
 #in helper_functions_quantum.py.  
@@ -143,7 +140,7 @@ MODE_DISPATCH = {
     19: {'sdk': 'ml'}, #input is 0.5 - with sigmoid activation
 }
 
-SLICES = [0.8]                      # Slices to use when calculating the gradient  
+SLICES = [1.0]                      # Slices to use when calculating the gradient  
                                     #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
                                     # For example, 0.2 means that the best 20% 
                                     # of distances found is included in the average.                                 
@@ -154,7 +151,7 @@ ETA = 0.1                           # eta - learning rate for parameter shift
 GAMMA = 0.101                       # constant that determines how quickly the SPSA perturbation decays
 S = 0.5                             # parameter for parameter shift.  Default is 0.5 
 SIMULATE_NOISE = False              # Simulate noise in the quantum circuit
-MPS = False                         # Use MPS simulator
+MPS = True                          # Use MPS simulator
 
 ROTATIONS = 10                      # number of rotations sampled in parameter graphs
 

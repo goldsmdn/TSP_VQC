@@ -1,4 +1,5 @@
 #quantum circuits.py
+from IPython.display import display
 
 from braket.circuits import Circuit
 from braket.parametric import FreeParameter
@@ -6,6 +7,26 @@ import numpy as np
 
 from qiskit import QuantumCircuit
 
+
+LARGEST_QUANTUM_CIRCUIT_TO_PRINT = 15
+
+def print_quantum_circuits(
+        qubits:int,
+        sdk_type:str,
+        qc:QuantumCircuit,
+        filename:str,
+        ):
+    """prints a quantum circuit using Qiskit or AWS formats"""
+    if qubits < LARGEST_QUANTUM_CIRCUIT_TO_PRINT:
+        match sdk_type:
+            case 'aws':
+                print(qc)
+            case 'qiskit':
+                fig = qc.draw("mpl", style="clifford",)
+                display(fig)
+                fig.savefig(filename, format='pdf', bbox_inches="tight")
+            case '_':
+                raise Exception(f'{sdk_type=} is not an allowed value')
 
 def mode_1(context_dict:dict) -> QuantumCircuit:
     """Creates a simple Qiskit circuit with multiple layera of Hadamards, 

@@ -3,24 +3,23 @@ from pytest import raises
 import math
 from pathlib import Path
 
-from classes.MyDataLogger import MyDataLogger, MySubDataLogger
-
-from modules.helper_functions_tsp import(validate_distance_array, 
-                                         find_distance, 
-                                         convert_binary_list_to_integer, 
-                                         check_loc_list, 
-                                         augment_loc_list, 
-                                         find_total_distance, 
-                                         find_problem_size,
-                                         convert_bit_string_to_cycle, 
-                                         find_stats, 
-                                         cost_fn_fact, 
-                                         hot_start,
-                                         hot_start_list_to_string, 
-                                         convert_integer_to_binary_list,
-                                         convert_binary_list_to_integer, 
-                                         find_run_stats,
-                                         )
+from modules.helper_functions_tsp import(
+    validate_distance_array, 
+    find_distance, 
+    convert_binary_list_to_integer, 
+    check_loc_list, 
+    augment_loc_list, 
+    find_total_distance, 
+    find_problem_size,
+    convert_bit_string_to_cycle, 
+    find_stats, 
+    cost_fn_fact, 
+    hot_start_list_find,
+    hot_start_list_to_string, 
+    convert_integer_to_binary_list,
+    convert_binary_list_to_integer, 
+    find_run_stats,
+    )
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
@@ -446,7 +445,8 @@ def test_convert_bit_string_to_cycle_00010__not_gray():
 
 def test_find_average():
     """Test find_stats in average mode"""
-    counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
+    counts = {'100': 145, '111': 131, '101': 183, '001': 65, 
+              '010': 84, '011': 304, '000': 59, '110': 29}
     locations = 4
     gray = False
     formulation = 'original'
@@ -468,12 +468,8 @@ def test_find_average():
 
 def test_find_lowest():
     """Test find_stats in lowest mode"""
-    #datalogger = MyDataLogger()
-    #sdl = MySubDataLogger(runid = datalogger.runid)
-    counts = {'100': 145, '111': 131, '101': 183, '001': 65, '010': 84, '011': 304, '000': 59, '110': 29}
-    #sdl.locations = 4
-    #sdl.gray = False
-   # sdl.formulation = 'original'
+    counts = {'100': 145, '111': 131, '101': 183, '001': 65, 
+              '010': 84, '011': 304, '000': 59, '110': 29}
     locations = 4
     gray = False
     formulation = 'original'
@@ -512,11 +508,12 @@ def test_find_average_slice1():
         distance_array=distance_array,
         target='local_aws'
         )
-    average , _ , _ = find_stats(cost_fn, 
-                                 counts, 
-                                 SHOTS, 
-                                 AVERAGE_SLICE, 
-                                 )
+    average , _ , _ = find_stats(
+        cost_fn, 
+        counts, 
+        SHOTS, 
+        AVERAGE_SLICE, 
+        )
     expected_result = 21.0
     assert expected_result == average
 
@@ -538,10 +535,11 @@ def test_find_average_slice2():
         distance_array=distance_array,
         target='local_aws'
         )
-    average , _ , _ = find_stats(cost_fn, 
-                                 counts, 
-                                 SHOTS, 
-                                 )
+    average , _ , _ = find_stats(
+        cost_fn, 
+        counts, 
+        SHOTS, 
+        )
     expected_result = 21.0
     assert expected_result == average
 
@@ -563,10 +561,11 @@ def test_find_average_slice2b():
         distance_array=distance_array,
         target='local_aws'
         )
-    average , _ , _ = find_stats(cost_fn, 
-                                 counts, 
-                                 SHOTS, 
-                                 )
+    average , _ , _ = find_stats(
+        cost_fn, 
+        counts, 
+        SHOTS, 
+        )
     expected_result = 25.0
     assert expected_result == average
 
@@ -590,11 +589,12 @@ def test_find_average_slice3():
         distance_array=distance_array,
         target='local_aws'
         )
-    average , _ , _ = find_stats(cost_fn, 
-                                 counts, 
-                                 SHOTS, 
-                                 AVERAGE_SLICE, 
-                                 )
+    average , _ , _ = find_stats(
+        cost_fn, 
+        counts, 
+        SHOTS, 
+        AVERAGE_SLICE, 
+        )
     expected_result = 21
     assert expected_result == average
 
@@ -618,11 +618,12 @@ def test_find_average_slice4():
         distance_array=distance_array,
         target='local_aws'
         )
-    average , _ , _ = find_stats(cost_fn, 
-                                 counts, 
-                                 SHOTS, 
-                                 AVERAGE_SLICE, 
-                                 )
+    average , _ , _ = find_stats(
+        cost_fn, 
+        counts, 
+        SHOTS, 
+        AVERAGE_SLICE, 
+        )
     expected_result = 21.3333
     assert expected_result - average < 0.0001
 
@@ -647,19 +648,22 @@ def test_find_average_slice5():
         distance_array=distance_array,
         target='local_aws'
         )
-    average , _ , _ = find_stats(cost_fn, 
-                                 counts, 
-                                 SHOTS, 
-                                 AVERAGE_SLICE,
-                                 )
+    average , _ , _ = find_stats(
+        cost_fn, 
+        counts, 
+        SHOTS, 
+        AVERAGE_SLICE, 
+        )
     expected_result = 20.25
     assert expected_result == average
 
 def test_find_average_slice6():
     """Test finding average slice"""
-    counts = {'11010': 200, #Energy = 21
-          '00000': 300, #Energy = 25
-          '01101': 500} #Energy = 19
+    counts = {
+        '11010': 200, #Energy = 21
+        '00000': 300, #Energy = 25
+        '01101': 500, #Energy = 19 
+        } 
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     locations = 5
@@ -676,11 +680,12 @@ def test_find_average_slice6():
         distance_array=distance_array,
         target='local_aws'
         )
-    average , _ , _ = find_stats(cost_fn, 
-                                 counts, 
-                                 SHOTS, 
-                                 AVERAGE_SLICE, 
-                                 )
+    average , _ , _ = find_stats(
+        cost_fn, 
+        counts, 
+        SHOTS, 
+        AVERAGE_SLICE, 
+        )
     expected_result = 21.2
     assert expected_result == average
 
@@ -690,10 +695,12 @@ def test_find_average_slice7():
     gray = True
     formulation = 'original'
     qubits = find_problem_size(locations, formulation)
-    counts = {'11010': 200, #Energy = 21
-          '00000': 300, #Energy = 25
+    counts = {
+        '11010': 200, #Energy = 21
+        '00000': 300, #Energy = 25
 
-          '01101': 500} #Energy = 19
+        '01101': 500
+        } #Energy = 19
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
@@ -706,81 +713,85 @@ def test_find_average_slice7():
         distance_array=distance_array,
         target='local_aws'
         )
-    average , _ , _ = find_stats(cost_fn, 
-                                 counts, 
-                                 SHOTS, 
-                                 AVERAGE_SLICE, 
-                                 )
+    average , _ , _ = find_stats(
+        cost_fn, 
+        counts, 
+        SHOTS, 
+        AVERAGE_SLICE, 
+        )
     expected_result = 19.0
     assert expected_result == average
 
 def test_hot_start_4():
     """Hot start list with four locations"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
-    sdl.locations = 4
+    locations = 4
     filename = 'networks/four_d.txt'
     distance_array = np.genfromtxt(filename)
-    actual_result = hot_start(sdl, distance_array)
+    actual_result = hot_start_list_find(locations, distance_array)
     expected_result = [0, 1, 2, 3]
     assert expected_result == actual_result
 
 def test_hot_start_5_list():
     """Hot start list with five locations"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
-    sdl.locations = 5
+    locations = 5
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
-    actual_result = hot_start(sdl, distance_array, )
+    actual_result = hot_start_list_find(locations, distance_array)
     expected_result = [0, 3, 2, 1, 4]
     assert expected_result == actual_result
 
 def test_hot_start_5_distance():
     """Hot start distance with five locations"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
-    sdl.locations = 5
+    locations = 5
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
-    list = hot_start(sdl, distance_array,)
-    actual_result = find_total_distance(list, sdl.locations, distance_array)
+    hot_start_list = hot_start_list_find(locations, distance_array)
+    actual_result = find_total_distance(hot_start_list, locations, distance_array)
     expected_result = 21
     assert expected_result == actual_result
 
 def test_hot_start_list_to_string_101():
     """Hot start list with four locations in descending order"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
-    sdl.locations = 4
-    sdl.gray = False
-    sdl.formulation = 'original'
+    locations = 4
+    gray = False
+    formulation = 'original'
     hot_start_list = [0, 3, 2, 1]
-    actual_result = hot_start_list_to_string(sdl, hot_start_list,)
+    actual_result = hot_start_list_to_string(
+        locations=locations,
+        gray=gray,
+        formulation=formulation,
+        hot_start_list=hot_start_list
+    )
     expected_result = [1, 0, 1]
     assert expected_result == actual_result
 
 def test_hot_start_list_to_string_101_gray():
     """Hot start list with four locations in descending order with Gray code"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
-    sdl.locations = 4
-    sdl.gray = True
-    sdl.formulation = 'original'
+    locations = 4
+    gray = True
+    formulation = 'original'
     hot_start_list = [0, 3, 2, 1]
-    actual_result = hot_start_list_to_string(sdl, hot_start_list,)
+    actual_result = hot_start_list_to_string(
+        locations=locations,
+        gray=gray,
+        formulation=formulation,
+        hot_start_list=hot_start_list
+    )
     expected_result = [1, 1, 1]
     assert expected_result == actual_result
 
 def test_hot_start_list_to_string_15_locs_no_gray():
     """Hot start list with fifteen locations in descending order without Gray code"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
-    sdl.locations = 15
-    sdl.formulation ='original'
-    sdl.gray = False
+    locations = 15
+    gray = False
+    formulation = 'original'
     hot_start_list = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
-    actual_result = hot_start_list_to_string(sdl, hot_start_list, )
+    actual_result = hot_start_list_to_string(
+        locations=locations,
+        gray=gray,
+        formulation=formulation,
+        hot_start_list=hot_start_list
+    )
     expected_result = [1, 1, 0, 1, \
                        1 ,1 ,0, 0, \
                        1, 0, 1, 1, \
@@ -796,13 +807,16 @@ def test_hot_start_list_to_string_15_locs_no_gray():
 
 def test_hot_start_list_to_string_15_locs_gray():
     """Hot start list with fifteen locations in descending order with Gray code"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
-    sdl.locations = 15
-    sdl.formulation ='original'
-    sdl.gray = True
+    locations = 15
+    formulation = 'original'
+    gray = True 
     hot_start_list = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
-    actual_result = hot_start_list_to_string(sdl, hot_start_list, )
+    actual_result = hot_start_list_to_string(
+        locations=locations,
+        gray=gray,
+        formulation=formulation,
+        hot_start_list=hot_start_list
+        )
     expected_result = [1, 0, 1, 1, \
                        1 ,0 ,1, 0, \
                        1, 1, 1, 0, \
@@ -850,46 +864,58 @@ def test_binary_string_conversion_gray():
 
 def test_bit_string_cycle_conversion_orig():
     """Test conversion of integers to binary lists without Gray code"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
-    sdl.locations = 4
-    sdl.formulation = 'new'
-    sdl.gray = False
-    f = math.factorial(sdl.locations)
-    #dim = find_problem_size(sdl)
-    dim = find_problem_size(sdl.locations, sdl.formulation)
+    locations=4
+    formulation = 'new'
+    gray = False
+    f = math.factorial(locations)
+    dim = find_problem_size(locations, formulation)
     expected_result = []
     actual_result = []
     for i in range(f):
-        binary_list = convert_integer_to_binary_list(i, dim, gray=sdl.gray)
+        binary_list = convert_integer_to_binary_list(i, dim, gray=gray)
         expected_result.append(binary_list)
-
     for binary_list in expected_result:
-        cycle = convert_bit_string_to_cycle(binary_list, sdl.locations, gray=sdl.gray, method=sdl.formulation)
-        new_binary_list = hot_start_list_to_string(sdl, cycle,)
+        cycle = convert_bit_string_to_cycle(
+            bit_string=binary_list, 
+            locs=locations, 
+            gray=gray, 
+            method=formulation)
+        new_binary_list = hot_start_list_to_string(
+            locations=locations, 
+            gray=gray, 
+            formulation=formulation, 
+            hot_start_list=cycle
+            )
         actual_result.append(new_binary_list)
     assert expected_result == actual_result
 
 def test_bit_string_cycle_conversion_orig2():
     """Test conversion of integers to binary lists with Gray code"""
-    datalogger = MyDataLogger()
-    sdl = MySubDataLogger(runid = datalogger.runid)
-    sdl.locations = 4
-    sdl.formulation = 'new'
-    sdl.gray = True
-    f = math.factorial(sdl.locations)
-    dim = find_problem_size(sdl.locations, sdl.formulation)
+    locations = 4
+    formulation = 'new' 
+    gray = True
+    f = math.factorial(locations)
+    dim = find_problem_size(locations, formulation)
     expected_result = []
     actual_result = []
     for i in range(f):
-        binary_list = convert_integer_to_binary_list(i, dim, gray=sdl.gray)
+        binary_list = convert_integer_to_binary_list(i, dim, gray=gray)
         expected_result.append(binary_list)
     for binary_list in expected_result:
-        cycle = convert_bit_string_to_cycle(binary_list, sdl.locations, gray=sdl.gray, method=sdl.formulation)
-        new_binary_list = hot_start_list_to_string(sdl, cycle, )
+        cycle = convert_bit_string_to_cycle(
+            bit_string=binary_list, 
+            locs=locations, 
+            gray=gray, 
+            method=formulation
+            )
+        new_binary_list = hot_start_list_to_string(
+            locations=locations, 
+            gray=gray, 
+            formulation=formulation, 
+            hot_start_list=cycle,
+            )
         actual_result.append(new_binary_list)
     assert expected_result == actual_result
-
 
 def test_lowest_list1():
     """Test run stats with two low items"""
