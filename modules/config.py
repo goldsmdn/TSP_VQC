@@ -13,7 +13,6 @@ from modules.quantum_circuits import (
 )
 
 # General control data - directories, file names, etc.
-
 CONTROL_DIR = 'control'
 CONTROL_FILE = 'control_parameters.csv'
 NETWORK_DIR = 'networks'
@@ -26,7 +25,7 @@ AWS = False                          # Whether runs are on AWS or Qiskit.
 
 CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
 
-TARGET = 'local_qiskit'         # Options from TARGETS dictionary below.  This controls which 
+TARGET = 'ml'                   # Options from TARGETS dictionary below.  This controls which 
                                 # quantum device is used and whether the emulator is used.
 
 TARGETS = {
@@ -70,14 +69,14 @@ PLOT_TITLE = False                  # Plot titles with graphs.  Not needed for p
 
 # configuration information used in ALL manual runs
 
-LOCATIONS = 15                      # number of locations to be visited          
+LOCATIONS = 4                       # number of locations to be visited          
 SHOTS = 1_024                       # shots used for each call of the quantum circuit
 
-ITERATIONS =  250                   # updates, or iterations
-PRINT_FREQUENCY = 25                # how often results are printed out
+ITERATIONS =  3                     # updates, or iterations
+PRINT_FREQUENCY = 1                 # how often results are printed out
 GRAY = False                        # Use Gray codes
-HOT_START = True                    # Make a hot start
-GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
+HOT_START = False                   # Make a hot start
+GRADIENT_TYPE = 'SGD'               # controls the optimiser used
                                     # quantum - 'parameter_shift' - default
                                     # quantum - 'SPSA' is a stochastic gradient descent
                                     # ml - 'SGD' stochastical
@@ -87,7 +86,7 @@ DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation f
 NUM_LAYERS = 1                      # number of layers in the model
 
 #information needed in QML manual runs:
-MODE = 2                           # See list of allowed modes in MODE_DISPATCH below.  
+MODE = 8                            # See list of allowed modes in MODE_DISPATCH below.  
 #This controls the structure of the variational quantum circuit used in the QML runs.  
 #The modes are described in the function that sets up the variational quantum circuit 
 #in helper_functions_quantum.py.  
