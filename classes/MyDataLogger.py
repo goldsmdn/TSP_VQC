@@ -34,11 +34,14 @@ from modules.config import (RESULTS_DIR,
                             TARGETS,
                             MPS,
                             AWS,
-                            MODE_DISPATCH,
                             )
 
 from modules.graph_functions import cost_graph_multi
 from modules.helper_functions_tsp import (
+    find_sdk,
+    find_sdk_from_dispatch_dir,
+    find_params_per_qubit,
+    find_multi_layers_allowed,
     validate_gradient_type,
     )        
 
@@ -134,14 +137,16 @@ class MySubDataLogger(MyDataLogger):
     average_list_all: list = field(default_factory=list)
     lowest_list_all: list = field(default_factory=list)
     sliced_cost_list_all:list = field(default_factory=list)
-    #noise simulation
-    noise:bool = None
-    #monte carlo
-    monte_carlo: bool = False
+    best_av_list: list = field(default_factory=list)
+    noise:bool = None #noise simulation
+    monte_carlo: bool = False #monte carlo
     mps: bool = None
     aws:bool = None
     target: str = None
-
+    sigma:float = None
+    best_av_to_date:str = None
+    last_av:str = None
+    
     def __post_init__(self):
         """This method is called after __init__"""
         self.subid = strftime('%H-%M-%S') # Generate subid if not provided
@@ -152,15 +157,10 @@ class MySubDataLogger(MyDataLogger):
 
     def calculate_parameter_numbers(self) -> int:
         """Calculate the number of parameters in a variational quantum circuit"""
-
-        #if self.mode in [1, 2, 3, 6, 7,] :
-        num_params_per_qubit = MODE_DISPATCH[self.mode]['params_per_qubit']
-        targets_sdk = MODE_DISPATCH[self.mode]['sdk']
-        #if self.mode in [1, 2, 3, 6, 12] :
-        #    num_params = 2 * self.qubits * self.layers
-        #elif self.mode == 4:
-        #    num_params = self.qubits * self.layers
-        #elif self.mode in [7, 13,]:
+        #num_params_per_qubit = MODE_DISPATCH[self.mode]['params_per_qubit']
+        num_params_per_qubit = find_params_per_qubit(self.mode)
+        #targets_sdk = MODE_DISPATCH[self.mode]['sdk']
+        targets_sdk = find_sdk_from_dispatch_dir(self.mode)
         match targets_sdk:
             case 'aws':
                 qubits_measured = find_qubits_measured(self.qubits, self.target)
@@ -173,15 +173,15 @@ class MySubDataLogger(MyDataLogger):
 
     def validate_input(self):
         """Validate the input fields"""
-        targets_sdk = MODE_DISPATCH[self.mode]['sdk']
-        #allow_multiple_layers = MODE_DISPATCH[self.mode]['allow_multiple_layers']
+        #targets_sdk = MODE_DISPATCH[self.mode]['sdk']
+        targets_sdk = find_sdk_from_dispatch_dir(self.mode)
         if not isinstance(self.quantum, bool):
             raise Exception(f'Input field quantum is not boolean')
         if not isinstance(self.hot_start, bool):
             raise Exception(f'Input field hot start is not boolean')
         if self.quantum:
             validate_gradient_type(self.gradient_type)
-            allow_multiple_layers = MODE_DISPATCH[self.mode]['allow_multiple_layers']
+            allow_multiple_layers = find_multi_layers_allowed(self.mode)
             if self.formulation not in ['original', 'new']:
                 raise Exception(f'Value {self.formulation} is not allowed for formulation' )
             if not isinstance(self.gray, bool):
@@ -198,8 +198,8 @@ class MySubDataLogger(MyDataLogger):
                 raise Exception(f'Target {self.target} is not in TARGETS dictionary')
             if TARGETS[self.target]['type'] not in ['local_aws', 'aws'] and self.aws:
                 raise Exception(f'AWS is set to true, but target {self.target} is not an AWS device')
-            circuit_sdk = MODE_DISPATCH[self.mode]['sdk']
-            targets_sdk = TARGETS[self.target]['sdk']
+            circuit_sdk = find_sdk_from_dispatch_dir(self.mode)
+            targets_sdk = find_sdk(self.target)
             if circuit_sdk != targets_sdk:
                 raise Exception(f'Mode {self.mode} is set up for {circuit_sdk}, but target {self.target} is set up for {targets_sdk}')
             if self.noise and targets_sdk != 'aws':
@@ -230,6 +230,7 @@ class MySubDataLogger(MyDataLogger):
         del results_dict['average_list_all']
         del results_dict['lowest_list_all']
         del results_dict['sliced_cost_list_all']
+        del results_dict['best_av_list']
         data_row = [results_dict]
 
         # Save the data to the specified CSV file
@@ -293,7 +294,6 @@ class MySubDataLogger(MyDataLogger):
             self.aws = format_boolean(data_dict['aws'])
             self.target = data_dict['target']
             
-        
     def update_general_constants_from_config(self):
         """Update general constants from the config file"""
         self.locations = LOCATIONS
@@ -359,19 +359,31 @@ class MySubDataLogger(MyDataLogger):
     
     def save_detailed_results(self):
         """Save detailed data"""
-        field_name_list = ['index_list', 'average_list', 'lowest_list', 'sliced_list']
         file_path = self.detailed_results_filename
         index_list = self.index_list
         average_list = list(map(float, self.average_list))
         lowest_list = list(map(float, self.lowest_list))
+        if self.sliced_list != [] and self.best_av_list != []:
+            raise Exception(f'Cannot write to both sliced list and best_av')
         if self.sliced_list != []:
             sliced_list = list(map(float, self.sliced_list))
+            field_name_list = ['index_list', 'average_list', 'lowest_list', 'sliced_list']
+        if self.best_av_list != []:
+            best_av_list = list(map(float, self.best_av_list))
+            field_name_list = ['index_list', 'average_list', 'lowest_list', 'best_av_list']
+        else:
+            field_name_list = ['index_list', 'average_list', 'lowest_list']
         try:
             with open(file_path, mode="a", newline="") as file: 
                 writer = csv.writer(file) 
                 writer.writerow(field_name_list)
+                if self.sliced_list != [] and self.best_av_list != []:
+                    raise Exception(f'Cannot write to both sliced list and best_av')
                 if self.sliced_list != []:
                     for row in zip(index_list, average_list, lowest_list, sliced_list):
+                        writer.writerow(row)
+                if self.best_av_list != []:
+                    for row in zip(index_list, average_list, lowest_list, best_av_list):
                         writer.writerow(row)
                 else:
                     for row in zip(index_list, average_list, lowest_list):
