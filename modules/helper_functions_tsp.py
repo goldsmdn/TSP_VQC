@@ -48,9 +48,22 @@ from modules.config import (
     PRINT_FREQUENCY,
     NETWORK_DIR,
     DATA_SOURCES,
+    OPTIMIZER_DICT,
     )
 
 import numpy as np
+
+def find_optimiser_function(optimiser:str)->object:
+    """find optimiser function from OPTIMIZER_DICT"""
+    return OPTIMIZER_DICT[optimiser]['function']
+
+def find_nevergrad_optimizers():
+    """return a dictionary of Nevergrad optimiser functions"""
+    nevergrad_optimizers_dict = {
+        key: value for key, value in OPTIMIZER_DICT.items()
+        if value.get('source') == 'nevergrad'
+        }
+    return nevergrad_optimizers_dict
 
 def find_bin_length(i: int) -> int:
     """find the length of a binary string to represent integer i"""
@@ -316,9 +329,14 @@ def find_total_distance(
         total_distance += distance
     return total_distance
 
-def find_device_string(target):
+def find_device_string(target)->str:
+    """finds device _arn for a target"""
     device_arn = TARGETS[target]['arn']
     return(device_arn)
+
+def find_local_quantum(target)->bool:
+    """finds if a target is a local quantum simulation"""
+    return TARGETS[target]['local_quantum']
 
 def find_device(target):
     """
@@ -350,8 +368,19 @@ def find_sdk(target:str) -> str:
     sdk: str
         The sdk for the given target, either 'braket' or 'qiskit' that determines subsequent processing.
     """
-    from modules.config import TARGETS
     return TARGETS[target]['sdk']
+
+def find_sdk_from_dispatch_dir(mode)->str:
+    """finds sdk for a mode from MODE_DISPATCH dictionary"""
+    return MODE_DISPATCH[mode]['sdk']
+
+def find_params_per_qubit(mode:int)-> int:
+    """finds params per qubits for a mdoe from MODE_DISPATCH dictionary"""
+    return MODE_DISPATCH[mode]['params_per_qubit']
+
+def find_multi_layers_allowed(mode)->bool:
+    """finds if multiple layers are allowed from MODE_DISPATCH dictionary """
+    return MODE_DISPATCH[mode]['allow_multiple_layers']
 
 def find_type(target:str) -> str: 
     """Find the type (local_AWS, local_qiskit or aws) for a given target

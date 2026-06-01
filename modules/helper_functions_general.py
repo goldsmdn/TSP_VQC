@@ -104,7 +104,6 @@ def convert_physical_to_logical_bit_string(
         qubits:int, 
         target:str) -> list:
     """finds the permutation to be applied to the output bit string"""
-    #print(f'Converting physical to logical bit string for {qubits} qubits and target {target}')
     output_list = []
     qubit_list = find_valid_device_loop(qubits, target)
     # remove last qubit - highest physical qubit
