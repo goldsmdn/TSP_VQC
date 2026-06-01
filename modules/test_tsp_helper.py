@@ -19,6 +19,7 @@ from modules.helper_functions_tsp import(
     convert_integer_to_binary_list,
     convert_binary_list_to_integer, 
     find_run_stats,
+    find_local_quantum,
     )
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
@@ -929,4 +930,18 @@ def test_lowest_list2():
     test_list = [100, 100, 100, 100]
     expected_result = (100, 0)
     actual_result = find_run_stats(test_list)
+    assert expected_result == actual_result 
+
+def test_local_quantum1():
+    """Test finding out if a target is local"""
+    target = 'local_qiskit'
+    expected_result = True
+    actual_result = find_local_quantum(target)
+    assert expected_result == actual_result 
+
+def test_local_quantum2():
+    """Test finding out if a target is local"""
+    target = 'cephus'
+    expected_result = False
+    actual_result = find_local_quantum(target)
     assert expected_result == actual_result 

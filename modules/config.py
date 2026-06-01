@@ -1,5 +1,6 @@
 #from collections.abc import Set
 import numpy as np
+import nevergrad as ng
 
 from modules.quantum_circuits import (
     mode_1,
@@ -13,7 +14,6 @@ from modules.quantum_circuits import (
 )
 
 # General control data - directories, file names, etc.
-
 CONTROL_DIR = 'control'
 CONTROL_FILE = 'control_parameters.csv'
 NETWORK_DIR = 'networks'
@@ -34,32 +34,38 @@ TARGETS = {
         'type': 'local_aws',
         'emulator': True,
         'sdk': 'aws',
+        'local_quantum': True,
     },
     'local_qiskit': { #test on local qiskit simulator
         'type': 'local_qiskit',
         'emulator': True,
         'sdk': 'qiskit',
+        'local_quantum': True,
     },
     'local_aws_test': { #test on local aws simulator using Cephus connectivity
         'type': 'local_aws',
         'emulator': True,
         'sdk': 'aws',
+        'local_quantum': True,
     },
     'cephus': { #production run on Rigetti Cephus
         'type': 'aws',
         'arn': CEPHUS_DEVICE,
         'emulator': False,
         'sdk': 'aws',
+        'local_quantum': False,
     },
     'cephus_em': {#emulator run on Rigetti Cephus - not currently provided by Rigetti, but could be added in the future
         'type': 'aws',
         'arn': CEPHUS_DEVICE,
         'emulator': True,
+        'local_quantum': False,
     },
     'ml': { #ML model - not a quantum device
         'type': 'ml',
         'emulator': False,
         'sdk': 'ml',
+        'local_quantum': False,
     },
 }
 
@@ -70,24 +76,57 @@ PLOT_TITLE = False                  # Plot titles with graphs.  Not needed for p
 
 # configuration information used in ALL manual runs
 
-LOCATIONS = 15                      # number of locations to be visited          
+LOCATIONS = 6                       # number of locations to be visited          
 SHOTS = 1_024                       # shots used for each call of the quantum circuit
 
-ITERATIONS =  250                   # updates, or iterations
-PRINT_FREQUENCY = 25                # how often results are printed out
+ITERATIONS =  50                    # updates, or iterations
+PRINT_FREQUENCY = 10                # how often results are printed out
 GRAY = False                        # Use Gray codes
-HOT_START = True                    # Make a hot start
+HOT_START = False                   # Make a hot start
 GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
                                     # quantum - 'parameter_shift' - default
                                     # quantum - 'SPSA' is a stochastic gradient descent
-                                    # ml - 'SGD' stochastical
-                                    # ml - 'SGD+X' stochastical with Xavier initialization
-                                    # ml - 'Adam' 
+
+OPTIMIZER_DICT = {
+    'NGOpt': {'source': 'nevergrad',
+        'function': ng.optimizers.NGOpt,
+        },
+    'SPSA_ng': {'source': 'nevergrad',
+        'function': ng.optimizers.SPSA,
+        },
+    'OnePlusOne': {'source': 'nevergrad',
+        'function': ng.optimizers.OnePlusOne,
+        },
+    'TBPSA': {'source': 'nevergrad',
+        'function': ng.optimizers.TBPSA,
+        },
+    'CMA': {'source': 'nevergrad',
+        'function': ng.optimizers.CMA,
+        },
+    'PSO': {'source': 'nevergrad',
+        'function': ng.optimizers.PSO,
+        },
+    'TwoPointsDE': {'source': 'nevergrad',
+        'function': ng.optimizers.TwoPointsDE,
+        },
+    'DE': {'source': 'nevergrad',
+        'function': ng.optimizers.DE,
+        },
+    'SQP': {'source': 'nevergrad',
+        'function': ng.optimizers.SQP,
+        },
+    'SPSA': {'source': 'own_code',}, #own stochastic gradient descent
+    'parameter_shift': {'source': 'own_code',},#own parameter shift gradient descent
+    'SGD': {'source': 'pytorch',}, #stochastical
+    'SGD+X': {'source': 'pytorch'}, #stochastical with Xavier initialization
+    'Adam': {'source': 'pytorch'},
+}
+
 DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation from paper
 NUM_LAYERS = 1                      # number of layers in the model
 
 #information needed in QML manual runs:
-MODE = 2                           # See list of allowed modes in MODE_DISPATCH below.  
+MODE = 2                            # See list of allowed modes in MODE_DISPATCH below.  
 #This controls the structure of the variational quantum circuit used in the QML runs.  
 #The modes are described in the function that sets up the variational quantum circuit 
 #in helper_functions_quantum.py.  

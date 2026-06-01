@@ -48,9 +48,26 @@ from modules.config import (
     PRINT_FREQUENCY,
     NETWORK_DIR,
     DATA_SOURCES,
+    OPTIMIZER_DICT,
     )
 
 import numpy as np
+
+def find_optimiser_function(optimiser:str)->object:
+    """find optimiser function from OPTIMIZER_DICT"""
+    return OPTIMIZER_DICT[optimiser]['function']
+
+def find_nevergrad_optimizers():
+    """return a dictionary of Nevergrad optimiser functions"""
+    nevergrad_optimizers_dict = {
+        key: value for key, value in OPTIMIZER_DICT.items()
+        if value.get('source') == 'nevergrad'
+        }
+    return nevergrad_optimizers_dict
+
+def find_optimizer_source(optimiser: str) -> str:
+    """find the source of the optimiser from OPTIMIZER_DICT"""
+    return OPTIMIZER_DICT[optimiser]['source']
 
 def find_bin_length(i: int) -> int:
     """find the length of a binary string to represent integer i"""
@@ -316,9 +333,14 @@ def find_total_distance(
         total_distance += distance
     return total_distance
 
-def find_device_string(target):
+def find_device_string(target)->str:
+    """finds device _arn for a target"""
     device_arn = TARGETS[target]['arn']
     return(device_arn)
+
+def find_local_quantum(target)->bool:
+    """finds if a target is a local quantum simulation"""
+    return TARGETS[target]['local_quantum']
 
 def find_device(target):
     """
@@ -350,8 +372,19 @@ def find_sdk(target:str) -> str:
     sdk: str
         The sdk for the given target, either 'braket' or 'qiskit' that determines subsequent processing.
     """
-    from modules.config import TARGETS
     return TARGETS[target]['sdk']
+
+def find_sdk_from_dispatch_dir(mode)->str:
+    """finds sdk for a mode from MODE_DISPATCH dictionary"""
+    return MODE_DISPATCH[mode]['sdk']
+
+def find_params_per_qubit(mode:int)-> int:
+    """finds params per qubits for a mdoe from MODE_DISPATCH dictionary"""
+    return MODE_DISPATCH[mode]['params_per_qubit']
+
+def find_multi_layers_allowed(mode)->bool:
+    """finds if multiple layers are allowed from MODE_DISPATCH dictionary """
+    return MODE_DISPATCH[mode]['allow_multiple_layers']
 
 def find_type(target:str) -> str: 
     """Find the type (local_AWS, local_qiskit or aws) for a given target
@@ -511,37 +544,7 @@ def vqc_circuit(
     if noise_bool:
         backend = FakeAuckland()
         qc = transpile(qc, backend=backend)
-    return qc
-
-#def define_parameters(                
-#        mode:int, 
-#        num_params:int
-#        ) -> list:
-    """Set up parameters and initialise text
-    
-    Parameters
-    ----------
-        mode: int - Controls setting the circuit up in different modes
-
-    Returns
-    -------
-    params: list
-        A list of parameters (the texts)
-
-    """
-    """params = []
-    circuit_sdk = MODE_DISPATCH[mode]['sdk']
-         
-    for i in range(num_params):
-        text = "param_" + str(i)
-        match circuit_sdk:
-            case 'aws':
-                params.append(FreeParameter(text))
-            case 'qiskit':
-                params.append(Parameter(text)) 
-            case _:
-                raise Exception(f'Mode {mode} has not been coded for')
-    return params"""
+    return qc 
 
 def create_initial_rotations(
         qubits: int,
@@ -669,6 +672,7 @@ def cost_func_evaluate(
         shots=shots, 
         average_slice=average_slice
     )
+    #print(f'Found {cost=}')
     return(cost, lowest, lowest_energy_bit_string)
 
 def is_even(n):
@@ -791,13 +795,13 @@ def update_parameters_using_gradient(
         qubits:int,
         average_slice:float,
         shots:int,
-        mode:int,
+        #mode:int,
         iterations:int,
         gray:bool,
-        hot_start:bool,
+        #hot_start:bool,
         gradient_type:str,
         formulation:str,
-        layers:int,
+        #layers:int,
         alpha:float,     
         big_a:float,
         c:float,
@@ -812,8 +816,15 @@ def update_parameters_using_gradient(
         target: str,
         mps: bool,
         print_results: str=True,
-        ):
+        ) -> tuple[list, list, list, list, list, list]:
     """Updates parameters using SPSA or parameter shift gradients"""
+
+    if abs(average_slice-1) < 0.001:
+        #average_slice is the same as 1, so don't need to evaluate both options
+        evaluate_av_slice_separately = False
+    else:
+        evaluate_av_slice_separately = True
+
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
     parameter_list, average_list = [], []
 
@@ -844,38 +855,44 @@ def update_parameters_using_gradient(
         
         magnitude_g0 = abs_gradient.mean()
  
-        if magnitude_g0 == 0:
+        #if magnitude_g0 == 0:
         # stop div by zero error
-            a = 999
-        else:
-            a = eta*((big_a+1)**alpha)/magnitude_g0
+        #    a = 999
+        #else:
+        #    a = eta*((big_a+1)**alpha)/magnitude_g0
+        
+        # stop div by zero error
+        a = eta*((big_a+1)**alpha)/(magnitude_g0+0.001)
 
     for i in range(0, iterations):
+        #print(f' Running for {i=}')
         bc = bind_weights(
             params=params, 
             rots=rots, 
             qc=qc,
             target=target,
             )
-        cost, lowest, lowest_energy_bit_string = cost_func_evaluate(
-            noise_bool=noise_bool,
-            shots=shots,
-            cost_fn=cost_fn, 
-            model=bc,
-            target=target,
-            mps=mps,
-            average_slice=average_slice, 
+        average, lowest, lowest_energy_bit_string = cost_func_evaluate(
+                noise_bool=noise_bool,
+                shots=shots,
+                cost_fn=cost_fn, 
+                model=bc, 
+                target=target,
+                mps=mps,
+                average_slice=1, 
             )
-        #cost is the top-sliced energy
-        average, _ , _ = cost_func_evaluate(
-            noise_bool=noise_bool,
-            shots=shots,
-            cost_fn=cost_fn, 
-            model=bc, 
-            target=target,
-            mps=mps,
-            average_slice=1, 
-            )
+        if evaluate_av_slice_separately:
+            cost, lowest, lowest_energy_bit_string = cost_func_evaluate(
+                noise_bool=noise_bool,
+                shots=shots,
+                cost_fn=cost_fn, 
+                model=bc,
+                target=target,
+                mps=mps,
+                average_slice=average_slice, 
+                )
+        else:        
+            cost = average
         #average is the average energy with no top slicing
         if i == 0:
             lowest_string_to_date = lowest_energy_bit_string
@@ -884,12 +901,16 @@ def update_parameters_using_gradient(
             if lowest < lowest_to_date:
                 lowest_to_date = lowest
                 lowest_string_to_date = lowest_energy_bit_string
-        lowest_string_to_date = convert_physical_to_logical_bit_string(lowest_string_to_date, qubits, target)
+        lowest_string_to_date = convert_physical_to_logical_bit_string(
+            input_bitstring=lowest_string_to_date, 
+            qubits=qubits, 
+            target=target,
+            )
         route_list = convert_bit_string_to_cycle(
-            lowest_string_to_date, 
-            locations, 
-            gray, 
-            formulation,
+            bit_string=lowest_string_to_date, 
+            locs=locations, 
+            gray=gray, 
+            method=formulation,
             )
         index_list.append(i)
         cost_list.append(cost)
@@ -1085,6 +1106,7 @@ def my_gradient(
         #need to return an array to match parameter shift
     else:
         raise Exception(f'Gradient type {gradient_type} is not an allowed choice')
+    print(f'evaluated gradient with {gradient_type=} and returned {gradient_array=}')
     return gradient_array   
 
 def validate_gradient_type(gradient_type):
@@ -1454,7 +1476,6 @@ def calculate_hot_start_data(
         locations=sdl.locations, 
         distance_array=distance_array, 
         )
-    #bin_hot_start_list =  hot_start_list_to_string(sdl, hot_start_list)
     bin_hot_start_list = hot_start_list_to_string(
         locations=sdl.locations,
         gray=sdl.gray,
