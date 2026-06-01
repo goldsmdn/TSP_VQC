@@ -43,6 +43,7 @@ from modules.helper_functions_tsp import (
     find_params_per_qubit,
     find_multi_layers_allowed,
     validate_gradient_type,
+    find_optimizer_source,
     )        
 
 from modules.helper_functions_general import (
@@ -157,9 +158,7 @@ class MySubDataLogger(MyDataLogger):
 
     def calculate_parameter_numbers(self) -> int:
         """Calculate the number of parameters in a variational quantum circuit"""
-        #num_params_per_qubit = MODE_DISPATCH[self.mode]['params_per_qubit']
         num_params_per_qubit = find_params_per_qubit(self.mode)
-        #targets_sdk = MODE_DISPATCH[self.mode]['sdk']
         targets_sdk = find_sdk_from_dispatch_dir(self.mode)
         match targets_sdk:
             case 'aws':
@@ -310,16 +309,19 @@ class MySubDataLogger(MyDataLogger):
 
     def update_quantum_constants_from_config(self):
         """Update constants needed for quantum from config file"""
+        optimizer_source = find_optimizer_source(self.gradient_type)
         self.quantum = True
-        self.alpha = ALPHA
-        self.big_a = BIG_A
-        self.c = C
-        self.eta = ETA
-        self.gamma = GAMMA
-        self.s = S
         self.noise = SIMULATE_NOISE
         self.mps = MPS
         self.aws = AWS
+        if optimizer_source != 'nevergrad':
+            # these constants are not used by Nevergrad optimizers 
+            self.alpha = ALPHA
+            self.big_a = BIG_A
+            self.c = C
+            self.eta = ETA
+            self.gamma = GAMMA
+            self.s = S
 
     def update_ml_constants_from_config(self):
         """Update constants needed for ML from config file"""

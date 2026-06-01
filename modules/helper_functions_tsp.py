@@ -65,6 +65,10 @@ def find_nevergrad_optimizers():
         }
     return nevergrad_optimizers_dict
 
+def find_optimizer_source(optimiser: str) -> str:
+    """find the source of the optimiser from OPTIMIZER_DICT"""
+    return OPTIMIZER_DICT[optimiser]['source']
+
 def find_bin_length(i: int) -> int:
     """find the length of a binary string to represent integer i"""
     if i <= 0:
