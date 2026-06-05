@@ -649,7 +649,8 @@ def cost_func_evaluate(
                 counts = job.result().get_counts()
             elif mps:
                 simulator = AerSimulator(method='matrix_product_state')
-                results = simulator.run(model).result()
+                #results = simulator.run(model).result()
+                results = simulator.run(model, shots=shots).result()
                 counts = results.get_counts(model)
             else:
                 if detect_quantum_GPU_support(target):
@@ -657,11 +658,13 @@ def cost_func_evaluate(
                         method='statevector', 
                         device='GPU'
                         )
-                    results = simulator.run(model).result()
+                    #results = simulator.run(model).result()
+                    results = simulator.run(model, shots=shots).result()
                     counts = results.get_counts(model)
                 else:
                     simulator = AerSimulator(method='statevector')
-                    results = simulator.run(model).result()
+                    #results = simulator.run(model).result()
+                    results = simulator.run(model, shots=shots).result()
                     counts = results.get_counts(model)
         case _:
             raise Exception(f'SDK {sdk_type} has not been coded for')
@@ -795,13 +798,10 @@ def update_parameters_using_gradient(
         qubits:int,
         average_slice:float,
         shots:int,
-        #mode:int,
         iterations:int,
         gray:bool,
-        #hot_start:bool,
         gradient_type:str,
         formulation:str,
-        #layers:int,
         alpha:float,     
         big_a:float,
         c:float,
