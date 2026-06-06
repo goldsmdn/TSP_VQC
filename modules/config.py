@@ -22,11 +22,11 @@ GRAPH_DIR = 'graphs'
 RESULTS_DIR = 'results'
 RESULTS_FILE = 'results.csv'
 ENCODING = 'utf-8-sig'              # Encoding of csv file
-AWS = False                          # Whether runs are on AWS or Qiskit.
+AWS = True                          # Whether runs are on AWS or Qiskit.
 
 CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
 
-TARGET = 'local_qiskit'         # Options from TARGETS dictionary below.  This controls which 
+TARGET = 'local_aws'            # Options from TARGETS dictionary below.  This controls which 
                                 # quantum device is used and whether the emulator is used.
 
 TARGETS = {
@@ -126,7 +126,7 @@ DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation f
 NUM_LAYERS = 1                      # number of layers in the model
 
 #information needed in QML manual runs:
-MODE = 2                            # See list of allowed modes in MODE_DISPATCH below.  
+MODE = 13                            # See list of allowed modes in MODE_DISPATCH below.  
 #This controls the structure of the variational quantum circuit used in the QML runs.  
 #The modes are described in the function that sets up the variational quantum circuit 
 #in helper_functions_quantum.py.  
@@ -190,7 +190,7 @@ ETA = 0.1                           # eta - learning rate for parameter shift
 GAMMA = 0.101                       # constant that determines how quickly the SPSA perturbation decays
 S = 0.5                             # parameter for parameter shift.  Default is 0.5 
 SIMULATE_NOISE = False              # Simulate noise in the quantum circuit
-MPS = True                          # Use MPS simulator
+MPS = False                         # Use MPS simulator
 
 ROTATIONS = 10                      # number of rotations sampled in parameter graphs
 
