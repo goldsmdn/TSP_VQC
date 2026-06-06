@@ -6,6 +6,8 @@ from modules.config import (RESULTS_DIR,
 
 from pathlib import Path
 
+import numpy as np
+
 def read_data():
     """Read data from csv file into pandas dataframe"""
     results_path = Path(RESULTS_DIR).joinpath(RESULTS_FILE)
@@ -28,7 +30,10 @@ def filter_results_qml(df):
     df = df[(df['gradient_type'] == 'SPSA')]
     df = df[(df['alpha'] == 0.602)]
     df = df[(df['big_a'] == 25)]
-    df = df[(df['c'] == 0.314)]
+    df = df[np.isclose(df['c'], np.pi/10, atol=1e-3)]
+    #df = df[(df['c'] >= 3.14) & (df['c'] <= 3.15)] 
+    # note different levels of rounding for different runs, so use a range instead of an exact value
+    #df = df[(df['c'] == 0.314)]
     df = df[(df['gamma'] == 0.101)]
     df = df[(df['eta'] == 0.1)]
     df = df[(df['s'] == 0.5)]

@@ -1106,7 +1106,7 @@ def my_gradient(
         #need to return an array to match parameter shift
     else:
         raise Exception(f'Gradient type {gradient_type} is not an allowed choice')
-    print(f'evaluated gradient with {gradient_type=} and returned {gradient_array=}')
+    #print(f'evaluated gradient with {gradient_type=} and returned {gradient_array=}')
     return gradient_array   
 
 def validate_gradient_type(gradient_type):
