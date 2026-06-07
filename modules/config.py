@@ -11,6 +11,9 @@ from modules.quantum_circuits import (
     mode_6,
     mode_7,
     mode_13,
+    mode_14,
+    mode_15,
+    mode_16,
 )
 
 # General control data - directories, file names, etc.
@@ -22,12 +25,12 @@ GRAPH_DIR = 'graphs'
 RESULTS_DIR = 'results'
 RESULTS_FILE = 'results.csv'
 ENCODING = 'utf-8-sig'              # Encoding of csv file
-AWS = False                          # Whether runs are on AWS or Qiskit.
+AWS = False                         # Whether runs are on AWS or Qiskit.
 
 CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
 
-TARGET = 'local_qiskit'         # Options from TARGETS dictionary below.  This controls which 
-                                # quantum device is used and whether the emulator is used.
+TARGET = 'local_qiskit'            # Options from TARGETS dictionary below.  This controls which 
+                                   # quantum device is used and whether the emulator is used.
 
 TARGETS = {
     'local_aws': { #test on local AWS simulator
@@ -76,10 +79,10 @@ PLOT_TITLE = False                  # Plot titles with graphs.  Not needed for p
 
 # configuration information used in ALL manual runs
 
-LOCATIONS = 12                      # number of locations to be visited          
+LOCATIONS = 7                       # number of locations to be visited          
 SHOTS = 1_024                       # shots used for each call of the quantum circuit
 
-ITERATIONS =  1_250                 # updates, or iterations
+ITERATIONS =  250                   # updates, or iterations
 PRINT_FREQUENCY = 10                # how often results are printed out
 GRAY = False                        # Use Gray codes
 HOT_START = False                   # Make a hot start
@@ -174,7 +177,22 @@ MODE_DISPATCH = {
         'sdk': 'aws',
         'params_per_qubit': 2,
         'hot_start_valid': False,
-        'allow_multiple_layers': True},
+        'allow_multiple_layers': False},
+    14: {'circuit':mode_14,#Qiskit IQP with only RX, RZ and CZ
+        'sdk': 'qiskit',
+        'params_per_qubit': 2,
+        'hot_start_valid': True,
+        'allow_multiple_layers': False},
+    15: {'circuit':mode_15,#Qiskit IQP with only RX, RZ and CZ improved version of 14.
+        'sdk': 'qiskit',
+        'params_per_qubit': 2,
+        'hot_start_valid': True,
+        'allow_multiple_layers': False},
+    16: {'circuit':mode_16,#Qiskit IQP with only RX, RZ and CZ improved version of 14.
+        'sdk': 'aws',
+        'params_per_qubit': 2,
+        'hot_start_valid': False,
+        'allow_multiple_layers': False},
     18: {'sdk': 'ml'}, #input is all zeros - with sigmoid activation    
     19: {'sdk': 'ml'}, #input is 0.5 - with sigmoid activation
 }
@@ -190,7 +208,7 @@ ETA = 0.1                           # eta - learning rate for parameter shift
 GAMMA = 0.101                       # constant that determines how quickly the SPSA perturbation decays
 S = 0.5                             # parameter for parameter shift.  Default is 0.5 
 SIMULATE_NOISE = False              # Simulate noise in the quantum circuit
-MPS = True                          # Use MPS simulator
+MPS = True                         # Use MPS simulator
 
 ROTATIONS = 10                      # number of rotations sampled in parameter graphs
 
