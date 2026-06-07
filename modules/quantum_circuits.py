@@ -85,12 +85,12 @@ def mode_2(context_dict:dict) -> QuantumCircuit:
     for layer in range(layers):
         offset = layer * qubits * 2
         for i in range(qubits):
-            qc.rx(params[i+offset], i)
+            theta1 = params[i+offset]
+            qc.rx(theta1, i)
         for i in range(qubits):
-            if i < qubits-1:
-                qc.rxx(params[qubits+i+offset], i, i+1,)
-            else:
-                qc.rxx(params[qubits+i+offset], i, 0,)
+            theta2 = params[qubits+i+offset]
+            q1, q2 = i % qubits, (i+1) % qubits
+            qc.rxx(theta2, q1, q2,)
     return qc
 
 def mode_3(context_dict:dict) -> QuantumCircuit:
@@ -360,29 +360,29 @@ def mode_15(context_dict:dict) -> Circuit:
 
     qc = QuantumCircuit(qubits, qubits)
     for layer in range(layers):
-        print(f'{qubit_dict=}, {qubits_measured=}, {qubits=}')
+        #print(f'{qubit_dict=}, {qubits_measured=}, {qubits=}')
         offset = layer * qubits_measured * 2
         #hadamard
         for i in range(qubits_measured):
-            #hadamard
             q = qubit_dict[i]
-            qc.rz(np.pi/2, q,)
+            qc.rz(np.pi, q,)
             qc.rx(np.pi/2, q,)
-            qc.rz(np.pi/2, q,)
+        #entangling
         for i in range(qubits_measured):
             #find q1, q2 in modc qubits measured
             q1 = qubit_dict[i % qubits_measured]
             q2 = qubit_dict[(i+1) % qubits_measured]
+            theta1 = params[i+offset]
             qc.cz(q1, q2)
-            qc.rz(params[i+offset], q2,)
+            qc.rz(theta1, q2,)
             qc.cz(q1, q2)
         for i in range(qubits_measured):
+            #z rotation
             q = qubit_dict[i]
-            qc.rz(params[qubits_measured+i+offset], q,)
-            # hadamdard
-            qc.rz(np.pi/2, q,)
+            theta2 = params[qubits_measured+i+offset]
+            qc.rz(theta2, q,)
+            # hadamdard 
             qc.rx(np.pi/2, q,)
-            qc.rz(np.pi/2, q,)
     return qc
 
 def mode_16(context_dict:dict) -> Circuit:
@@ -416,21 +416,20 @@ def mode_16(context_dict:dict) -> Circuit:
             q = qubit_dict[i]
             inner.rz(q, np.pi/2,)
             inner.rx(q, np.pi/2,)
-            inner.rz(q, np.pi/2,)
         for i in range(qubits_measured):
             #find q1, q2 in modc qubits measured
             q1 = qubit_dict[i % qubits_measured]
             q2 = qubit_dict[(i+1) % qubits_measured]
+            theta1 = params[i+offset]
             inner.cz(q1, q2)
-            inner.rz(q2, params[i+offset],)
+            inner.rz(q2, theta1,)
             inner.cz(q1, q2)
         for i in range(qubits_measured):
             q = qubit_dict[i]
-            inner.rz(q, params[qubits_measured+i+offset],)
+            theta2 = params[qubits_measured+i+offset]
+            inner.rz(q, theta2,)
             # hadamdard
-            inner.rz(q, np.pi/2,)
             inner.rx(q, np.pi/2,)
-            inner.rz(q, np.pi/2,)
         print(f'After circuit set up, the verbatim box receives the following circuit{inner.qubits}')
         print(f'The qubit dictionary is {qubit_dict}')
     qc = Circuit().add_verbatim_box(inner)  

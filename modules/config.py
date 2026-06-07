@@ -25,12 +25,12 @@ GRAPH_DIR = 'graphs'
 RESULTS_DIR = 'results'
 RESULTS_FILE = 'results.csv'
 ENCODING = 'utf-8-sig'              # Encoding of csv file
-AWS = False                          # Whether runs are on AWS or Qiskit.
+AWS = False                         # Whether runs are on AWS or Qiskit.
 
 CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
 
-TARGET = 'local_qisit'          # Options from TARGETS dictionary below.  This controls which 
-                                # quantum device is used and whether the emulator is used.
+TARGET = 'local_qiskit'            # Options from TARGETS dictionary below.  This controls which 
+                                   # quantum device is used and whether the emulator is used.
 
 TARGETS = {
     'local_aws': { #test on local AWS simulator
@@ -129,7 +129,7 @@ DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation f
 NUM_LAYERS = 1                      # number of layers in the model
 
 #information needed in QML manual runs:
-MODE = 15                            # See list of allowed modes in MODE_DISPATCH below.  
+MODE = 2                            # See list of allowed modes in MODE_DISPATCH below.  
 #This controls the structure of the variational quantum circuit used in the QML runs.  
 #The modes are described in the function that sets up the variational quantum circuit 
 #in helper_functions_quantum.py.  

@@ -1217,7 +1217,7 @@ def cost_fn_fact(
     def cost_fn(bit_string_input: list) -> float:
         """Returns the value of the objective function for a bit_string"""
         if isinstance(bit_string_input, list):
-            if target == 'ml':
+            if target in ['ml', 'monte_carlo']:
                 #no need to convert from physical to logical bit string as 
                 #the input is not from a quantum computer
                 bit_string = bit_string_input
