@@ -71,3 +71,12 @@ def select_key_fields_ml(df):
     df = df[['locations', 'iteration_found', 'best_dist_found', 'best_dist', 
              'quality', 'error','mode', 'layers', 'elapsed', 'monte_carlo']]
     return df
+
+def apply_filters(df:pd.DataFrame, filters:dict ):
+    """apply filters"""
+    for col, val in filters.items():
+        if isinstance(val, list):
+            df = df[df[col].isin(val)]
+        else:
+            df = df[df[col] == val]
+    return df
