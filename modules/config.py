@@ -79,14 +79,14 @@ PLOT_TITLE = False                  # Plot titles with graphs.  Not needed for p
 
 # configuration information used in ALL manual runs
 
-LOCATIONS = 7                       # number of locations to be visited          
+LOCATIONS = 12                      # number of locations to be visited          
 SHOTS = 1_024                       # shots used for each call of the quantum circuit
 
-ITERATIONS =  250                   # updates, or iterations
-PRINT_FREQUENCY = 10                # how often results are printed out
+ITERATIONS =  1_025                 # updates, or iterations
+PRINT_FREQUENCY = 25                # how often results are printed out
 GRAY = False                        # Use Gray codes
 HOT_START = False                   # Make a hot start
-GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
+GRADIENT_TYPE = 'SPSA2'             # controls the optimiser used
                                     # quantum - 'parameter_shift' - default
                                     # quantum - 'SPSA' is a stochastic gradient descent
 
@@ -119,6 +119,7 @@ OPTIMIZER_DICT = {
         'function': ng.optimizers.SQP,
         },
     'SPSA': {'source': 'own_code',}, #own stochastic gradient descent
+    'SPSA2': {'source': 'own_code',}, #own stochastic gradient descent
     'parameter_shift': {'source': 'own_code',},#own parameter shift gradient descent
     'SGD': {'source': 'pytorch',}, #stochastical
     'SGD+X': {'source': 'pytorch'}, #stochastical with Xavier initialization
