@@ -29,7 +29,7 @@ AWS = False                         # Whether runs are on AWS or Qiskit.
 
 CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
 
-TARGET = 'local_qiskit'            # Options from TARGETS dictionary below.  This controls which 
+TARGET = 'ml'                      # Options from TARGETS dictionary below.  This controls which 
                                    # quantum device is used and whether the emulator is used.
 
 TARGETS = {
@@ -79,58 +79,105 @@ PLOT_TITLE = False                  # Plot titles with graphs.  Not needed for p
 
 # configuration information used in ALL manual runs
 
-LOCATIONS = 12                      # number of locations to be visited          
-SHOTS = 1_024                       # shots used for each call of the quantum circuit
+LOCATIONS = 6                        # number of locations to be visited          
+#SHOTS = 1_024                       # shots used for each call of the quantum circuit
+SHOTS = 32
 
-ITERATIONS =  1_025                 # updates, or iterations
-PRINT_FREQUENCY = 25                # how often results are printed out
+#ITERATIONS =  1_025                 # updates, or iterations
+ITERATIONS = 20
+#PRINT_FREQUENCY = 25                # how often results are printed out
+PRINT_FREQUENCY = 5
 GRAY = False                        # Use Gray codes
 HOT_START = False                   # Make a hot start
-GRADIENT_TYPE = 'SPSA2'             # controls the optimiser used
+GRADIENT_TYPE = 'SGD+X'             # controls the optimiser used
                                     # quantum - 'parameter_shift' - default
                                     # quantum - 'SPSA' is a stochastic gradient descent
 
 OPTIMIZER_DICT = {
-    'NGOpt': {'source': 'nevergrad',
+    'NGOpt': {# Hand-crafted optimiser selection wizard provided by Nevergrad
+        'source': 'nevergrad',
         'function': ng.optimizers.NGOpt,
+        'hot_start': True,   
         },
-    'SPSA_ng': {'source': 'nevergrad',
+    'SPSA_ng': {# Nevergrad version of SPSA
+        'source': 'nevergrad',
         'function': ng.optimizers.SPSA,
+        'hot_start': True,   
         },
-    'OnePlusOne': {'source': 'nevergrad',
+    'OnePlusOne': {# Nevergrad simple evolutionary algorithm 
+        'source': 'nevergrad',
         'function': ng.optimizers.OnePlusOne,
+        'hot_start': True,           
         },
-    'TBPSA': {'source': 'nevergrad',
+    'TBPSA': {# Nevergrad Test-Based Population Size Adaptation
+        'source': 'nevergrad',
         'function': ng.optimizers.TBPSA,
+        'hot_start': True,   
         },
-    'CMA': {'source': 'nevergrad',
+    'CMA': {# Nevergrad Covariance Matrix Adaptation Evolution Strategy
+        'source': 'nevergrad',
         'function': ng.optimizers.CMA,
+        'hot_start': True,   
         },
-    'PSO': {'source': 'nevergrad',
+    'PSO': {# Particle Swarm Optimisation
+        'source': 'nevergrad',
         'function': ng.optimizers.PSO,
+        'hot_start': True,   
         },
-    'TwoPointsDE': {'source': 'nevergrad',
+    'TwoPointsDE': {# Nevergrad -Differential Evolution two points
+        'source': 'nevergrad',
         'function': ng.optimizers.TwoPointsDE,
+        'hot_start': True,   
         },
-    'DE': {'source': 'nevergrad',
+    'DE': {# Nevergrad -Differential Evolution basic
+        'source': 'nevergrad',
         'function': ng.optimizers.DE,
+        'hot_start': True,   
         },
-    'SQP': {'source': 'nevergrad',
+    'SQP': {# Nevergrad - Sequential Quadratic Programming
+        'source': 'nevergrad',
         'function': ng.optimizers.SQP,
+        'hot_start': True,   
         },
-    'SPSA': {'source': 'own_code',}, #own stochastic gradient descent
-    'SPSA2': {'source': 'own_code',}, #own stochastic gradient descent
-    'parameter_shift': {'source': 'own_code',},#own parameter shift gradient descent
-    'SGD': {'source': 'pytorch',}, #stochastical
-    'SGD+X': {'source': 'pytorch'}, #stochastical with Xavier initialization
-    'Adam': {'source': 'pytorch'},
-}
+    'SPSA': {#own stochastic gradient descent - three cost fn calls per iteration
+        'source': 'own_code',  
+        'hot_start': True,
+        },                
+    'SPSA2': {#own stochastic gradient descent - one cost fn calls per iteration
+        'source': 'own_code',             
+        'hot_start': True,
+        },                 
+    'parameter_shift': {#own parameter shift gradient descent
+        'source': 'own_code',    
+        'hot_start': True,
+        },   
+    'SGD': {#stochastical
+        'source': 'pytorch',      
+        'hot_start': True
+        },              
+    'SGD+X': {#stochastical with Xavier initialization
+        'source': 'pytorch',    
+        'hot_start': False
+        },            
+    'Adam': {#Adam
+        'source': 'pytorch',                
+        'hot_start': True
+        },              
+    'Adam+X': {#Adam with Xavier initialization
+        'source': 'pytorch',                
+        'hot_start': False
+        },           
+    'RMSprop': {#RMSprop
+        'source': 'pytorch',                
+        'hot_start': True
+        },           
+    }
 
 DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation from paper
 NUM_LAYERS = 1                      # number of layers in the model
 
 #information needed in QML manual runs:
-MODE = 2                            # See list of allowed modes in MODE_DISPATCH below.  
+MODE = 8                            # See list of allowed modes in MODE_DISPATCH below.  
 #This controls the structure of the variational quantum circuit used in the QML runs.  
 #The modes are described in the function that sets up the variational quantum circuit 
 #in helper_functions_quantum.py.  

@@ -53,6 +53,13 @@ from modules.config import (
 
 import numpy as np
 
+def validate_optimiser(optimiser:str)->object:
+    """validate that the optimiser is in OPTIMIZER_DICT"""
+    if optimiser in OPTIMIZER_DICT:
+        return True
+    else:
+        return False
+
 def find_optimiser_function(optimiser:str)->object:
     """find optimiser function from OPTIMIZER_DICT"""
     return OPTIMIZER_DICT[optimiser]['function']
@@ -68,6 +75,10 @@ def find_nevergrad_optimizers():
 def find_optimizer_source(optimiser: str) -> str:
     """find the source of the optimiser from OPTIMIZER_DICT"""
     return OPTIMIZER_DICT[optimiser]['source']
+
+def find_optimizer_hot_start(optimiser: str) -> str:
+    """find if a hot start is valid for the optimiser"""
+    return OPTIMIZER_DICT[optimiser]['hot_start']
 
 def find_bin_length(i: int) -> int:
     """find the length of a binary string to represent integer i"""
