@@ -79,16 +79,15 @@ PLOT_TITLE = False                  # Plot titles with graphs.  Not needed for p
 
 # configuration information used in ALL manual runs
 
-LOCATIONS = 6                        # number of locations to be visited          
+LOCATIONS = 12                       # number of locations to be visited          
 SHOTS = 1_024                        # shots used for each call of the quantum circuit
 
-#ITERATIONS =  1_025                 # updates, or iterations
-ITERATIONS = 100
-#PRINT_FREQUENCY = 25                # how often results are printed out
-PRINT_FREQUENCY = 20
+ITERATIONS =  250                   # updates, or iterations
+PRINT_FREQUENCY = 25                # how often results are printed out
+
 GRAY = False                        # Use Gray codes
 HOT_START = False                   # Make a hot start
-GRADIENT_TYPE = 'parameter_shift'   # controls the optimiser used
+GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
                                     # quantum - 'parameter_shift' - default
                                     # quantum - 'SPSA' is a stochastic gradient descent
 
@@ -252,20 +251,18 @@ MODE_DISPATCH = {
     19: {'sdk': 'ml'}, #input is 0.5 - with sigmoid activation
 }
 
-SLICES = [1.0]                      # Slices to use when calculating the gradient  
-                                    #[1, 0.75, 0.6, 0.5, 0.4, 0.25, 0.15, 0.05] 
-                                    # For example, 0.2 means that the best 20% 
-                                    # of distances found is included in the average.                                 
-ALPHA = 0.602                       # constant that controls the learning rate for SPSA decays
-BIG_A = 25                          # A for SPSA
-C = np.pi/10                        # initial CK for SPSA
-ETA = 0.1                           # eta - learning rate for parameter shift
-GAMMA = 0.101                       # constant that determines how quickly the SPSA perturbation decays
-S = 0.5                             # parameter for parameter shift.  Default is 0.5 
-SIMULATE_NOISE = False              # Simulate noise in the quantum circuit
-MPS = True                         # Use MPS simulator
+SLICES = [1.0]            # Slices to use when calculating the gradient  
+# For example, 0.2 means that the best 20% of distances found is included in the average.                                 
+ALPHA = 0.602             # constant that controls the learning rate for SPSA decays
+BIG_A = 25                # A for SPSA
+C = np.pi/10              # initial CK for SPSA
+ETA = 0.1                 # eta - learning rate for parameter shift
+GAMMA = 0.101             # constant that determines how quickly the SPSA perturbation decays
+S = 0.5                   # parameter for parameter shift.  Default is 0.5 
+SIMULATE_NOISE = False    # simulate noise in the quantum circuit
+MPS = True                # use MPS simulator
 
-ROTATIONS = 10                      # number of rotations sampled in parameter graphs
+ROTATIONS = 10            # number of rotations sampled in parameter graphs
 
 #information needed in ML manual runs:
 STD_DEV = 0.05                      #standard deviation for warm start weight randomization
