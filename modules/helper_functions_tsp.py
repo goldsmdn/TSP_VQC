@@ -53,6 +53,13 @@ from modules.config import (
 
 import numpy as np
 
+def validate_optimiser(optimiser:str)->object:
+    """validate that the optimiser is in OPTIMIZER_DICT"""
+    if optimiser in OPTIMIZER_DICT:
+        return True
+    else:
+        return False
+
 def find_optimiser_function(optimiser:str)->object:
     """find optimiser function from OPTIMIZER_DICT"""
     return OPTIMIZER_DICT[optimiser]['function']
@@ -68,6 +75,10 @@ def find_nevergrad_optimizers():
 def find_optimizer_source(optimiser: str) -> str:
     """find the source of the optimiser from OPTIMIZER_DICT"""
     return OPTIMIZER_DICT[optimiser]['source']
+
+def find_optimizer_hot_start(optimiser: str) -> str:
+    """find if a hot start is valid for the optimiser"""
+    return OPTIMIZER_DICT[optimiser]['hot_start']
 
 def find_bin_length(i: int) -> int:
     """find the length of a binary string to represent integer i"""
@@ -824,13 +835,16 @@ def update_parameters_using_gradient(
         evaluate_av_slice_separately = False
     else:
         evaluate_av_slice_separately = True
+        if gradient_type == 'SPSA2':
+            raise ValueError(f'Cannot evaluate the average slice for SPSA2 at present')
 
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
     parameter_list, average_list = [], []
 
     validate_gradient_type(gradient_type)
 
-    if gradient_type == 'SPSA':
+    #if gradient_type == 'SPSA':
+    if gradient_type in ['SPSA', 'SPSA2']:
         #define_parameters
         # A is <= 10% of the number of iterations normally, but here the number of iterations is lower.
         # order of magnitude of first gradients
@@ -854,33 +868,45 @@ def update_parameters_using_gradient(
         )
         
         magnitude_g0 = abs_gradient.mean()
- 
-        #if magnitude_g0 == 0:
-        # stop div by zero error
-        #    a = 999
-        #else:
-        #    a = eta*((big_a+1)**alpha)/magnitude_g0
-        
         # stop div by zero error
         a = eta*((big_a+1)**alpha)/(magnitude_g0+0.001)
+    
+    if gradient_type == 'SPSA2':
+    #need to get started
+        bc = bind_weights(
+        params=params, 
+        rots=rots, 
+        qc=qc,
+        target=target,
+        )
+
+        average, lowest, lowest_energy_bit_string = cost_func_evaluate(
+        noise_bool=noise_bool,
+        shots=shots,
+        cost_fn=cost_fn, 
+        model=bc, 
+        target=target,
+        mps=mps,
+        average_slice=1, 
+    )
 
     for i in range(0, iterations):
-        #print(f' Running for {i=}')
         bc = bind_weights(
             params=params, 
             rots=rots, 
             qc=qc,
             target=target,
             )
-        average, lowest, lowest_energy_bit_string = cost_func_evaluate(
-                noise_bool=noise_bool,
-                shots=shots,
-                cost_fn=cost_fn, 
-                model=bc, 
-                target=target,
-                mps=mps,
-                average_slice=1, 
-            )
+        if gradient_type != 'SPSA2':
+            average, lowest, lowest_energy_bit_string = cost_func_evaluate(
+                    noise_bool=noise_bool,
+                    shots=shots,
+                    cost_fn=cost_fn, 
+                    model=bc, 
+                    target=target,
+                    mps=mps,
+                    average_slice=1, 
+                )
         if evaluate_av_slice_separately:
             cost, lowest, lowest_energy_bit_string = cost_func_evaluate(
                 noise_bool=noise_bool,
@@ -932,7 +958,6 @@ def update_parameters_using_gradient(
                 mps=mps,
                 ck=ck,
                 )
-            
             rots = rots - eta * gradient
         elif gradient_type == 'SPSA':
             ak = a/((i+1+big_a)**(alpha))
@@ -952,6 +977,43 @@ def update_parameters_using_gradient(
                 ck=ck,
                 )
             rots = rots - ak * gradient
+
+        elif gradient_type == 'SPSA2':
+            #need to correct for taking gradient less often
+            ak = a/((i // 2 + 1 + big_a)**(alpha))
+            ck = c/((i // 2 + 1)**(gamma))
+
+            length = len(rots)
+            # bernoulli-like distribution
+            deltak = np.random.choice([-1, 1], size=length)
+            
+            # simultaneous perturbations
+            ck_deltak = ck * deltak
+            new_rots = rots + ck_deltak
+            #print(f'{ck_deltak}')
+
+            #gradient approximation
+            bc = bind_weights(
+                params=params, 
+                rots=new_rots,
+                qc=qc,
+                target=target,
+                )
+            new_average, lowest, lowest_energy_bit_string  = cost_func_evaluate(
+                noise_bool=noise_bool,
+                shots=shots,
+                cost_fn=cost_fn, 
+                model=bc, 
+                target=target,
+                mps=mps,
+                average_slice=average_slice, 
+                )
+            
+            delta = new_average - average
+            #print(f'{delta=}, {new_average=}, {average=}, {rots=}')
+            gradient = delta / ck_deltak
+            rots = rots - ak * gradient
+
         else:
             raise Exception(f'Error found when calculating gradient. {gradient_type} is not an allowed gradient type')
         gradient_list.append(gradient.tolist())
@@ -967,6 +1029,9 @@ def update_parameters_using_gradient(
             log_metric(metric_name="top_sliced_sample_cost", iteration_number=i, value=cost)
             log_metric(metric_name="lowest_sample_cost", iteration_number=i, value=lowest)
             log_metric(metric_name="lowest_to_date", iteration_number=i, value=lowest_to_date)
+        if gradient_type == 'SPSA2':
+            average = new_average
+            cost = new_average
                 
     return index_list, cost_list, lowest_list, gradient_list, average_list, parameter_list 
     
@@ -1057,7 +1122,9 @@ def my_gradient(
             delta = s * (cost_plus - cost_minus)
             gradient_list.append(delta)
         gradient_array = np.array(gradient_list)
-    elif gradient_type == 'SPSA':
+    #elif gradient_type == 'SPSA':
+    elif gradient_type in ['SPSA', 'SPSA2']:
+    #spsa 2 is only called to find original gradient.
         # number of parameters
         length = len(rots)
         # bernoulli-like distribution
@@ -1111,7 +1178,7 @@ def my_gradient(
 
 def validate_gradient_type(gradient_type):
     """Check that the gradient type is valid"""
-    allowed_types = ['parameter_shift', 'SPSA']
+    allowed_types = ['parameter_shift', 'SPSA', 'SPSA2']
     if gradient_type not in allowed_types:
         raise Exception (f'Gradient type {gradient_type} is not coded for')
     

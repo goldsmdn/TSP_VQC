@@ -4,37 +4,40 @@ from pathlib import Path
 import csv
 from dataclasses import dataclass, asdict, field
 from typing import Callable
-from modules.helper_functions_general import find_qubits_measured
+from modules.helper_functions_general import (
+    find_qubits_measured,
+)
 
-from modules.config import (RESULTS_DIR, 
-                            RESULTS_FILE,
-                            GRAPH_DIR,
-                            CACHE_MAX_SIZE,
-                            LOCATIONS, 
-                            SHOTS,
-                            MODE, 
-                            ITERATIONS, 
-                            GRAY, 
-                            HOT_START,
-                            GRADIENT_TYPE, 
-                            S, 
-                            ETA, 
-                            ALPHA, 
-                            GAMMA, 
-                            C, 
-                            BIG_A,    
-                            DECODING_FORMULATION,
-                            NUM_LAYERS, 
-                            STD_DEV,
-                            LR, 
-                            MOMENTUM,
-                            WEIGHT_DECAY,
-                            SIMULATE_NOISE,
-                            TARGET,
-                            TARGETS,
-                            MPS,
-                            AWS,
-                            )
+from modules.config import (
+    RESULTS_DIR, 
+    RESULTS_FILE,
+    GRAPH_DIR,
+    CACHE_MAX_SIZE,
+    LOCATIONS, 
+    SHOTS,
+    MODE, 
+    ITERATIONS, 
+    GRAY, 
+    HOT_START,
+    GRADIENT_TYPE, 
+    S, 
+    ETA, 
+    ALPHA, 
+    GAMMA, 
+    C, 
+    BIG_A,    
+    DECODING_FORMULATION,
+    NUM_LAYERS, 
+    STD_DEV,
+    LR, 
+    MOMENTUM,
+    WEIGHT_DECAY,
+    SIMULATE_NOISE,
+    TARGET,
+    TARGETS,
+    MPS,
+    AWS,
+    )
 
 from modules.graph_functions import cost_graph_multi
 from modules.helper_functions_tsp import (
@@ -43,7 +46,9 @@ from modules.helper_functions_tsp import (
     find_params_per_qubit,
     find_multi_layers_allowed,
     validate_gradient_type,
+    validate_optimiser,
     find_optimizer_source,
+    find_optimizer_hot_start,
     )        
 
 from modules.helper_functions_general import (
@@ -172,12 +177,15 @@ class MySubDataLogger(MyDataLogger):
 
     def validate_input(self):
         """Validate the input fields"""
-        #targets_sdk = MODE_DISPATCH[self.mode]['sdk']
         targets_sdk = find_sdk_from_dispatch_dir(self.mode)
         if not isinstance(self.quantum, bool):
             raise Exception(f'Input field quantum is not boolean')
         if not isinstance(self.hot_start, bool):
             raise Exception(f'Input field hot start is not boolean')
+        if not validate_optimiser(self.gradient_type):
+            raise ValueError(f'{self.gradient_type} is not in OPTIMISER_DICT')
+        if self.hot_start and not find_optimizer_hot_start(self.gradient_type):
+            raise ValueError(f'Hot start is not allowed with {self.gradient_type}')
         if self.quantum:
             validate_gradient_type(self.gradient_type)
             allow_multiple_layers = find_multi_layers_allowed(self.mode)
@@ -204,13 +212,10 @@ class MySubDataLogger(MyDataLogger):
             if self.noise and targets_sdk != 'aws':
                 raise Exception(f'Noise simulation is currently only not set up for AWS devices, and {self.target=}')
         else:
-            if self.gradient_type not in ['SGD', 'SGD+X', 'Adam', 'Adam+X', 'RMSprop',]:
+            if find_optimizer_source(self.gradient_type) != 'pytorch':
                 raise Exception(f'Only certain gradient type are allowed for non quantum, not {self.gradient_type}')
             if targets_sdk != 'ml':
                 raise Exception(f'mode = {self.mode} is not permitted for ml')
-            if self.gradient_type in ['SGD+X', 'Adam+X'] and self.start:
-                if self.hot_start:
-                    raise Exception(f'Hot start is not allowed with SGD+X and AdamX')
             if self.mps is True:
                 raise Exception(f'MPS simulator is only for quantum runs')
             if self.aws is True:
