@@ -370,31 +370,32 @@ class MySubDataLogger(MyDataLogger):
         index_list = self.index_list
         average_list = list(map(float, self.average_list))
         lowest_list = list(map(float, self.lowest_list))
-        if self.sliced_list != [] and self.best_av_list != []:
-            raise Exception(f'Cannot write to both sliced list and best_av')
-        if self.sliced_list != []:
-            sliced_list = list(map(float, self.sliced_list))
-            field_name_list = ['index_list', 'average_list', 'lowest_list', 'sliced_list']
-        if self.best_av_list != []:
-            best_av_list = list(map(float, self.best_av_list))
-            field_name_list = ['index_list', 'average_list', 'lowest_list', 'best_av_list']
-        else:
-            field_name_list = ['index_list', 'average_list', 'lowest_list']
+        sliced_list = list(map(float, self.sliced_list))
+        #if self.sliced_list != [] and self.best_av_list != []:
+        #    raise Exception(f'Cannot write to both sliced list and best_av')
+        #if self.sliced_list != []:
+        #    sliced_list = list(map(float, self.sliced_list))
+        #    field_name_list = ['index_list', 'average_list', 'lowest_list', 'sliced_list']
+        #if self.best_av_list != []:
+        #    best_av_list = list(map(float, self.best_av_list))
+        #    field_name_list = ['index_list', 'average_list', 'lowest_list', 'best_av_list']
+        #else:
+        field_name_list = ['index_list', 'average_list', 'lowest_list', 'sliced_list']
         try:
             with open(file_path, mode="a", newline="") as file: 
                 writer = csv.writer(file) 
                 writer.writerow(field_name_list)
-                if self.sliced_list != [] and self.best_av_list != []:
-                    raise Exception(f'Cannot write to both sliced list and best_av')
-                if self.sliced_list != []:
-                    for row in zip(index_list, average_list, lowest_list, sliced_list):
-                        writer.writerow(row)
-                if self.best_av_list != []:
-                    for row in zip(index_list, average_list, lowest_list, best_av_list):
-                        writer.writerow(row)
-                else:
-                    for row in zip(index_list, average_list, lowest_list):
-                        writer.writerow(row)
+                #if self.sliced_list != [] and self.best_av_list != []:
+                #    raise Exception(f'Cannot write to both sliced list and best_av')
+                #if self.sliced_list != []:
+                #    for row in zip(index_list, average_list, lowest_list, sliced_list):
+                #        writer.writerow(row)
+                #elif self.best_av_list != []:
+                #    for row in zip(index_list, average_list, lowest_list, best_av_list):
+                #        writer.writerow(row)
+                #else:
+                for row in zip(index_list, average_list, lowest_list, sliced_list):
+                    writer.writerow(row)
                 print(f'Detailed data for Run ID: {self.runid} - {self.subid} successfully added to {file_path}')
 
         except Exception as e:

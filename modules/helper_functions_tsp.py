@@ -31,16 +31,16 @@ from modules.helper_functions_general import (
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
 
-from modules.quantum_circuits import (
-    mode_1,
-    mode_2,
-    mode_3,
-    mode_4,
-    mode_5,
-    mode_6,
-    mode_7,
-    mode_13,
-    )
+#from modules.quantum_circuits import (
+#    mode_1,
+#    mode_2,
+#    mode_3,
+#    mode_4,
+#    mode_5,
+#    mode_6,
+#    mode_7,
+#    mode_13,
+#    )
 
 from modules.config import (
     MODE_DISPATCH, 
@@ -59,6 +59,14 @@ def validate_optimiser(optimiser:str)->object:
         return True
     else:
         return False
+    
+def find_if_optimiser_is_SPSA_like(optimiser:str)->object:
+    """find if the optimiser follows the SPSA pattern"""
+    return OPTIMIZER_DICT[optimiser]['SPSA_like']
+    
+def find_optimiser_cost_fn_calls(optimiser:str)->object:
+    """find the number of cost function calls from OPTIMIZER_DICT"""
+    return OPTIMIZER_DICT[optimiser]['cost_fn_calls']
 
 def find_optimiser_function(optimiser:str)->object:
     """find optimiser function from OPTIMIZER_DICT"""
@@ -830,21 +838,21 @@ def update_parameters_using_gradient(
         ) -> tuple[list, list, list, list, list, list]:
     """Updates parameters using SPSA or parameter shift gradients"""
 
+    calls = find_optimiser_cost_fn_calls(gradient_type)
+    SPSA_like = find_if_optimiser_is_SPSA_like(gradient_type)
+
     if abs(average_slice-1) < 0.001:
-        #average_slice is the same as 1, so don't need to evaluate both options
         evaluate_av_slice_separately = False
-    else:
-        evaluate_av_slice_separately = True
-        if gradient_type == 'SPSA2':
-            raise ValueError(f'Cannot evaluate the average slice for SPSA2 at present')
+
+    if evaluate_av_slice_separately and calls ==1:
+        raise Exception(f'Cannot evaluate the average slice not equal to 1 with {calls=} at present')
 
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
     parameter_list, average_list = [], []
 
     validate_gradient_type(gradient_type)
 
-    #if gradient_type == 'SPSA':
-    if gradient_type in ['SPSA', 'SPSA2']:
+    if SPSA_like:
         #define_parameters
         # A is <= 10% of the number of iterations normally, but here the number of iterations is lower.
         # order of magnitude of first gradients
@@ -866,29 +874,26 @@ def update_parameters_using_gradient(
             mps=mps,
             )
         )
-        
         magnitude_g0 = abs_gradient.mean()
         # stop div by zero error
         a = eta*((big_a+1)**alpha)/(magnitude_g0+0.001)
-    
-    if gradient_type == 'SPSA2':
-    #need to get started
+    if calls == 1:
+    #need to get started so that have a value when calculate delta
         bc = bind_weights(
-        params=params, 
-        rots=rots, 
-        qc=qc,
-        target=target,
+            params=params, 
+            rots=rots, 
+            qc=qc,
+            target=target,
         )
-
         average, lowest, lowest_energy_bit_string = cost_func_evaluate(
-        noise_bool=noise_bool,
-        shots=shots,
-        cost_fn=cost_fn, 
-        model=bc, 
-        target=target,
-        mps=mps,
-        average_slice=1, 
-    )
+            noise_bool=noise_bool,
+            shots=shots,
+            cost_fn=cost_fn, 
+            model=bc, 
+            target=target,
+            mps=mps,
+            average_slice=1, 
+        )
 
     for i in range(0, iterations):
         bc = bind_weights(
@@ -897,28 +902,34 @@ def update_parameters_using_gradient(
             qc=qc,
             target=target,
             )
-        if gradient_type != 'SPSA2':
+        #if gradient_type != 'SPSA2':
+        if calls > 1:
+            # find the cost
             average, lowest, lowest_energy_bit_string = cost_func_evaluate(
-                    noise_bool=noise_bool,
-                    shots=shots,
-                    cost_fn=cost_fn, 
-                    model=bc, 
-                    target=target,
-                    mps=mps,
-                    average_slice=1, 
-                )
-        if evaluate_av_slice_separately:
-            cost, lowest, lowest_energy_bit_string = cost_func_evaluate(
                 noise_bool=noise_bool,
                 shots=shots,
                 cost_fn=cost_fn, 
-                model=bc,
+                model=bc, 
                 target=target,
                 mps=mps,
-                average_slice=average_slice, 
+                average_slice=1, 
                 )
-        else:        
-            cost = average
+            if evaluate_av_slice_separately:
+                cost, lowest, lowest_energy_bit_string = cost_func_evaluate(
+                    noise_bool=noise_bool,
+                    shots=shots,
+                    cost_fn=cost_fn, 
+                    model=bc,
+                    target=target,
+                    mps=mps,
+                    average_slice=average_slice, 
+                    )
+            else:
+                cost = average
+        elif calls == 1:        
+            cost = average # set as found above, or as reset at end of loop
+        else:
+            raise Exception(f'{calls=} is invalid')
         #average is the average energy with no top slicing
         if i == 0:
             lowest_string_to_date = lowest_energy_bit_string
@@ -927,11 +938,11 @@ def update_parameters_using_gradient(
             if lowest < lowest_to_date:
                 lowest_to_date = lowest
                 lowest_string_to_date = lowest_energy_bit_string
-        lowest_string_to_date = convert_physical_to_logical_bit_string(
-            input_bitstring=lowest_string_to_date, 
-            qubits=qubits, 
-            target=target,
-            )
+        #lowest_string_to_date = convert_physical_to_logical_bit_string(
+        #    input_bitstring=lowest_string_to_date, 
+        #    qubits=qubits, 
+        #    target=target,
+        #    )
         route_list = convert_bit_string_to_cycle(
             bit_string=lowest_string_to_date, 
             locs=locations, 
@@ -943,7 +954,8 @@ def update_parameters_using_gradient(
         lowest_list.append(lowest_to_date)
         average_list.append(average)
         parameter_list.append(rots)
-        if gradient_type == 'parameter_shift':
+        #if gradient_type == 'parameter_shift':
+        if not SPSA_like:
             gradient = my_gradient(
                 noise_bool=noise_bool,
                 shots=shots,
@@ -956,83 +968,77 @@ def update_parameters_using_gradient(
                 average_slice=average_slice,
                 target=target,
                 mps=mps,
-                ck=ck,
                 )
             rots = rots - eta * gradient
-        elif gradient_type == 'SPSA':
-            ak = a/((i+1+big_a)**(alpha))
-            ck = c/((i+1)**(gamma))
-            gradient = my_gradient(
-                noise_bool=noise_bool,
-                shots=shots,
-                s=s,
-                gradient_type=gradient_type,
-                cost_fn=cost_fn, 
-                qc=qc, 
-                params=params, 
-                rots=rots, 
-                average_slice=average_slice,
-                target=target,
-                mps=mps,
-                ck=ck,
-                )
-            rots = rots - ak * gradient
+        elif SPSA_like:
+            if calls == 3:
+                ak = a/((i+1+big_a)**(alpha))
+                ck = c/((i+1)**(gamma))
+                gradient = my_gradient(
+                    noise_bool=noise_bool,
+                    shots=shots,
+                    s=s,
+                    gradient_type=gradient_type,
+                    cost_fn=cost_fn, 
+                    qc=qc, 
+                    params=params, 
+                    rots=rots, 
+                    average_slice=average_slice,
+                    target=target,
+                    mps=mps,
+                    ck=ck,
+                    )
+                rots = rots - ak * gradient
+            elif calls ==1:
+                #need to correct for taking gradient less often
+                ak = a/((i // 2 + 1 + big_a)**(alpha))
+                ck = c/((i // 2 + 1)**(gamma))
+                length = len(rots)
+                # bernoulli-like distribution
+                deltak = np.random.choice([-1, 1], size=length)
+                # simultaneous perturbations
+                ck_deltak = ck * deltak
+                new_rots = rots + ck_deltak
 
-        elif gradient_type == 'SPSA2':
-            #need to correct for taking gradient less often
-            ak = a/((i // 2 + 1 + big_a)**(alpha))
-            ck = c/((i // 2 + 1)**(gamma))
-
-            length = len(rots)
-            # bernoulli-like distribution
-            deltak = np.random.choice([-1, 1], size=length)
+                #gradient approximation
+                bc = bind_weights(
+                    params=params, 
+                    rots=new_rots,
+                    qc=qc,
+                    target=target,
+                    )
+                new_average, lowest, lowest_energy_bit_string  = cost_func_evaluate(
+                    noise_bool=noise_bool,
+                    shots=shots,
+                    cost_fn=cost_fn, 
+                    model=bc, 
+                    target=target,
+                    mps=mps,
+                    average_slice=average_slice, 
+                    )
+                delta = new_average - average
+                gradient = delta / ck_deltak
+                rots = rots - ak * gradient
+            else:
+                raise ValueError(f'{calls=} is not coded for')
             
-            # simultaneous perturbations
-            ck_deltak = ck * deltak
-            new_rots = rots + ck_deltak
-            #print(f'{ck_deltak}')
-
-            #gradient approximation
-            bc = bind_weights(
-                params=params, 
-                rots=new_rots,
-                qc=qc,
-                target=target,
-                )
-            new_average, lowest, lowest_energy_bit_string  = cost_func_evaluate(
-                noise_bool=noise_bool,
-                shots=shots,
-                cost_fn=cost_fn, 
-                model=bc, 
-                target=target,
-                mps=mps,
-                average_slice=average_slice, 
-                )
+            gradient_list.append(gradient.tolist())
             
-            delta = new_average - average
-            #print(f'{delta=}, {new_average=}, {average=}, {rots=}')
-            gradient = delta / ck_deltak
-            rots = rots - ak * gradient
-
-        else:
-            raise Exception(f'Error found when calculating gradient. {gradient_type} is not an allowed gradient type')
-        gradient_list.append(gradient.tolist())
-        if print_results and i % PRINT_FREQUENCY == 0:  
-            #Force flush to push to Cloudwatch quickly
-            print(f'For iteration {i} using the best {average_slice*100} percent of the results', flush=True)
-            print(f'The average cost from the sample is {average:.3f} and the top-sliced average of the best results is {cost:.3f}', flush=True)
-            print(f'The lowest cost from the sample is {lowest:.3f}', flush=True)
-            print(f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date}', flush=True)
-            print(f'and route {route_list}')
-            #AWS hybrid job
-            log_metric(metric_name="average_sample_cost", iteration_number=i, value=average)
-            log_metric(metric_name="top_sliced_sample_cost", iteration_number=i, value=cost)
-            log_metric(metric_name="lowest_sample_cost", iteration_number=i, value=lowest)
-            log_metric(metric_name="lowest_to_date", iteration_number=i, value=lowest_to_date)
-        if gradient_type == 'SPSA2':
+            if print_results and i % PRINT_FREQUENCY == 0:          
+                print(f'For iteration {i} using the best {average_slice*100} percent of the results', flush=True)
+                print(f'The average cost from the sample is {average:.3f} and the top-sliced average of the best results is {cost:.3f}', flush=True)
+                print(f'The lowest cost from the sample is {lowest:.3f}', flush=True)
+                print(f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date}', flush=True)
+                print(f'and route {route_list}')
+                #AWS hybrid job
+                log_metric(metric_name="average_sample_cost", iteration_number=i, value=average)
+                log_metric(metric_name="top_sliced_sample_cost", iteration_number=i, value=cost)
+                log_metric(metric_name="lowest_sample_cost", iteration_number=i, value=lowest)
+                log_metric(metric_name="lowest_to_date", iteration_number=i, value=lowest_to_date)
+        #if gradient_type == 'SPSA2':
+        if calls == 1:
             average = new_average
             cost = new_average
-                
     return index_list, cost_list, lowest_list, gradient_list, average_list, parameter_list 
     
 def my_gradient(
@@ -1082,8 +1088,12 @@ def my_gradient(
     gradient:array
         The gradient for each parameter
     """
+
+    SPSA_like = find_if_optimiser_is_SPSA_like(gradient_type)
+
     new_rots = copy.deepcopy(rots)  
-    if gradient_type == 'parameter_shift':
+    #if gradient_type == 'parameter_shift':
+    if not SPSA_like:
         gradient_list = []
         for i, theta in enumerate(rots):
             new_rots[i] = theta + np.pi/(4*s)
@@ -1123,7 +1133,8 @@ def my_gradient(
             gradient_list.append(delta)
         gradient_array = np.array(gradient_list)
     #elif gradient_type == 'SPSA':
-    elif gradient_type in ['SPSA', 'SPSA2']:
+    #elif gradient_type in ['SPSA', 'SPSA2']:
+    elif SPSA_like:
     #spsa 2 is only called to find original gradient.
         # number of parameters
         length = len(rots)
