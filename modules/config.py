@@ -29,7 +29,7 @@ AWS = False                         # Whether runs are on AWS or Qiskit.
 
 CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
 
-TARGET = 'ml'                      # Options from TARGETS dictionary below.  This controls which 
+TARGET = 'local_qiskit'            # Options from TARGETS dictionary below.  This controls which 
                                    # quantum device is used and whether the emulator is used.
 
 TARGETS = {
@@ -80,16 +80,15 @@ PLOT_TITLE = False                  # Plot titles with graphs.  Not needed for p
 # configuration information used in ALL manual runs
 
 LOCATIONS = 6                        # number of locations to be visited          
-#SHOTS = 1_024                       # shots used for each call of the quantum circuit
-SHOTS = 32
+SHOTS = 1_024                        # shots used for each call of the quantum circuit
 
 #ITERATIONS =  1_025                 # updates, or iterations
-ITERATIONS = 20
+ITERATIONS = 100
 #PRINT_FREQUENCY = 25                # how often results are printed out
-PRINT_FREQUENCY = 5
+PRINT_FREQUENCY = 20
 GRAY = False                        # Use Gray codes
 HOT_START = False                   # Make a hot start
-GRADIENT_TYPE = 'SGD+X'             # controls the optimiser used
+GRADIENT_TYPE = 'parameter_shift'   # controls the optimiser used
                                     # quantum - 'parameter_shift' - default
                                     # quantum - 'SPSA' is a stochastic gradient descent
 
@@ -142,14 +141,20 @@ OPTIMIZER_DICT = {
     'SPSA': {#own stochastic gradient descent - three cost fn calls per iteration
         'source': 'own_code',  
         'hot_start': True,
+        'cost_fn_calls': 3,
+        'SPSA_like': True,
         },                
     'SPSA2': {#own stochastic gradient descent - one cost fn calls per iteration
         'source': 'own_code',             
         'hot_start': True,
+        'cost_fn_calls': 1,
+        'SPSA_like': True,
         },                 
     'parameter_shift': {#own parameter shift gradient descent
         'source': 'own_code',    
         'hot_start': True,
+        'cost_fn_calls': 999, # many calls
+        'SPSA_like': False
         },   
     'SGD': {#stochastical
         'source': 'pytorch',      
@@ -177,7 +182,7 @@ DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation f
 NUM_LAYERS = 1                      # number of layers in the model
 
 #information needed in QML manual runs:
-MODE = 8                            # See list of allowed modes in MODE_DISPATCH below.  
+MODE = 2                            # See list of allowed modes in MODE_DISPATCH below.  
 #This controls the structure of the variational quantum circuit used in the QML runs.  
 #The modes are described in the function that sets up the variational quantum circuit 
 #in helper_functions_quantum.py.  
@@ -219,8 +224,10 @@ MODE_DISPATCH = {
         'params_per_qubit': 2,
         'hot_start_valid': False,
         'allow_multiple_layers': True},
-    8: {'sdk': 'ml'}, #input is all zeros - with sine activation
-    9: {'sdk': 'ml'}, #input is 0.5 - with sine activation
+    8: {'sdk': 'ml',#input is all zeros - with sine activation
+        'allow_multiple_layers': True}, 
+    9: {'sdk': 'ml',#input is 0.5 - with sine activation
+        'allow_multiple_layers': True},
     13: {'circuit':mode_13,#AWS IQP with only RX, RZ and CZ
         'sdk': 'aws',
         'params_per_qubit': 2,
