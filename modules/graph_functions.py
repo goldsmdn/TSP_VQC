@@ -3,10 +3,8 @@ import matplotlib.patches as mpatches
 from classes.MyModel import MySine
 from pathlib import Path
 import torch
-from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import pandas as pd
-import seaborn as sns
 
 from modules.config import GRAPH_DIR, PLOT_TITLE
 
@@ -670,5 +668,104 @@ def plot_optimiser_performance2(
     plt.tight_layout(rect=[0, 0, 0.85, 1])
     filepath = Path(GRAPH_DIR).joinpath(f'{title}.pdf')
     plt.savefig(fname=filepath, bbox_inches='tight')
+
+    plt.show()
+
+
+def plot_overall_results(
+    width: float,  # the width of the bars
+    multiplier: float,
+    simulation_means: pd.DataFrame,
+    simulation_errors: pd.DataFrame,
+    greedy_classical: pd.DataFrame,
+    AWS_results: pd.DataFrame,
+    colors: list, # list of colours to used for the bars
+    x: np.array,  # the label locations
+    locs: list,  # locations to be plotted
+):
+    """plots overall results for the paper"""
+    fig, ax = plt.subplots(layout='constrained')
+
+    for attribute, measurement in simulation_means.items():
+        offset = width * multiplier
+        errors = simulation_errors[attribute]
+        color = colors[attribute]
+        rects = ax.bar(
+            x=x + offset,
+            height=measurement,
+            width=width,
+            label=attribute,
+            yerr=errors,
+            capsize=4,
+            error_kw={'elinewidth': 1, 'alpha': 0.9},
+            color=color,
+            edgecolor='black',
+            linewidth=0.6,
+        )
+
+        ax.bar_label(
+            container=rects,
+            padding=5,
+            fmt='%.1f',
+            label_type='edge',
+            fontsize=8,
+            rotation=90,
+        )
+        multiplier += 1
+
+    # --- Now add Greedy Classical line (centered over grouped bars) ---
+    num_bar_groups = 4  # total plotted groups including spacing
+    group_width = width * (num_bar_groups - 1)
+    center_offset = group_width / 2 - width / 2  # center alignment
+
+    # )
+
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_xlabel('Number of Locations', fontsize=14)
+    ax.set_ylabel('Solution Quality (%)', fontsize=14)
+    ax.set_title(
+        'Solution Quality by Number of Locations for VQA, ML, Monte Carlo and Greedy methods'
+    )
+    ax.set_xticks(x + width, locs)
+    ax.set_ylim(0, 140)
+
+    ax.plot(
+        x + center_offset,
+        greedy_classical,
+        color='black',
+        marker='D',
+        linestyle='--',
+        linewidth=1,
+        markersize=5,
+        label='Greedy Classical',
+    )
+
+    ax.plot(
+        x + center_offset,
+        AWS_results,
+        color='black',
+        marker='P',
+        linestyle='--',
+        linewidth=1,
+        markersize=15,
+        label='VQA: Hardware',
+    )
+
+    # --- Reorder legend so "Greedy Classical" appears last ---
+    handles, labels = ax.get_legend_handles_labels()
+
+    # Move 'Results from AWS' to the end
+
+    if 'Greedy Classical' in labels:
+        idx = labels.index('Greedy Classical')
+        # Pop and append to end
+        handles.append(handles.pop(idx))
+        labels.append(labels.pop(idx))
+
+    ax.legend(
+        handles, labels, loc='upper right', ncols=2, fontsize='small', framealpha=1
+    )
+    filename = Path(GRAPH_DIR).joinpath('solution_quality_by_method.pdf')
+    plt.savefig(filename, bbox_inches='tight')
 
     plt.show()
