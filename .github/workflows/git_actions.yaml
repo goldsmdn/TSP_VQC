@@ -26,7 +26,7 @@ jobs:
           # Install most deps normally
           uv pip install numpy pytest graycode qiskit qiskit_aer torch \
             sphinx sphinx_rtd_theme sphinx-autodoc-typehints matplotlib ghp-import \
-            qiskit_ibm_runtime pandas seaborn amazon-braket-sdk ipython nevergrad
+            qiskit_ibm_runtime pandas seaborn amazon-braket-sdk>=1.50.0 ipython nevergrad
           # Install qiskit_ibm_runtime (which pulls ibm-platform-services) with no build isolation
           uv pip install --no-build-isolation qiskit_ibm_runtime
             
