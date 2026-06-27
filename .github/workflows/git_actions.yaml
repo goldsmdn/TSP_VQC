@@ -19,7 +19,7 @@ jobs:
             uv --version
       - name: Install dependencies with uv
         run: |
-          uv venv .venv
+          uv venv --python 3.9 .venv
           source .venv/bin/activate
           uv pip install numpy pytest graycode qiskit qiskit_aer torch \
             sphinx sphinx_rtd_theme sphinx-autodoc-typehints matplotlib ghp-import \
