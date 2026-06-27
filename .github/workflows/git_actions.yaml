@@ -23,6 +23,8 @@ jobs:
           source .venv/bin/activate
           # Ensure pip, setuptools (and pkg_resources) and wheel are available in the build environment
           uv pip install --upgrade pip setuptools wheel
+          # Forceably install llvmlite
+          uv pip install llvmlite
           # Install most deps normally
           uv pip install numpy pytest graycode qiskit qiskit_aer torch \
             sphinx sphinx_rtd_theme sphinx-autodoc-typehints matplotlib ghp-import \
