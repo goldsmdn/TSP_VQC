@@ -21,8 +21,8 @@ jobs:
         run: |
           uv venv --python $(which python) .venv
           source .venv/bin/activate
-          uv pip install setuptools
-          uv pip install numpy pytest graycode qiskit qiskit_aer torch \
+          uv pip install setuptools wheel
+          uv pip install --no-build-isolation numpy pytest graycode qiskit qiskit_aer torch \
             sphinx sphinx_rtd_theme sphinx-autodoc-typehints matplotlib ghp-import \
             qiskit_ibm_runtime pandas seaborn amazon-braket-sdk ipython nevergrad
             
