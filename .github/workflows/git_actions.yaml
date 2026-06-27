@@ -19,11 +19,19 @@ jobs:
             uv --version
       - name: Install dependencies with uv
         run: |
-          uv venv .venv
+          uv venv --python $(which python) .venv
           source .venv/bin/activate
+          # Ensure pip, setuptools (and pkg_resources) and wheel are available in the build environment
+          uv pip install --upgrade pip setuptools wheel
+          # Forceably install llvmlite
+          # uv pip install llvmlite
+          # Install most deps normally
           uv pip install numpy pytest graycode qiskit qiskit_aer torch \
             sphinx sphinx_rtd_theme sphinx-autodoc-typehints matplotlib ghp-import \
-            qiskit_ibm_runtime pandas seaborn amazon-braket-sdk ipython nevergrad
+            qiskit_ibm_runtime pandas seaborn amazon-braket-sdk>=1.50.0 ipython nevergrad \
+          numba>=0.57.0 llvmlite>=0.40.0
+          # Install qiskit_ibm_runtime (which pulls ibm-platform-services) with no build isolation
+          # uv pip install --no-build-isolation qiskit_ibm_runtime
             
       - name: Test with pytest
         run: |
