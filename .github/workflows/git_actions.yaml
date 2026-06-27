@@ -21,10 +21,14 @@ jobs:
         run: |
           uv venv --python $(which python) .venv
           source .venv/bin/activate
-          uv pip install setuptools wheel
-          uv pip install --no-build-isolation numpy pytest graycode qiskit qiskit_aer torch \
+          # Ensure pip, setuptools (and pkg_resources) and wheel are available in the build environment
+          uv pip install --upgrade pip setuptools wheel
+          # Install most deps normally
+          uv pip install numpy pytest graycode qiskit qiskit_aer torch \
             sphinx sphinx_rtd_theme sphinx-autodoc-typehints matplotlib ghp-import \
             qiskit_ibm_runtime pandas seaborn amazon-braket-sdk ipython nevergrad
+          # Install qiskit_ibm_runtime (which pulls ibm-platform-services) with no build isolation
+          uv pip install --no-build-isolation qiskit_ibm_runtime
             
       - name: Test with pytest
         run: |
