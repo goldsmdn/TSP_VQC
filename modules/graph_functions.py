@@ -14,12 +14,14 @@ SPACE = ' '
 CMAP = 'Set3'
 CMAP_HEATMAP = 'cividis'
 
-def parameter_graph(filename: str, 
-                    title: str,
-                    index_list: list, 
-                    gradient_list: list, 
-                    legend:list,
-                    ):
+
+def parameter_graph(
+    filename: str,
+    title: str,
+    index_list: list,
+    gradient_list: list,
+    legend: list,
+):
     """Plots a graph of the parameter evolution by iteration."""
     p = plt.plot(index_list, gradient_list)
     plt.grid(axis='x')
@@ -31,57 +33,61 @@ def parameter_graph(filename: str,
     plt.savefig(filename)
     plt.show()
 
-def find_size(cost_list: list)-> tuple:
+
+def find_size(cost_list: list) -> tuple:
     """Find the number of subplots"""
     if cost_list:
         length = len(cost_list)
     else:
         length = 1
     if length == 1:
-        rows = 1    
+        rows = 1
         columns = 1
     elif length % 2 != 0:
         rows = length
         columns = 1
     else:
-        rows = int(length/2)
+        rows = int(length / 2)
         columns = 2
-    return(length, rows, columns)
+    return (length, rows, columns)
 
-def find_graph_statistics(av_list:np.ndarray, 
-                          best:float)-> tuple:
+
+def find_graph_statistics(av_list: np.ndarray, best: float) -> tuple:
     """Helper function for graph plotting to find good values for ymin and ymax"""
     maximum = float(np.max(av_list))
-    ymin, ymax = int(best*.9), int(maximum*1.1) 
-    return(ymin, ymax)
+    ymin, ymax = int(best * 0.9), int(maximum * 1.1)
+    return (ymin, ymax)
 
-def find_best_coords(x_list:np.ndarray, 
-                     best:float)->tuple:
+
+def find_best_coords(x_list: np.ndarray, best: float) -> tuple:
     """Helper function for graph plotting to find coordinates for best known value line"""
-    x1 =  [0, x_list[-1]]
-    y1 =  [best, best]
-    return(x1, y1)
+    x1 = [0, x_list[-1]]
+    y1 = [best, best]
+    return (x1, y1)
 
-def find_i_j(count:int, rows:int)->tuple:
-    """Find indices for subplots"""        
+
+def find_i_j(count: int, rows: int) -> tuple:
+    """Find indices for subplots"""
     if count < rows:
         i, j = count, 0
     else:
         i, j = count - rows, 1
-    return(i,j)
+    return (i, j)
 
-def cost_graph_multi(filename: str, 
-                     parameter_list: list=None, 
-                     x_list : list=None,
-                     av_list :list=None, 
-                     lowest_list: list=None,
-                     sliced_list: list=None, 
-                     best: float=None,
-                     main_title: str='',
-                     sub_title: str='',
-                     x_label: str='Epoch',
-                     figsize: tuple=(8,8),
-                     ):
+
+def cost_graph_multi(
+    filename: str,
+    parameter_list: list = None,
+    x_list: list = None,
+    av_list: list = None,
+    lowest_list: list = None,
+    sliced_list: list = None,
+    best: float = None,
+    main_title: str = '',
+    sub_title: str = '',
+    x_label: str = 'Epoch',
+    figsize: tuple = (8, 8),
+):
     """Plots a graph of the cost function for multiple lists"""
     plt.style.use('seaborn-v0_8-colorblind')
     length, rows, columns = find_size(parameter_list)
@@ -92,29 +98,37 @@ def cost_graph_multi(filename: str,
 
     for count in range(length):
         i, j = find_i_j(count, rows)
-        axs[i,j].plot(x_list, av_list[count], linewidth=1.0, color = 'blue', label='Average')
+        axs[i, j].plot(
+            x_list, av_list[count], linewidth=1.0, color='blue', label='Average'
+        )
         if sliced_list:
-            axs[i,j].plot(x_list, sliced_list[count], linewidth=1.0, color = 'orange', label='Sliced Average')
-        axs[i,j].plot(x_list, lowest_list[count], linewidth=1.0, color = 'red', label='Lowest found')
-        axs[i,j].plot(x1, y1, linewidth=1.0, color = 'black', label='Lowest known')
-        axs[i,j].grid(axis='x', color='0.95')
-        axs[i,j].axis(ymin=ymin, ymax=ymax)
-        axs[i,j].set_xlabel(x_label, fontsize=6)
-        axs[i,j].set_ylabel('Energy (Distance)', fontsize=6)
-        axs[i,j].xaxis.set_tick_params(labelsize=7)
-        axs[i,j].yaxis.set_tick_params(labelsize=7)
+            axs[i, j].plot(
+                x_list,
+                sliced_list[count],
+                linewidth=1.0,
+                color='orange',
+                label='Sliced Average',
+            )
+        axs[i, j].plot(
+            x_list, lowest_list[count], linewidth=1.0, color='red', label='Lowest found'
+        )
+        axs[i, j].plot(x1, y1, linewidth=1.0, color='black', label='Lowest known')
+        axs[i, j].grid(axis='x', color='0.95')
+        axs[i, j].axis(ymin=ymin, ymax=ymax)
+        axs[i, j].set_xlabel(x_label, fontsize=6)
+        axs[i, j].set_ylabel('Energy (Distance)', fontsize=6)
+        axs[i, j].xaxis.set_tick_params(labelsize=7)
+        axs[i, j].yaxis.set_tick_params(labelsize=7)
         if sub_title != '':
             sub_title_full = sub_title + f'{parameter_list[count]}'
-            axs[i,j].set_title(sub_title_full, fontsize=6)
-        axs[i,j].legend(fontsize=6, loc='upper right')
+            axs[i, j].set_title(sub_title_full, fontsize=6)
+        axs[i, j].legend(fontsize=6, loc='upper right')
     fig.tight_layout()
     fig.savefig(filename)
-    #plt.close(fig)
+    # plt.close(fig)
 
-def plot_shortest_routes(points: list, 
-                         route1:list, 
-                         route2:list = None
-                         ):
+
+def plot_shortest_routes(points: list, route1: list, route2: list = None):
     """Plot the shortest route found and optionally a hot start route."""
     x = points[:, 0]
     y = points[:, 1]
@@ -129,25 +143,31 @@ def plot_shortest_routes(points: list,
     if route2:
         for i in range(len(route2) - 1):
             start_index = route2[i]
-            end_index = route2[i+1]
-            plt.plot([x[start_index], x[end_index]], 
-                     [y[start_index], y[end_index]], 
-                     color='red')
+            end_index = route2[i + 1]
+            plt.plot(
+                [x[start_index], x[end_index]],
+                [y[start_index], y[end_index]],
+                color='red',
+            )
         # Connect the last point back to the first to complete the cycle
         start_index = route2[-1]
         end_index = route2[0]
-        plt.plot([x[start_index], x[end_index]], [y[start_index], y[end_index]], color='red')
+        plt.plot(
+            [x[start_index], x[end_index]], [y[start_index], y[end_index]], color='red'
+        )
 
     for i in range(len(route1) - 1):
         start_index = route1[i]
-        end_index = route1[i+1]
-        plt.plot([x[start_index], x[end_index]], 
-                 [y[start_index], y[end_index]], 
-                 color='blue')
+        end_index = route1[i + 1]
+        plt.plot(
+            [x[start_index], x[end_index]], [y[start_index], y[end_index]], color='blue'
+        )
         # Connect the last point back to the first to complete the cycle
         start_index = route1[-1]
         end_index = route1[0]
-        plt.plot([x[start_index], x[end_index]], [y[start_index], y[end_index]], color='blue')
+        plt.plot(
+            [x[start_index], x[end_index]], [y[start_index], y[end_index]], color='blue'
+        )
 
     red_patch = mpatches.Patch(color='red', label='The hot start route')
     blue_patch = mpatches.Patch(color='blue', label='The shortest route')
@@ -155,7 +175,8 @@ def plot_shortest_routes(points: list,
     plt.show()
     plt.close()
 
-def plot_sine_activation():    
+
+def plot_sine_activation():
     """Plot the Sine Activation Function for the classical ML model."""
     title = 'Sine_Activation_Function'
     filepath = Path(GRAPH_DIR).joinpath(title + '.pdf')
@@ -174,22 +195,22 @@ def plot_sine_activation():
     plt.savefig(filepath, bbox_inches='tight')
     plt.show()
     plt.close()
-    
-def plot_3d_graph_models(grouped_means: pd.DataFrame, 
-                         input: str,
-                         input2: str = 'layers'
-                         ):
+
+
+def plot_3d_graph_models(
+    grouped_means: pd.DataFrame, input: str, input2: str = 'layers'
+):
     """Plot a 3D bar graph of the given input data grouped by layers and locations
 
     Parameters
-    ---------- 
+    ----------
     grouped_means : pd.DataFrame
         DataFrame containing the grouped means data.
     input : str
         The column name for the z-axis values.
     input2 : str, optional
         The column name for the y-axis values (default is 'layers').
-    """ 
+    """
     fig = plt.figure(figsize=(10, 7))
     ax = fig.add_subplot(111, projection='3d')
 
@@ -198,7 +219,7 @@ def plot_3d_graph_models(grouped_means: pd.DataFrame,
 
     input2_map = {sli: i for i, sli in enumerate(input2_vals)}
     loc_map = {loc: i for i, loc in enumerate(locations)}
-    
+
     # Assign colors for each location
     colors = plt.get_cmap(CMAP, len(input2_vals))  # or 'Set3', 'Paired', etc.
     input2_colors = {item: colors(i) for i, item in enumerate(input2_vals)}
@@ -209,8 +230,8 @@ def plot_3d_graph_models(grouped_means: pd.DataFrame,
 
     # Plot bars with different colors
     for i, row in grouped_means.iterrows():
-        x = loc_map[row['locations']] - dx/2    # Center the bar on the x-axis
-        y = input2_map[row[input2]] - dy/2  # Center the bar on the y-axis
+        x = loc_map[row['locations']] - dx / 2  # Center the bar on the x-axis
+        y = input2_map[row[input2]] - dy / 2  # Center the bar on the y-axis
         z = 0
         dz = row[input]
 
@@ -228,35 +249,38 @@ def plot_3d_graph_models(grouped_means: pd.DataFrame,
     ax.set_yticks(list(input2_map.values()))
     ax.set_yticklabels(list(input2_map.keys()))
 
-    legend_handles = [mpatches.Patch(color=input2_colors[layer], label=layer) for layer in input2_vals]
-    plt.legend(handles=legend_handles, title=input2, loc='upper left', bbox_to_anchor=(1, 1))
-    plt.grid(color = 'green', linestyle = '--', linewidth = 0.5)
+    legend_handles = [
+        mpatches.Patch(color=input2_colors[layer], label=layer) for layer in input2_vals
+    ]
+    plt.legend(
+        handles=legend_handles, title=input2, loc='upper left', bbox_to_anchor=(1, 1)
+    )
+    plt.grid(color='green', linestyle='--', linewidth=0.5)
     formatted_input = input.replace('_', SPACE).lower()
     title = f'3D bar graph of {formatted_input} by {input2} and locations'
     if PLOT_TITLE:
         plt.title(title)
     filepath = Path(GRAPH_DIR).joinpath(f'{title}.pdf')
 
-    plt.tight_layout()
     plt.savefig(filepath, bbox_inches='tight')
     plt.show()
     plt.close(fig)
-    
-def plot_3d_graph_slice(grouped_means: pd.DataFrame, 
-                        input: str, 
-                        show_sem:bool=False
-                        ):
+
+
+def plot_3d_graph_slice(
+    grouped_means: pd.DataFrame, input: str, show_sem: bool = False
+):
     """Plot a 3D bar graph of the given input data grouped by locations and slice.
 
     Parameters
-    ---------- 
+    ----------
     grouped_means : pd.DataFrame
         DataFrame containing the grouped means data.
     input : str
         The column name for the z-axis values.
     show_sem : bool, optional
         Whether to show standard error of the mean (SEM) as error bars (default is False
-    """   
+    """
 
     fig = plt.figure(figsize=(10, 7))
     ax = fig.add_subplot(111, projection='3d')
@@ -264,15 +288,8 @@ def plot_3d_graph_slice(grouped_means: pd.DataFrame,
     # Map categorical data to numeric positions
     locations = sorted(grouped_means['locations'].unique())
     slices = sorted(grouped_means['slice'].unique())
-
-    #rint(f'Locations: {locations}')
-    #rint(f'Slices: {slices}')
-
     loc_map = {loc: i for i, loc in enumerate(locations)}
     slice_map = {sli: i for i, sli in enumerate(slices)}
-
-    #rint(f'Location Map: {loc_map}')
-    #rint(f'Slice Map: {slice_map}')
 
     # Assign colors for each location
     colors = plt.get_cmap(CMAP, len(locations))  # or 'Set3', 'Paired', etc.
@@ -283,9 +300,8 @@ def plot_3d_graph_slice(grouped_means: pd.DataFrame,
     dy = 0.25
     cap_width = 0.1
 
-   # loop BY LOCATION ORDER so that the bars for higher locations are drawn on top of the bars for lower locations, making them more visible.
+    # loop BY LOCATION ORDER so that the bars for higher locations are drawn on top of the bars for lower locations, making them more visible.
     for loc in locations:  # so 15 is drawn last
-        #rint(f'Processing location: {loc}')
         df_loc = grouped_means[grouped_means['locations'] == loc]
         for _, row in df_loc.iterrows():
             x = slice_map[row['slice']] - dx / 2
@@ -293,11 +309,15 @@ def plot_3d_graph_slice(grouped_means: pd.DataFrame,
             dz = row[input]
 
             ax.bar3d(
-                x, y, 0,
-                dx, dy, dz,
+                x,
+                y,
+                0,
+                dx,
+                dy,
+                dz,
                 color=location_colors[loc],
-                shade=True, 
-                zsort='max' #puts smaller bars in front of taller bars, making them more visible
+                shade=True,
+                zsort='max',  # puts smaller bars in front of taller bars, making them more visible
             )
 
             if show_sem and row['sem'] > 0:
@@ -309,7 +329,7 @@ def plot_3d_graph_slice(grouped_means: pd.DataFrame,
                     [y_center, y_center],
                     [dz, dz + row['sem']],
                     color='black',
-                    linewidth=1.5
+                    linewidth=1.5,
                 )
 
                 ax.plot(
@@ -317,12 +337,11 @@ def plot_3d_graph_slice(grouped_means: pd.DataFrame,
                     [y_center, y_center],
                     [dz + row['sem'], dz + row['sem']],
                     color='black',
-                    linewidth=1.5
+                    linewidth=1.5,
                 )
 
-# ✅ View so Y is true depth axis
+    # View so Y is true depth axis
     ax.view_init(elev=20, azim=-60)
-
 
     # Label axes
     ax.set_xlabel('Slice')
@@ -335,8 +354,15 @@ def plot_3d_graph_slice(grouped_means: pd.DataFrame,
     ax.set_yticks(list(loc_map.values()))
     ax.set_yticklabels(list(loc_map.keys()))
 
-    legend_handles = [mpatches.Patch(color=location_colors[loc], label=loc) for loc in locations]
-    plt.legend(handles=legend_handles, title='Locations', loc='upper left', bbox_to_anchor=(1, 1))
+    legend_handles = [
+        mpatches.Patch(color=location_colors[loc], label=loc) for loc in locations
+    ]
+    plt.legend(
+        handles=legend_handles,
+        title='Locations',
+        loc='upper left',
+        bbox_to_anchor=(1, 1),
+    )
 
     formatted_input = input.replace('_', SPACE).lower()
     title = f'3D bar graph of {formatted_input} by location and slice'
@@ -349,15 +375,17 @@ def plot_3d_graph_slice(grouped_means: pd.DataFrame,
     plt.show()
     plt.close(fig)
 
-def plot_heatmap(input: pd.DataFrame,
-                 title: str,
-                 x_label:str,
-                 y_label:str,
-                 )-> None:
+
+def plot_heatmap(
+    input: pd.DataFrame,
+    title: str,
+    x_label: str,
+    y_label: str,
+) -> None:
     """Plot a heat map of the given input data."""
     # Prepare the data
     heatmap_data = input.values
-    x_labels = input.columns.format()
+    x_labels = input.columns.astype(str)
     y_labels = input.index
 
     # Create the plot
@@ -372,15 +400,15 @@ def plot_heatmap(input: pd.DataFrame,
     plt.yticks(ticks=np.arange(len(y_labels)), labels=y_labels)
 
     # Annotate each cell with the numeric value
-    for i in range(heatmap_data.shape[0]):       # rows
-        for j in range(heatmap_data.shape[1]):   # columns
+    for i in range(heatmap_data.shape[0]):  # rows
+        for j in range(heatmap_data.shape[1]):  # columns
             value = heatmap_data[i, j]
             if not np.isnan(value):  # skip missing values
                 if value > 80:
                     color = 'black'
                 else:
                     color = 'white'
-                plt.text(j, i, f"{value:.1f}", ha='center', va='center', color=color)
+                plt.text(j, i, f'{value:.1f}', ha='center', va='center', color=color)
 
     # Add labels and title
     plt.xlabel(x_label)
@@ -391,11 +419,9 @@ def plot_heatmap(input: pd.DataFrame,
     plt.show()
     plt.close()
 
+
 def plot_2d_graph_slice(
-    sliced_summary,
-    input='error',
-    location_value=None,
-    show_sem=True
+    sliced_summary, input='error', location_value=None, show_sem=True
 ):
     """
     Plot 2D means with optional SEM error bars for one location across slices.
@@ -414,12 +440,11 @@ def plot_2d_graph_slice(
     """
 
     if location_value is None:
-        raise ValueError("location_value must be specified")
+        raise ValueError('location_value must be specified')
 
     # Filter data for the chosen location
-    df_loc = (
-        sliced_summary[sliced_summary['locations'] == location_value]
-        .sort_values('slice')
+    df_loc = sliced_summary[sliced_summary['locations'] == location_value].sort_values(
+        'slice'
     )
 
     slices = df_loc['slice']
@@ -435,21 +460,215 @@ def plot_2d_graph_slice(
             yerr=sems,
             fmt='o-',
             capsize=4,
-            label=f"Location {location_value}"
+            label=f'Location {location_value}',
         )
     else:
-        plt.plot(
-            slices,
-            means,
-            marker='o',
-            label=f"Location {location_value}"
-        )
+        plt.plot(slices, means, marker='o', label=f'Location {location_value}')
 
-    plt.xlabel("Slice")
+    plt.xlabel('Slice')
     plt.ylabel(input)
-    plt.title(f"{input.capitalize()} across slices\n(Location = {location_value})")
+    plt.title(f'{input.capitalize()} across slices\n(Location = {location_value})')
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.show()
     plt.close()
+
+
+def plot_optimiser_performance1(
+    df_stats: pd.DataFrame,
+    best_dist: pd.array,
+    locations: int,
+    shots: int,
+    plot_last_av: bool,
+    plot_best_found: bool,
+    plot_best_dist: bool,
+):
+    """Plots a graph of the performance of optimisers for different sinam and iterations"""
+    sigmas = df_stats['sigma'].unique()
+    gradient_types = df_stats['gradient_type'].unique()
+    colors = plt.cm.tab10(range(len(gradient_types)))
+    markers = ['o', 'x', 's', '^', 'D', 'v', 'P', '*', 'X']
+
+    fig, axes = plt.subplots(4, 2, figsize=(16, 16), sharex=True, sharey=True)
+    axes = axes.flatten()
+    title = f'Optimser Performance by Sigma with Estimated Uncertainty for {locations} Locations and {shots} Shots'
+
+    fig.suptitle(title, fontsize=16)
+
+    x_ticks = [10, 50, 250, 1_250]
+    x_tick_labels = ['10', '50', '250', '1,250']
+
+    for ax, sigma in zip(axes, sigmas):
+        subset_sigma = df_stats[df_stats['sigma'] == sigma]
+
+        for color, gt, marker in zip(colors, gradient_types, markers):
+            subset = subset_sigma[subset_sigma['gradient_type'] == gt]
+            subset = subset.sort_values('iterations')
+            if subset.empty:
+                continue
+            x = subset['iterations']
+
+            if plot_last_av:
+                y_last_av = subset['last_av_mean']
+                y_last_av_std = subset['last_av_sem']
+                ax.plot(
+                    x,
+                    y_last_av,
+                    marker=marker,
+                    color=color,
+                    label=f'{gt} - Last average',
+                )
+                ax.fill_between(
+                    x,
+                    y_last_av - y_last_av_std,
+                    y_last_av + y_last_av_std,
+                    color=color,
+                    alpha=0.2,
+                )
+            if plot_best_found:
+                y_best_found = subset['best_found_mean']
+                y_best_found_std = subset['best_found_sem']
+                ax.plot(
+                    x,
+                    y_best_found,
+                    marker=marker,
+                    color=color,
+                    label=f'{gt} - Best Found',
+                )
+                ax.fill_between(
+                    x,
+                    y_best_found - y_best_found_std,
+                    y_best_found + y_best_found_std,
+                    color=color,
+                    alpha=0.2,
+                )
+        if plot_best_dist:
+            ax.axhline(
+                y=best_dist,
+                color='black',
+                linewidth=2,
+                label='Lowest known distance' if ax is axes[0] else None,
+            )
+
+        # Titles and formatting per subplot
+        ax.set_title(f'Sigma = {sigma}')
+        ax.set_xscale('log')
+        ax.set_xticks(x_ticks, labels=x_tick_labels)
+        ax.grid(True)
+
+    # Shared labels
+    fig.supxlabel('Iterations (budget): log scale', fontsize=14)
+    fig.supylabel('Energy (distance)', fontsize=14)
+
+    # ONE legend (global)
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(
+        handles, labels, loc='center right', bbox_to_anchor=(1.07, 0.7), fontsize=14
+    )
+
+    # Layout spacing
+    plt.tight_layout(rect=[0, 0, 0.85, 1])
+    filepath = Path(GRAPH_DIR).joinpath(f'{title}.pdf')
+    plt.savefig(fname=filepath, bbox_inches='tight')
+    plt.show()
+
+
+def plot_optimiser_performance2(
+    df_stats: pd.DataFrame,
+    best_dist: pd.array,
+    locations: int,
+    shots: int,
+    plot_last_av: bool,
+    plot_best_found: bool,
+    plot_best_dist: bool,
+):
+    """plot optimiser peformance for different optimisers and iterations by sigma"""
+    sigmas = df_stats['sigma'].unique()
+    gradient_types = df_stats['gradient_type'].unique()
+    colors = plt.cm.tab10(range(len(gradient_types)))
+    iterations = df_stats['iterations'].unique()
+    markers = ['o', 'x', 's', '^', 'D', 'v', 'P', '*', 'X']
+
+    fig, axes = plt.subplots(3, 3, figsize=(16, 16), sharex=True, sharey=True)
+    axes = axes.flatten()
+    title = f'Optimser Performance by Sigma for different budgets with Estimated Uncertainty for {locations} Locations and {shots} Shots'
+
+    fig.suptitle(title, fontsize=16)
+
+    x_ticks = sigmas
+    x_tick_labels = [f'{sigma:.1f}' for sigma in sigmas]
+
+    for ax, gradient_type in zip(axes, gradient_types):
+        subset_gt = df_stats[df_stats['gradient_type'] == gradient_type]
+
+        for color, iteration, marker in zip(colors, iterations, markers):
+            subset = subset_gt[subset_gt['iterations'] == iteration]
+            subset = subset.sort_values('iterations')
+            if subset.empty:
+                continue
+            x = subset['sigma']
+
+            if plot_last_av:
+                y_last_av = subset['last_av_mean']
+                y_last_av_std = subset['last_av_sem']
+                ax.plot(
+                    x,
+                    y_last_av,
+                    marker=marker,
+                    color=color,
+                    label=f'{iteration:.0f} - Last average',
+                )
+                ax.fill_between(
+                    x,
+                    y_last_av - y_last_av_std,
+                    y_last_av + y_last_av_std,
+                    color=color,
+                    alpha=0.2,
+                )
+            if plot_best_found:
+                y_best_found = subset['best_found_mean']
+                y_best_found_std = subset['best_found_sem']
+                ax.plot(
+                    x,
+                    y_best_found,
+                    marker=marker,
+                    color=color,
+                    label=f'{iteration:.0f} - Best Found',
+                )
+                ax.fill_between(
+                    x,
+                    y_best_found - y_best_found_std,
+                    y_best_found + y_best_found_std,
+                    color=color,
+                    alpha=0.2,
+                )
+        if plot_best_dist:
+            ax.axhline(
+                y=best_dist,
+                color='black',
+                linewidth=2,
+                label='Lowest known distance' if ax is axes[0] else None,
+            )
+
+        # Titles and formatting per subplot
+        ax.set_title(f'Optimiser = {gradient_type}')
+        ax.set_xticks(x_ticks, labels=x_tick_labels)
+        ax.grid(True)
+
+    # Shared labels
+    fig.supxlabel('Sigma', fontsize=14)
+    fig.supylabel('Energy (distance)', fontsize=14)
+
+    # ONE legend (global)
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(
+        handles, labels, loc='center right', bbox_to_anchor=(1.07, 0.9), fontsize=14
+    )
+
+    # Layout spacing
+    plt.tight_layout(rect=[0, 0, 0.85, 1])
+    filepath = Path(GRAPH_DIR).joinpath(f'{title}.pdf')
+    plt.savefig(fname=filepath, bbox_inches='tight')
+
+    plt.show()

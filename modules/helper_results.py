@@ -1,81 +1,43 @@
 import pandas as pd
-
-from modules.config import (RESULTS_DIR,
-                            RESULTS_FILE, 
-                            )
-
 from pathlib import Path
 
-import numpy as np
+from modules.config import (
+    RESULTS_DIR,
+    RESULTS_FILE,
+)
+
+
+def apply_special_processing(df: pd.DataFrame) -> pd.DataFrame:
+    df['noise'] = df['noise'].fillna(False)
+    return df
+
 
 def read_data():
     """Read data from csv file into pandas dataframe"""
     results_path = Path(RESULTS_DIR).joinpath(RESULTS_FILE)
     df = pd.read_csv(results_path)
+    df = apply_special_processing(df)
     return df
 
-def filter_results_general(df):
-    """Filter the results table based on standard parameters"""    
-    df = df[(df['formulation'] == 'original')]
-    df = df[(df['hot_start'] == False)]
-    df = df[(df['gray'] == False)]
-    df = df[(df['iterations'] == 250)]
-    df = df[(df['noise'] != True)]
-    return df
 
-def filter_results_qml(df):
-    """Filter the results table for the VQA model based on standard parameters"""    
-    df = df[(df['quantum'] == True)]
-    df = filter_results_general(df)
-    df = df[(df['gradient_type'] == 'SPSA')]
-    df = df[(df['alpha'] == 0.602)]
-    df = df[(df['big_a'] == 25)]
-    df = df[np.isclose(df['c'], np.pi/10, atol=1e-3)]
-    #df = df[(df['c'] >= 3.14) & (df['c'] <= 3.15)] 
-    # note different levels of rounding for different runs, so use a range instead of an exact value
-    #df = df[(df['c'] == 0.314)]
-    df = df[(df['gamma'] == 0.101)]
-    df = df[(df['eta'] == 0.1)]
-    df = df[(df['s'] == 0.5)]
-    df = df[(df['shots'] == 1024)]
-    return df
-
-def filter_results_ml(df):
-    """Filter the results tables for the ML model based on standard parameters"""    
-    df = df[(df['quantum'] == False)]
-    df = filter_results_general(df)
-    df = df[(df['shots'] == 64)]
-    df = df[(df['std_dev'] == 0.05)]
-    df = df[(df['lr'] == 2e-5)]
-    df = df[(df['weight_decay'] == 0.0006)]
-    df = df[(df['momentum'] == 0.8)]
-    return df
-
-def find_quality(df, factor=1, round=None):
+def find_quality(
+    df: pd.DataFrame, factor: float = 1, round: bool = None
+) -> pd.DataFrame:
     """Find the quantum and error metrics"""
-    df['quality'] =  factor* df['best_dist'] / df['best_dist_found'] 
+    df['quality'] = factor * df['best_dist'] / df['best_dist_found']
     df['error'] = 1 * factor - df['quality']
     if round:
         df['quality'] = df['quality'].round(round)
         df['error'] = df['error'].round(round)
     return df
 
-def select_key_fields_qml(df):
-    """Restrict data set to key fields for VQA model"""
-    df = df[['locations', 'slice','iteration_found', 'best_dist_found', 'best_dist', 
-             'quality', 'error','mode','monte_carlo', 'layers', 'elapsed','mps']]
-    return df
 
-def select_key_fields_ml(df):
-    """Restrict data set to key fields for ML model"""
-    df = df[['locations', 'iteration_found', 'best_dist_found', 'best_dist', 
-             'quality', 'error','mode', 'layers', 'elapsed', 'monte_carlo']]
-    return df
-
-def apply_filters(df:pd.DataFrame, filters:dict ):
-    """apply filters"""
+def apply_filters(df: pd.DataFrame, filters: dict) -> pd.DataFrame:
+    """Apply flexible filters"""
     for col, val in filters.items():
-        if isinstance(val, list):
+        if callable(val):
+            df = df[val(df[col])]
+        elif isinstance(val, list):
             df = df[df[col].isin(val)]
         else:
             df = df[df[col] == val]

@@ -52,7 +52,7 @@ from modules.helper_functions_tsp import (
     )        
 
 from modules.helper_functions_general import (
-    find_qubits_measured,
+    #find_qubits_measured,
     format_boolean,
 )
 
@@ -179,9 +179,9 @@ class MySubDataLogger(MyDataLogger):
         """Validate the input fields"""
         targets_sdk = find_sdk_from_dispatch_dir(self.mode)
         if not isinstance(self.quantum, bool):
-            raise Exception(f'Input field quantum is not boolean')
+            raise Exception('Input field quantum is not boolean')
         if not isinstance(self.hot_start, bool):
-            raise Exception(f'Input field hot start is not boolean')
+            raise Exception('Input field hot start is not boolean')
         if not validate_optimiser(self.gradient_type):
             raise ValueError(f'{self.gradient_type} is not in OPTIMISER_DICT')
         if self.hot_start and not find_optimizer_hot_start(self.gradient_type):
@@ -192,15 +192,15 @@ class MySubDataLogger(MyDataLogger):
             if self.formulation not in ['original', 'new']:
                 raise Exception(f'Value {self.formulation} is not allowed for formulation' )
             if not isinstance(self.gray, bool):
-                raise Exception(f'Input field gray is not boolean')
+                raise Exception('Input field gray is not boolean')
             if not isinstance(self.noise, bool):
-                raise Exception(f'Input field noise is not boolean')
+                raise Exception('Input field noise is not boolean')
             if targets_sdk not in ['aws', 'qiskit']:
                 raise Exception(f'mode = {self.mode} is not permitted for quantum')
             if not allow_multiple_layers and self.layers > 1:
                 raise Exception(f'mode = {self.mode} is only for 1 layer')
             if self.mps and self.aws:
-                raise Exception(f'MPS and AWS cannot both be true')
+                raise Exception('MPS and AWS cannot both be true')
             if self.target not in TARGETS:
                 raise Exception(f'Target {self.target} is not in TARGETS dictionary')
             if TARGETS[self.target]['type'] not in ['local_aws', 'aws'] and self.aws:
@@ -217,9 +217,9 @@ class MySubDataLogger(MyDataLogger):
             if targets_sdk != 'ml':
                 raise Exception(f'mode = {self.mode} is not permitted for ml')
             if self.mps is True:
-                raise Exception(f'MPS simulator is only for quantum runs')
+                raise Exception('MPS simulator is only for quantum runs')
             if self.aws is True:
-                raise Exception(f'AWS is only for quantum runs')
+                raise Exception('AWS is only for quantum runs')
             if self.target != 'ml':
                 raise Exception(f'{self.target=} and should be ml for non quantum runs')
     
