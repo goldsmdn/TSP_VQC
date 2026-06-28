@@ -1,5 +1,6 @@
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
 
 from modules.config import (
     RESULTS_DIR,
@@ -42,3 +43,13 @@ def apply_filters(df: pd.DataFrame, filters: dict) -> pd.DataFrame:
         else:
             df = df[df[col] == val]
     return df
+
+
+def find_mean_and_error(
+    df: pd.DataFrame, locs: int
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """find mean and error from dataframe input"""
+    grouped_df = df.groupby('locations')['quality']
+    mean = grouped_df.mean().reindex(locs).to_numpy()
+    error = grouped_df.sem().reindex(locs).to_numpy()
+    return mean, error

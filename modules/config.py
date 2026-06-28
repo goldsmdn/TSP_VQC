@@ -1,4 +1,3 @@
-#from collections.abc import Set
 import numpy as np
 import nevergrad as ng
 
@@ -7,7 +6,7 @@ from modules.quantum_circuits import (
     mode_2,
     mode_3,
     mode_4,
-    mode_5, 
+    mode_5,
     mode_6,
     mode_7,
     mode_13,
@@ -24,47 +23,47 @@ DATA_SOURCES = 'data_sources.json'
 GRAPH_DIR = 'graphs'
 RESULTS_DIR = 'results'
 RESULTS_FILE = 'results.csv'
-ENCODING = 'utf-8-sig'              # Encoding of csv file
-AWS = False                         # Whether runs are on AWS or Qiskit.
+ENCODING = 'utf-8-sig'  # Encoding of csv file
+AWS = False  # Whether runs are on AWS or Qiskit.
 
 CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
 
-TARGET = 'local_qiskit'            # Options from TARGETS dictionary below.  This controls which 
-                                   # quantum device is used and whether the emulator is used.
+TARGET = 'local_qiskit'  # Options from TARGETS dictionary below.  This controls which
+# quantum device is used and whether the emulator is used.
 
 TARGETS = {
-    'local_aws': { #test on local AWS simulator
+    'local_aws': {  # test on local AWS simulator
         'type': 'local_aws',
         'emulator': True,
         'sdk': 'aws',
         'local_quantum': True,
     },
-    'local_qiskit': { #test on local qiskit simulator
+    'local_qiskit': {  # test on local qiskit simulator
         'type': 'local_qiskit',
         'emulator': True,
         'sdk': 'qiskit',
         'local_quantum': True,
     },
-    'local_aws_test': { #test on local aws simulator using Cephus connectivity
+    'local_aws_test': {  # test on local aws simulator using Cephus connectivity
         'type': 'local_aws',
         'emulator': True,
         'sdk': 'aws',
         'local_quantum': True,
     },
-    'cephus': { #production run on Rigetti Cephus
+    'cephus': {  # production run on Rigetti Cephus
         'type': 'aws',
         'arn': CEPHUS_DEVICE,
         'emulator': False,
         'sdk': 'aws',
         'local_quantum': False,
     },
-    'cephus_em': {#emulator run on Rigetti Cephus - not currently provided by Rigetti, but could be added in the future
+    'cephus_em': {  # emulator run on Rigetti Cephus - not currently provided by Rigetti, but could be added in the future
         'type': 'aws',
         'arn': CEPHUS_DEVICE,
         'emulator': True,
         'local_quantum': False,
     },
-    'ml': { #ML model - not a quantum device
+    'ml': {  # ML model - not a quantum device
         'type': 'ml',
         'emulator': False,
         'sdk': 'ml',
@@ -72,239 +71,577 @@ TARGETS = {
     },
 }
 
-#General control parameters - verbosity, cache size, etc.
-VERBOSE = False                     # controls how much is printed
-CACHE_MAX_SIZE = 50_000_000         # maximum size of the cache.
-PLOT_TITLE = False                  # Plot titles with graphs.  Not needed for publication.
+# General control parameters - verbosity, cache size, etc.
+VERBOSE = False  # controls how much is printed
+CACHE_MAX_SIZE = 50_000_000  # maximum size of the cache.
+PLOT_TITLE = False  # Plot titles with graphs.  Not needed for publication.
 
 # configuration information used in ALL manual runs
 
-LOCATIONS = 12                       # number of locations to be visited          
-SHOTS = 1_024                        # shots used for each call of the quantum circuit
+LOCATIONS = 12  # number of locations to be visited
+SHOTS = 1_024  # shots used for each call of the quantum circuit
 
-ITERATIONS =  250                   # updates, or iterations
-PRINT_FREQUENCY = 25                # how often results are printed out
+ITERATIONS = 1_250  # updates, or iterations
+PRINT_FREQUENCY = 1_250  # how often results are printed out
 
-GRAY = False                        # Use Gray codes
-HOT_START = False                   # Make a hot start
-GRADIENT_TYPE = 'SPSA'              # controls the optimiser used
-                                    # quantum - 'parameter_shift' - default
-                                    # quantum - 'SPSA' is a stochastic gradient descent
+GRAY = False  # Use Gray codes
+HOT_START = False  # Make a hot start
+GRADIENT_TYPE = 'SPSA'  # controls the optimiser used
+# quantum - 'parameter_shift' - default
+# quantum - 'SPSA' is a stochastic gradient descent
 
 OPTIMIZER_DICT = {
-    'NGOpt': {# Hand-crafted optimiser selection wizard provided by Nevergrad
+    'NGOpt': {  # Hand-crafted optimiser selection wizard provided by Nevergrad
         'source': 'nevergrad',
         'function': ng.optimizers.NGOpt,
-        'hot_start': True,   
-        },
-    'SPSA_ng': {# Nevergrad version of SPSA
+        'hot_start': True,
+    },
+    'SPSA_ng': {  # Nevergrad version of SPSA
         'source': 'nevergrad',
         'function': ng.optimizers.SPSA,
-        'hot_start': True,   
-        },
-    'OnePlusOne': {# Nevergrad simple evolutionary algorithm 
+        'hot_start': True,
+    },
+    'OnePlusOne': {  # Nevergrad simple evolutionary algorithm
         'source': 'nevergrad',
         'function': ng.optimizers.OnePlusOne,
-        'hot_start': True,           
-        },
-    'TBPSA': {# Nevergrad Test-Based Population Size Adaptation
+        'hot_start': True,
+    },
+    'TBPSA': {  # Nevergrad Test-Based Population Size Adaptation
         'source': 'nevergrad',
         'function': ng.optimizers.TBPSA,
-        'hot_start': True,   
-        },
-    'CMA': {# Nevergrad Covariance Matrix Adaptation Evolution Strategy
+        'hot_start': True,
+    },
+    'CMA': {  # Nevergrad Covariance Matrix Adaptation Evolution Strategy
         'source': 'nevergrad',
         'function': ng.optimizers.CMA,
-        'hot_start': True,   
-        },
-    'PSO': {# Particle Swarm Optimisation
+        'hot_start': True,
+    },
+    'PSO': {  # Particle Swarm Optimisation
         'source': 'nevergrad',
         'function': ng.optimizers.PSO,
-        'hot_start': True,   
-        },
-    'TwoPointsDE': {# Nevergrad -Differential Evolution two points
+        'hot_start': True,
+    },
+    'TwoPointsDE': {  # Nevergrad -Differential Evolution two points
         'source': 'nevergrad',
         'function': ng.optimizers.TwoPointsDE,
-        'hot_start': True,   
-        },
-    'DE': {# Nevergrad -Differential Evolution basic
+        'hot_start': True,
+    },
+    'DE': {  # Nevergrad -Differential Evolution basic
         'source': 'nevergrad',
         'function': ng.optimizers.DE,
-        'hot_start': True,   
-        },
-    'SQP': {# Nevergrad - Sequential Quadratic Programming
+        'hot_start': True,
+    },
+    'SQP': {  # Nevergrad - Sequential Quadratic Programming
         'source': 'nevergrad',
         'function': ng.optimizers.SQP,
-        'hot_start': True,   
-        },
-    'SPSA': {#own stochastic gradient descent - three cost fn calls per iteration
-        'source': 'own_code',  
+        'hot_start': True,
+    },
+    'SPSA': {  # own stochastic gradient descent - three cost fn calls per iteration
+        'source': 'own_code',
         'hot_start': True,
         'cost_fn_calls': 3,
         'SPSA_like': True,
-        },                
-    'SPSA2': {#own stochastic gradient descent - one cost fn calls per iteration
-        'source': 'own_code',             
+    },
+    'SPSA2': {  # own stochastic gradient descent - one cost fn calls per iteration
+        'source': 'own_code',
         'hot_start': True,
         'cost_fn_calls': 1,
         'SPSA_like': True,
-        },                 
-    'parameter_shift': {#own parameter shift gradient descent
-        'source': 'own_code',    
+    },
+    'parameter_shift': {  # own parameter shift gradient descent
+        'source': 'own_code',
         'hot_start': True,
-        'cost_fn_calls': 999, # many calls
-        'SPSA_like': False
-        },   
-    'SGD': {#stochastical
-        'source': 'pytorch',      
-        'hot_start': True
-        },              
-    'SGD+X': {#stochastical with Xavier initialization
-        'source': 'pytorch',    
-        'hot_start': False
-        },            
-    'Adam': {#Adam
-        'source': 'pytorch',                
-        'hot_start': True
-        },              
-    'Adam+X': {#Adam with Xavier initialization
-        'source': 'pytorch',                
-        'hot_start': False
-        },           
-    'RMSprop': {#RMSprop
-        'source': 'pytorch',                
-        'hot_start': True
-        },           
-    }
+        'cost_fn_calls': 999,  # many calls
+        'SPSA_like': False,
+    },
+    'SGD': {  # stochastical
+        'source': 'pytorch',
+        'hot_start': True,
+    },
+    'SGD+X': {  # stochastical with Xavier initialization
+        'source': 'pytorch',
+        'hot_start': False,
+    },
+    'Adam': {  # Adam
+        'source': 'pytorch',
+        'hot_start': True,
+    },
+    'Adam+X': {  # Adam with Xavier initialization
+        'source': 'pytorch',
+        'hot_start': False,
+    },
+    'RMSprop': {  # RMSprop
+        'source': 'pytorch',
+        'hot_start': True,
+    },
+}
 
-DECODING_FORMULATION = 'original'   # 'original' or 'new' - new is formulation from paper
-NUM_LAYERS = 1                      # number of layers in the model
+DECODING_FORMULATION = 'original'  # 'original' or 'new' - new is formulation from paper
+NUM_LAYERS = 1  # number of layers in the model
 
-#information needed in QML manual runs:
-MODE = 2                            # See list of allowed modes in MODE_DISPATCH below.  
-#This controls the structure of the variational quantum circuit used in the QML runs.  
-#The modes are described in the function that sets up the variational quantum circuit 
-#in helper_functions_quantum.py.  
-#The mode also controls which SDK is used - AWS, Qiskit or ML.  
+# information needed in QML manual runs:
+MODE = 2  # See list of allowed modes in MODE_DISPATCH below.
+# This controls the structure of the variational quantum circuit used in the QML runs.
+# The modes are described in the function that sets up the variational quantum circuit
+# in helper_functions_quantum.py.
+# The mode also controls which SDK is used - AWS, Qiskit or ML.
 
 MODE_DISPATCH = {
-    1: {'circuit':mode_1, #Qiskit rxgate, rygate, cnot gates
+    1: {
+        'circuit': mode_1,  # Qiskit rxgate, rygate, cnot gates
         'sdk': 'qiskit',
         'params_per_qubit': 2,
         'hot_start_valid': False,
-        'allow_multiple_layers': True},
-    2: {'circuit':mode_2, #Qiskit rxgate, XX gates -can be used with Hot Start
+        'allow_multiple_layers': True,
+    },
+    2: {
+        'circuit': mode_2,  # Qiskit rxgate, XX gates -can be used with Hot Start
         'sdk': 'qiskit',
         'params_per_qubit': 2,
         'hot_start_valid': True,
-        'allow_multiple_layers': True},
-    3: {'circuit':mode_3, #Qiskit IQP based
+        'allow_multiple_layers': True,
+    },
+    3: {
+        'circuit': mode_3,  # Qiskit IQP based
         'sdk': 'qiskit',
         'params_per_qubit': 2,
         'hot_start_valid': False,
-        'allow_multiple_layers': True},
-    4: {'circuit':mode_4, #Qiskit rxgate
+        'allow_multiple_layers': True,
+    },
+    4: {
+        'circuit': mode_4,  # Qiskit rxgate
         'sdk': 'qiskit',
         'params_per_qubit': 1,
         'hot_start_valid': True,
-        'allow_multiple_layers': False},
-    5: {'circuit':mode_5, #Qiskit test mode
+        'allow_multiple_layers': False,
+    },
+    5: {
+        'circuit': mode_5,  # Qiskit test mode
         'sdk': 'qiskit',
         'params_per_qubit': 2,
         'hot_start_valid': False,
-        'allow_multiple_layers': True},
-    6: {'circuit':mode_6, #Qiskit rxgate, ry gate
+        'allow_multiple_layers': True,
+    },
+    6: {
+        'circuit': mode_6,  # Qiskit rxgate, ry gate
         'sdk': 'qiskit',
         'params_per_qubit': 2,
         'hot_start_valid': False,
-        'allow_multiple_layers': True},
-    7: {'circuit':mode_7, #AWS rz gates, iswap gates
+        'allow_multiple_layers': True,
+    },
+    7: {
+        'circuit': mode_7,  # AWS rz gates, iswap gates
         'sdk': 'aws',
         'params_per_qubit': 2,
         'hot_start_valid': False,
-        'allow_multiple_layers': True},
-    8: {'sdk': 'ml',#input is all zeros - with sine activation
-        'allow_multiple_layers': True}, 
-    9: {'sdk': 'ml',#input is 0.5 - with sine activation
-        'allow_multiple_layers': True},
-    13: {'circuit':mode_13,#AWS IQP with only RX, RZ and CZ
+        'allow_multiple_layers': True,
+    },
+    8: {
+        'sdk': 'ml',  # input is all zeros - with sine activation
+        'allow_multiple_layers': True,
+    },
+    9: {
+        'sdk': 'ml',  # input is 0.5 - with sine activation
+        'allow_multiple_layers': True,
+    },
+    13: {
+        'circuit': mode_13,  # AWS IQP with only RX, RZ and CZ
         'sdk': 'aws',
         'params_per_qubit': 2,
         'hot_start_valid': False,
-        'allow_multiple_layers': False},
-    14: {'circuit':mode_14,#Qiskit IQP with only RX, RZ and CZ
+        'allow_multiple_layers': False,
+    },
+    14: {
+        'circuit': mode_14,  # Qiskit IQP with only RX, RZ and CZ
         'sdk': 'qiskit',
         'params_per_qubit': 2,
         'hot_start_valid': True,
-        'allow_multiple_layers': False},
-    15: {'circuit':mode_15,#Qiskit IQP with only RX, RZ and CZ improved version of 14.
+        'allow_multiple_layers': False,
+    },
+    15: {
+        'circuit': mode_15,  # Qiskit IQP with only RX, RZ and CZ improved version of 14.
         'sdk': 'qiskit',
         'params_per_qubit': 2,
         'hot_start_valid': True,
-        'allow_multiple_layers': False},
-    16: {'circuit':mode_16,#Qiskit IQP with only RX, RZ and CZ improved version of 14.
+        'allow_multiple_layers': False,
+    },
+    16: {
+        'circuit': mode_16,  # Qiskit IQP with only RX, RZ and CZ improved version of 14.
         'sdk': 'aws',
         'params_per_qubit': 2,
         'hot_start_valid': False,
-        'allow_multiple_layers': False},
-    18: {'sdk': 'ml'}, #input is all zeros - with sigmoid activation    
-    19: {'sdk': 'ml'}, #input is 0.5 - with sigmoid activation
+        'allow_multiple_layers': False,
+    },
+    18: {'sdk': 'ml'},  # input is all zeros - with sigmoid activation
+    19: {'sdk': 'ml'},  # input is 0.5 - with sigmoid activation
 }
 
-SLICES = [1.0]            # Slices to use when calculating the gradient  
-# For example, 0.2 means that the best 20% of distances found is included in the average.                                 
-ALPHA = 0.602             # constant that controls the learning rate for SPSA decays
-BIG_A = 25                # A for SPSA
-C = np.pi/10              # initial CK for SPSA
-ETA = 0.1                 # eta - learning rate for parameter shift
-GAMMA = 0.101             # constant that determines how quickly the SPSA perturbation decays
-S = 0.5                   # parameter for parameter shift.  Default is 0.5 
-SIMULATE_NOISE = False    # simulate noise in the quantum circuit
-MPS = True                # use MPS simulator
+SLICES = [1.0]  # Slices to use when calculating the gradient
+# For example, 0.2 means that the best 20% of distances found is included in the average.
+ALPHA = 0.602  # constant that controls the learning rate for SPSA decays
+BIG_A = 25  # A for SPSA
+C = np.pi / 10  # initial CK for SPSA
+ETA = 0.1  # eta - learning rate for parameter shift
+GAMMA = 0.101  # constant that determines how quickly the SPSA perturbation decays
+S = 0.5  # parameter for parameter shift.  Default is 0.5
+SIMULATE_NOISE = False  # simulate noise in the quantum circuit
+MPS = True  # use MPS simulator
 
-ROTATIONS = 10            # number of rotations sampled in parameter graphs
+ROTATIONS = 10  # number of rotations sampled in parameter graphs
 
-#information needed in ML manual runs:
-STD_DEV = 0.05                      #standard deviation for warm start weight randomization
-LR = 1e-3                           #Learning rate
-MOMENTUM = 0.9                     
-WEIGHT_DECAY = 0.0006               #importance of L2 regularization in optimiser
-                                    #options: 'Adam', 'SGD', 'RMSprop'    
-                                    
-VALID_QUBIT_LOOPS = {'ankaa':
-                        {3: [  0, 1, 8, 7,], #convention - loops return to qubit 0 at the end and this is assumed in the code
-                         8: [  0, 1, 2, 3, 10, 9,  8,  7,],
-                         14: [ 0,  1,  2,  3,  4,  5,  6, 13, 12, 11, 10,  9, 8, 7,],
-                         29: [ 0,  1,  2,  3,  4,  5,  6, 13, 12, 11, 10,  9, 8,
-                              15, 16, 17, 18, 19, 20, 27, 26, 25, 24, 23, 22, 29, 28, 21,
-                              14, 7,],
-                         41:[ 0,  1,  2,  3,  4,  5,  6, 13, 12, 11, 10, 9, 8, 
-                             15, 16, 17, 18, 19, 20, 27, 26, 25, 24, 23, 22, 29, 
-                             30, 37, 44, 51, 58, 
-                             57, 56, 49, 50, 43, 36, 35, 28, 21, 14,  7,],
-                         49:[ 0,  1,  2,  3,  4,  5,  6, 13, 12, 11, 10, 9, 8, 
-                             15, 16, 17, 18, 19, 20, 27, 26, 25, 24, 23, 22, 29, 
-                             30, 37, 44, 51, 52, 53, 54, 55, 62, 61, 60, 59, 58, 
-                             57, 56, 49, 50, 43, 36, 35, 28, 21, 14,  7,],
-                             },
-                    'cephus': 
-                         {3: [  0, 1, 10, 9,], #convention - loops return to qubit 0 at the end and this is assumed in the code
-                          8: [  0, 1, 2, 3, 12, 11, 10,  9,],
-                          14: [ 0,  1,  2,  3,  4,  5,  6, 15, 14, 13, 12, 11, 10, 9,],
-                          29: [ 0,  1,  2,  3,  4,  5,  6, 7, 16, 15, 14, 13, 12, 11, 10,
-                              19, 20, 21, 22, 23, 24, 33, 32, 31, 30, 29, 28, 27,
-                              18, 9,],
-                          41:[ 0,  1,  2,  3,  4,  5,  6, 7, 16, 15, 14, 13, 12, 11, 10,
-                              19, 20, 21, 22, 23, 24, 25, 26, 35, 34, 33, 32, 31, 30, 39, 48, 
-                              49, 58, 57, 56, 55, 54, 
-                              45, 36, 27, 18, 9,],
-                          49:[ 0,  1,  2,  3,  4,  5,  6, 7, 16, 15, 14, 13, 12, 11, 10,
-                              19, 20, 21, 22, 23, 24, 25, 26, 35, 34, 33, 32, 31, 30, 39, 48, 
-                              49, 50, 51, 52, 61, 60, 59, 58, 57, 56, 65, 64, 55, 54, 
-                              45, 36, 27, 18, 9,],
-                             },
-                     'local_aws_test':
-                            {3: [  0, 1, 10, 9,],
-                            14: [ 0,  1,  2,  3,  4,  5,  6, 15, 14, 13, 12, 11, 10, 9,],
-                            }
-                    }                         
+# information needed in ML manual runs:
+STD_DEV = 0.05  # standard deviation for warm start weight randomization
+LR = 1e-3  # Learning rate
+MOMENTUM = 0.9
+WEIGHT_DECAY = 0.0006  # importance of L2 regularization in optimiser
+
+VALID_QUBIT_LOOPS = {
+    'ankaa': {
+        3: [
+            0,
+            1,
+            8,
+            7,
+        ],  # convention - loops return to qubit 0 at the end and this is assumed in the code
+        8: [
+            0,
+            1,
+            2,
+            3,
+            10,
+            9,
+            8,
+            7,
+        ],
+        14: [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            13,
+            12,
+            11,
+            10,
+            9,
+            8,
+            7,
+        ],
+        29: [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            13,
+            12,
+            11,
+            10,
+            9,
+            8,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            27,
+            26,
+            25,
+            24,
+            23,
+            22,
+            29,
+            28,
+            21,
+            14,
+            7,
+        ],
+        41: [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            13,
+            12,
+            11,
+            10,
+            9,
+            8,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            27,
+            26,
+            25,
+            24,
+            23,
+            22,
+            29,
+            30,
+            37,
+            44,
+            51,
+            58,
+            57,
+            56,
+            49,
+            50,
+            43,
+            36,
+            35,
+            28,
+            21,
+            14,
+            7,
+        ],
+        49: [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            13,
+            12,
+            11,
+            10,
+            9,
+            8,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            27,
+            26,
+            25,
+            24,
+            23,
+            22,
+            29,
+            30,
+            37,
+            44,
+            51,
+            52,
+            53,
+            54,
+            55,
+            62,
+            61,
+            60,
+            59,
+            58,
+            57,
+            56,
+            49,
+            50,
+            43,
+            36,
+            35,
+            28,
+            21,
+            14,
+            7,
+        ],
+    },
+    'cephus': {
+        3: [
+            0,
+            1,
+            10,
+            9,
+        ],  # convention - loops return to qubit 0 at the end and this is assumed in the code
+        8: [
+            0,
+            1,
+            2,
+            3,
+            12,
+            11,
+            10,
+            9,
+        ],
+        14: [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            15,
+            14,
+            13,
+            12,
+            11,
+            10,
+            9,
+        ],
+        29: [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            16,
+            15,
+            14,
+            13,
+            12,
+            11,
+            10,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            33,
+            32,
+            31,
+            30,
+            29,
+            28,
+            27,
+            18,
+            9,
+        ],
+        41: [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            16,
+            15,
+            14,
+            13,
+            12,
+            11,
+            10,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            35,
+            34,
+            33,
+            32,
+            31,
+            30,
+            39,
+            48,
+            49,
+            58,
+            57,
+            56,
+            55,
+            54,
+            45,
+            36,
+            27,
+            18,
+            9,
+        ],
+        49: [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            16,
+            15,
+            14,
+            13,
+            12,
+            11,
+            10,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            35,
+            34,
+            33,
+            32,
+            31,
+            30,
+            39,
+            48,
+            49,
+            50,
+            51,
+            52,
+            61,
+            60,
+            59,
+            58,
+            57,
+            56,
+            65,
+            64,
+            55,
+            54,
+            45,
+            36,
+            27,
+            18,
+            9,
+        ],
+    },
+    'local_aws_test': {
+        3: [
+            0,
+            1,
+            10,
+            9,
+        ],
+        14: [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            15,
+            14,
+            13,
+            12,
+            11,
+            10,
+            9,
+        ],
+    },
+}

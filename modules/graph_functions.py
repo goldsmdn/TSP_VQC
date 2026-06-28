@@ -1,11 +1,12 @@
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from classes.MyModel import MySine
 from pathlib import Path
-import torch
+
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import torch
 
+from classes.MyModel import MySine
 from modules.config import GRAPH_DIR, PLOT_TITLE
 
 SPACE = ' '
@@ -668,22 +669,22 @@ def plot_optimiser_performance2(
     plt.tight_layout(rect=[0, 0, 0.85, 1])
     filepath = Path(GRAPH_DIR).joinpath(f'{title}.pdf')
     plt.savefig(fname=filepath, bbox_inches='tight')
-
     plt.show()
 
 
 def plot_overall_results(
     width: float,  # the width of the bars
-    multiplier: float,
+    multiplier: float, #controls magnitude of offset
     simulation_means: pd.DataFrame,
     simulation_errors: pd.DataFrame,
-    greedy_classical: pd.DataFrame,
-    AWS_results: pd.DataFrame,
     colors: list, # list of colours to used for the bars
-    x: np.array,  # the label locations
     locs: list,  # locations to be plotted
+    title:str='Solution Quality by Number of Locations for VQA, ML, Monte Carlo and Greedy methods',
+    greedy_classical: pd.DataFrame=False,
+    AWS_results: pd.DataFrame=False,
 ):
     """plots overall results for the paper"""
+    x = np.arange(len(locs))
     fig, ax = plt.subplots(layout='constrained')
 
     for attribute, measurement in simulation_means.items():
@@ -718,38 +719,38 @@ def plot_overall_results(
     group_width = width * (num_bar_groups - 1)
     center_offset = group_width / 2 - width / 2  # center alignment
 
-    # )
-
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_xlabel('Number of Locations', fontsize=14)
     ax.set_ylabel('Solution Quality (%)', fontsize=14)
     ax.set_title(
-        'Solution Quality by Number of Locations for VQA, ML, Monte Carlo and Greedy methods'
+        title
     )
     ax.set_xticks(x + width, locs)
     ax.set_ylim(0, 140)
 
-    ax.plot(
-        x + center_offset,
-        greedy_classical,
-        color='black',
-        marker='D',
-        linestyle='--',
-        linewidth=1,
-        markersize=5,
-        label='Greedy Classical',
-    )
+    if greedy_classical:
+        ax.plot(
+            x + center_offset,
+            greedy_classical,
+            color='black',
+            marker='D',
+            linestyle='--',
+            linewidth=1,
+            markersize=5,
+            label='Greedy Classical',
+        )
 
-    ax.plot(
-        x + center_offset,
-        AWS_results,
-        color='black',
-        marker='P',
-        linestyle='--',
-        linewidth=1,
-        markersize=15,
-        label='VQA: Hardware',
-    )
+    if AWS_results:
+        ax.plot(
+            x + center_offset,
+            AWS_results,
+            color='black',
+            marker='P',
+            linestyle='--',
+            linewidth=1,
+            markersize=15,
+            label='VQA: Hardware',
+        )
 
     # --- Reorder legend so "Greedy Classical" appears last ---
     handles, labels = ax.get_legend_handles_labels()
