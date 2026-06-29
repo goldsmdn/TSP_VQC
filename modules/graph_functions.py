@@ -674,14 +674,14 @@ def plot_optimiser_performance2(
 
 def plot_overall_results(
     width: float,  # the width of the bars
-    multiplier: float, #controls magnitude of offset
+    multiplier: float,  # controls magnitude of offset
     simulation_means: pd.DataFrame,
     simulation_errors: pd.DataFrame,
-    colors: list, # list of colours to used for the bars
+    colors: list,  # list of colours to used for the bars
     locs: list,  # locations to be plotted
-    title:str='Solution Quality by Number of Locations for VQA, ML, Monte Carlo and Greedy methods',
-    greedy_classical: pd.DataFrame=False,
-    AWS_results: pd.DataFrame=False,
+    title: str = 'Solution Quality by Number of Locations for VQA, ML, Monte Carlo and Greedy methods',
+    greedy_classical: pd.DataFrame = False,
+    AWS_results: pd.DataFrame = False,
 ):
     """plots overall results for the paper"""
     x = np.arange(len(locs))
@@ -722,9 +722,7 @@ def plot_overall_results(
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_xlabel('Number of Locations', fontsize=14)
     ax.set_ylabel('Solution Quality (%)', fontsize=14)
-    ax.set_title(
-        title
-    )
+    ax.set_title(title)
     ax.set_xticks(x + width, locs)
     ax.set_ylim(0, 140)
 
@@ -769,4 +767,43 @@ def plot_overall_results(
     filename = Path(GRAPH_DIR).joinpath('solution_quality_by_method.pdf')
     plt.savefig(filename, bbox_inches='tight')
 
+    plt.show()
+
+
+def plot_circuit_comparison(
+    cma_stats: pd.DataFrame,
+    vqa_mc_mean: pd.DataFrame,  # Monte Carlo mean
+    vqa_mc_error: pd.DataFrame,  # Monte Carlo error
+    locs: list,
+):
+    """plots comparisons between different circuits"""
+    plt.figure()
+
+    for mode, group in cma_stats.groupby('mode'):
+        group_sorted = group.sort_values('locations')
+
+        plt.errorbar(
+            group_sorted['locations'],
+            group_sorted['quality_mean'],
+            yerr=group_sorted['quality_sem'],
+            fmt='.',
+            capsize=3,
+            label=mode,
+        )
+
+    plt.errorbar(
+        locs,
+        vqa_mc_mean,
+        yerr=vqa_mc_error,
+        fmt='.',
+        color='black',
+        capsize=3,
+        label='monte carlo',
+    )
+
+    # Labels and legend
+    plt.xlabel('Locations')
+    plt.ylabel('Quality')
+    plt.title('Quality vs Locations by Mode')
+    plt.legend()
     plt.show()
