@@ -1,46 +1,40 @@
 # helper functions for quantum circuit construction and evaluation
+import copy
 import math
 import random
-import copy
-import graycode
-import torch
-
 from pathlib import Path
+from typing import Callable
 
+import graycode
+import numpy as np
+import torch
 from braket.circuits import Circuit
-from braket.parametric import FreeParameter
 from braket.jobs.metrics import log_metric
-
-from qiskit.circuit import Parameter
+from braket.parametric import FreeParameter
 from qiskit import transpile
+from qiskit.circuit import Parameter
 from qiskit_aer import AerSimulator
 from qiskit_ibm_runtime.fake_provider import FakeAuckland
 
-from typing import Callable
+from classes.LRUCacheUnhashable import LRUCacheUnhashable
+from modules.config import (
+    DATA_SOURCES,
+    MODE_DISPATCH,
+    NETWORK_DIR,
+    OPTIMIZER_DICT,
+    PRINT_FREQUENCY,
+    TARGETS,
+)
 
 # from torch import mps # Import Callable for type hinting
-
 from modules.helper_functions_general import (
+    binary_string_format,
+    convert_physical_to_logical_bit_string,
     find_logical_to_physical_dictionary,
     find_qubits_measured,
     find_valid_device_loop,
-    convert_physical_to_logical_bit_string,
-    binary_string_format,
     load_dict_from_json,
 )
-
-from classes.LRUCacheUnhashable import LRUCacheUnhashable
-
-from modules.config import (
-    MODE_DISPATCH,
-    TARGETS,
-    PRINT_FREQUENCY,
-    NETWORK_DIR,
-    DATA_SOURCES,
-    OPTIMIZER_DICT,
-)
-
-import numpy as np
 
 
 def validate_optimiser(optimiser: str) -> object:
@@ -1556,7 +1550,11 @@ def find_distances_array(
 
 
 def calculate_hot_start_data(
-    sdl,
+    # sdl,
+    locations: int,
+    gray: bool,
+    formulation: str,
+    best_dist: float,
     distance_array: np.ndarray,
     cost_fn: Callable,
     print_results: bool = False,
@@ -1583,13 +1581,13 @@ def calculate_hot_start_data(
 
     """
     hot_start_list = hot_start_list_find(
-        locations=sdl.locations,
+        locations=locations,
         distance_array=distance_array,
     )
     bin_hot_start_list = hot_start_list_to_string(
-        locations=sdl.locations,
-        gray=sdl.gray,
-        formulation=sdl.formulation,
+        locations=locations,
+        gray=gray,
+        formulation=formulation,
         hot_start_list=hot_start_list,
     )
     hot_start_distance = cost_fn(bin_hot_start_list)
@@ -1597,7 +1595,7 @@ def calculate_hot_start_data(
         print(f'The hot start location list is {hot_start_list}')
         print(f'This is equivalent to a binary list: {bin_hot_start_list}')
         print(
-            f'The hot start distance is {hot_start_distance}, compared to a best distance of {sdl.best_dist}.'
+            f'The hot start distance is {hot_start_distance}, compared to a best distance of {best_dist}.'
         )
         print(f'The hot start distance is {hot_start_distance}')
     return bin_hot_start_list, hot_start_distance
