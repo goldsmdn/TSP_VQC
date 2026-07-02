@@ -613,6 +613,7 @@ def cost_func_evaluate(
     target,
     mps,
     average_slice: float = 1,
+    verbose: bool = False,
 ) -> tuple[float, float, list[int]]:
     """Evaluate cost function on a quantum computer
 
@@ -666,21 +667,22 @@ def cost_func_evaluate(
             else:
                 if detect_quantum_GPU_support(target):
                     simulator = AerSimulator(method='statevector', device='GPU')
-                    # results = simulator.run(model).result()
                     results = simulator.run(model, shots=shots).result()
                     counts = results.get_counts(model)
                 else:
                     simulator = AerSimulator(method='statevector')
-                    # results = simulator.run(model).result()
                     results = simulator.run(model, shots=shots).result()
                     counts = results.get_counts(model)
         case _:
             raise Exception(f'SDK {sdk_type} has not been coded for')
 
     cost, lowest, lowest_energy_bit_string = find_stats(
-        cost_fn=cost_fn, counts=counts, shots=shots, average_slice=average_slice
+        cost_fn=cost_fn,
+        counts=counts,
+        shots=shots,
+        average_slice=average_slice,
+        verbose=verbose,
     )
-    # print(f'Found {cost=}')
     return (cost, lowest, lowest_energy_bit_string)
 
 
@@ -724,6 +726,7 @@ def find_stats(
     counts: dict,
     shots: int,
     average_slice: float = 1,
+    verbose: bool = False,
 ) -> tuple[float, float, list[int]]:
     """Finds the average energy of the relevant counts, and the lowest energy
 
@@ -768,13 +771,14 @@ def find_stats(
     for key, count in counts.items():
         bit_list = [int(bits) for bits in key]
         energy = cost_fn(bit_list)
+        if verbose:
+            print(f'{key=} {count=} {energy=}')
         if slicing:
             # if already in dictionary increment
             if energy in energy_dict.keys():
                 energy_dict[energy] += count
             else:
                 energy_dict[energy] = count
-        # if first == True:
         if first:
             lowest_energy = energy
             first = False
@@ -838,7 +842,9 @@ def update_parameters_using_gradient(
     calls = find_optimiser_cost_fn_calls(gradient_type)
     SPSA_like = find_if_optimiser_is_SPSA_like(gradient_type)
 
-    if abs(average_slice - 1) < 0.001:
+    if (
+        abs(average_slice - 1) < 0.001
+    ):  # average slice is close to 1, so don't need to evaluate separately.
         evaluate_av_slice_separately = False
 
     if evaluate_av_slice_separately and calls == 1:
@@ -859,6 +865,7 @@ def update_parameters_using_gradient(
         if any(x is None for x in (s, eta, big_a, alpha)):
             raise Exception(f'{s=}, {eta=}, {big_a=}, {alpha=}')
 
+        # find initial gradient.
         abs_gradient = np.abs(
             my_gradient(
                 noise_bool=noise_bool,
@@ -872,11 +879,13 @@ def update_parameters_using_gradient(
                 average_slice=average_slice,
                 target=target,
                 mps=mps,
+                ck=c,  # initial value
             )
         )
         magnitude_g0 = abs_gradient.mean()
         # stop div by zero error
         a = eta * ((big_a + 1) ** alpha) / (magnitude_g0 + 0.001)
+        # print(f'{abs_gradient=}, {magnitude_g0=}, {a=}, {eta=}, {big_a=}, {alpha=}')
     if calls == 1:
         # need to get started so that have a value when calculate delta
         bc = bind_weights(
@@ -885,6 +894,7 @@ def update_parameters_using_gradient(
             qc=qc,
             target=target,
         )
+        print('evaluating cost function')
         average, lowest, lowest_energy_bit_string = cost_func_evaluate(
             noise_bool=noise_bool,
             shots=shots,
@@ -934,21 +944,25 @@ def update_parameters_using_gradient(
         if i == 0:
             lowest_string_to_date = lowest_energy_bit_string
             lowest_to_date = lowest
+            # print(f'{lowest_string_to_date}')
         else:
             if lowest < lowest_to_date:
                 lowest_to_date = lowest
                 lowest_string_to_date = lowest_energy_bit_string
-        # lowest_string_to_date = convert_physical_to_logical_bit_string(
-        #    input_bitstring=lowest_string_to_date,
-        #    qubits=qubits,
-        #    target=target,
-        #    )
+            # only need this code for AWS non-essential reporting
+            lowest_string_to_date = convert_physical_to_logical_bit_string(
+                input_bitstring=lowest_string_to_date,
+                qubits=qubits,
+                target=target,
+            )
+            # print(f'{lowest_string_to_date}')
         route_list = convert_bit_string_to_cycle(
             bit_string=lowest_string_to_date,
             locs=locations,
             gray=gray,
             method=formulation,
         )
+        # print(f'{route_list=}')
         index_list.append(i)
         cost_list.append(cost)
         lowest_list.append(lowest_to_date)
@@ -967,7 +981,7 @@ def update_parameters_using_gradient(
                 rots=rots,
                 average_slice=average_slice,
                 target=target,
-                mps=mps,
+                mps=mps,  # ck only needed for SPSA
             )
             rots = rots - eta * gradient
         elif SPSA_like:
@@ -998,7 +1012,10 @@ def update_parameters_using_gradient(
                 deltak = np.random.choice([-1, 1], size=length)
                 # simultaneous perturbations
                 ck_deltak = ck * deltak
+                # print(f'{ck_deltak=}')
                 new_rots = rots + ck_deltak
+                # old_rots = rots  # for prining
+                # print(f'{new_rots=}')
 
                 # gradient approximation
                 bc = bind_weights(
@@ -1007,6 +1024,11 @@ def update_parameters_using_gradient(
                     qc=qc,
                     target=target,
                 )
+                # set verbose for debugging
+                # if print_results and i % PRINT_FREQUENCY == 0:
+                #    verbose = True
+                # else:
+                #    verbose = False
                 new_average, lowest, lowest_energy_bit_string = cost_func_evaluate(
                     noise_bool=noise_bool,
                     shots=shots,
@@ -1015,10 +1037,15 @@ def update_parameters_using_gradient(
                     target=target,
                     mps=mps,
                     average_slice=average_slice,
+                    # verbose=verbose,
                 )
+
+                # print(f'evalulated average cost as {new_average=} in iteration {i=}')
                 delta = new_average - average
                 gradient = delta / ck_deltak
+                # print(f'{gradient=}')
                 rots = rots - ak * gradient
+                # print(f'{rots=}')
             else:
                 raise ValueError(f'{calls=} is not coded for')
 
@@ -1038,6 +1065,14 @@ def update_parameters_using_gradient(
                     f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date}',
                     flush=True,
                 )
+                # print(
+                #    f'{ak=} {ck=} \n ',
+                # f'Rotations from last iterations = {old_rots} \n'
+                #    f'Rotations after this iteration = {rots} \n',
+                # f'Rotations used for gradient evaluation =  {new_rots} \n'
+                # f'{gradient=} \n {ck_deltak=}',
+                #    flush=True,
+                # )
                 print(f'and route {route_list}')
                 # AWS hybrid job
                 log_metric(
@@ -1170,6 +1205,7 @@ def my_gradient(
 
         # simultaneous perturbations
         ck_deltak = ck * deltak
+        # print(f'{ck_deltak=}')
         new_rots = rots + ck_deltak
 
         # gradient approximation
@@ -1550,7 +1586,6 @@ def find_distances_array(
 
 
 def calculate_hot_start_data(
-    # sdl,
     locations: int,
     gray: bool,
     formulation: str,
