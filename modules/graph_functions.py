@@ -24,7 +24,7 @@ def parameter_graph(
     """Plots a graph of the parameter evolution by iteration."""
     p = plt.plot(index_list, gradient_list)
     plt.grid(axis='x')
-    plt.legend(p, legend)
+    plt.legend(handles=p, labels=legend, ncols=3, fontsize='xx-small', shadow='true')
     plt.title(title)
     plt.tight_layout()
     plt.xlabel('Iteration')
@@ -121,7 +121,7 @@ def cost_graph_multi(
         if sub_title != '':
             sub_title_full = sub_title + f'{parameter_list[count]}'
             axs[i, j].set_title(sub_title_full, fontsize=6)
-        axs[i, j].legend(fontsize=6, loc='upper right')
+        axs[i, j].legend(fontsize=6, loc='upper right', shadow='true')
     fig.tight_layout()
     fig.savefig(filename)
     # plt.close(fig)
@@ -170,7 +170,7 @@ def plot_shortest_routes(points: list, route1: list, route2: list = None):
 
     red_patch = mpatches.Patch(color='red', label='The hot start route')
     blue_patch = mpatches.Patch(color='blue', label='The shortest route')
-    plt.legend(handles=[red_patch, blue_patch])
+    plt.legend(handles=[red_patch, blue_patch], shadow='true')
     plt.show()
     plt.close()
 
@@ -252,7 +252,11 @@ def plot_3d_graph_models(
         mpatches.Patch(color=input2_colors[layer], label=layer) for layer in input2_vals
     ]
     plt.legend(
-        handles=legend_handles, title=input2, loc='upper left', bbox_to_anchor=(1, 1)
+        handles=legend_handles,
+        title=input2,
+        loc='upper left',
+        bbox_to_anchor=(1, 1),
+        shadow='true',
     )
     plt.grid(color='green', linestyle='--', linewidth=0.5)
     formatted_input = input.replace('_', SPACE).lower()
@@ -361,6 +365,7 @@ def plot_3d_graph_slice(
         title='Locations',
         loc='upper left',
         bbox_to_anchor=(1, 1),
+        shadow='true',
     )
 
     formatted_input = input.replace('_', SPACE).lower()
@@ -467,7 +472,7 @@ def plot_2d_graph_slice(
     plt.xlabel('Slice')
     plt.ylabel(input)
     plt.title(f'{input.capitalize()} across slices\n(Location = {location_value})')
-    plt.legend()
+    plt.legend(shadow='true')
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.show()
@@ -563,7 +568,12 @@ def plot_optimiser_performance1(
     # ONE legend (global)
     handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(
-        handles, labels, loc='center right', bbox_to_anchor=(1.07, 0.7), fontsize=14
+        handles,
+        labels,
+        loc='center right',
+        bbox_to_anchor=(1.07, 0.7),
+        fontsize=14,
+        shadow='true',
     )
 
     # Layout spacing
@@ -662,7 +672,12 @@ def plot_optimiser_performance2(
     # ONE legend (global)
     handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(
-        handles, labels, loc='center right', bbox_to_anchor=(1.07, 0.9), fontsize=14
+        handles,
+        labels,
+        loc='center right',
+        bbox_to_anchor=(1.07, 0.9),
+        fontsize=14,
+        shadow='true',
     )
 
     # Layout spacing
@@ -674,14 +689,16 @@ def plot_optimiser_performance2(
 
 def plot_overall_results(
     width: float,  # the width of the bars
-    multiplier: float, #controls magnitude of offset
+    multiplier: float,  # controls magnitude of offset
     simulation_means: pd.DataFrame,
     simulation_errors: pd.DataFrame,
-    colors: list, # list of colours to used for the bars
+    colors: list,  # list of colours to used for the bars
     locs: list,  # locations to be plotted
-    title:str='Solution Quality by Number of Locations for VQA, ML, Monte Carlo and Greedy methods',
-    greedy_classical: pd.DataFrame=False,
-    AWS_results: pd.DataFrame=False,
+    title: str = 'Solution Quality by Number of Locations for VQA, ML, Monte Carlo and Greedy methods',
+    greedy_classical: pd.DataFrame = False,
+    AWS_results: pd.DataFrame = False,
+    monte_carlo: pd.DataFrame = False,
+    n_cols: int = 2,  # number of columns in the legend
 ):
     """plots overall results for the paper"""
     x = np.arange(len(locs))
@@ -714,7 +731,6 @@ def plot_overall_results(
         )
         multiplier += 1
 
-    # --- Now add Greedy Classical line (centered over grouped bars) ---
     num_bar_groups = 4  # total plotted groups including spacing
     group_width = width * (num_bar_groups - 1)
     center_offset = group_width / 2 - width / 2  # center alignment
@@ -722,12 +738,11 @@ def plot_overall_results(
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_xlabel('Number of Locations', fontsize=14)
     ax.set_ylabel('Solution Quality (%)', fontsize=14)
-    ax.set_title(
-        title
-    )
+    ax.set_title(title)
     ax.set_xticks(x + width, locs)
     ax.set_ylim(0, 140)
 
+    # --- Now add Greedy Classical line (centered over grouped bars) ---
     if greedy_classical:
         ax.plot(
             x + center_offset,
@@ -752,10 +767,22 @@ def plot_overall_results(
             label='VQA: Hardware',
         )
 
+    if monte_carlo:
+        ax.plot(
+            x + center_offset,
+            monte_carlo,
+            color='#D81B60',  # magenta accent',
+            marker='x',
+            linestyle='--',
+            linewidth=1,
+            markersize=5,
+            label='Monte Carlo comparison',
+        )
+
     # --- Reorder legend so "Greedy Classical" appears last ---
     handles, labels = ax.get_legend_handles_labels()
 
-    # Move 'Results from AWS' to the end
+    # Move 'Results from AWS', 'Greedy Classical' to the end
 
     if 'Greedy Classical' in labels:
         idx = labels.index('Greedy Classical')
@@ -763,10 +790,61 @@ def plot_overall_results(
         handles.append(handles.pop(idx))
         labels.append(labels.pop(idx))
 
+    if 'Monte Carlo comparison' in labels:
+        idx = labels.index('Monte Carlo comparison')
+        # Pop and append to end
+        handles.append(handles.pop(idx))
+        labels.append(labels.pop(idx))
+
     ax.legend(
-        handles, labels, loc='upper right', ncols=2, fontsize='small', framealpha=1
+        handles,
+        labels,
+        loc='upper right',
+        ncols=n_cols,
+        fontsize='small',
+        framealpha=1,
+        shadow='true',
     )
     filename = Path(GRAPH_DIR).joinpath('solution_quality_by_method.pdf')
     plt.savefig(filename, bbox_inches='tight')
 
+    plt.show()
+
+
+def plot_circuit_comparison(
+    cma_stats: pd.DataFrame,
+    vqa_mc_mean: pd.DataFrame,  # Monte Carlo mean
+    vqa_mc_error: pd.DataFrame,  # Monte Carlo error
+    locs: list,
+):
+    """plots comparisons between different circuits"""
+    plt.figure()
+
+    for mode, group in cma_stats.groupby('mode'):
+        group_sorted = group.sort_values('locations')
+
+        plt.errorbar(
+            group_sorted['locations'],
+            group_sorted['quality_mean'],
+            yerr=group_sorted['quality_sem'],
+            fmt='.',
+            capsize=3,
+            label=mode,
+        )
+
+    plt.errorbar(
+        locs,
+        vqa_mc_mean,
+        yerr=vqa_mc_error,
+        fmt='.',
+        color='black',
+        capsize=3,
+        label='monte carlo',
+    )
+
+    # Labels and legend
+    plt.xlabel('Locations')
+    plt.ylabel('Quality')
+    plt.title('Quality vs Locations by Mode')
+    plt.legend(shadow='true')
     plt.show()

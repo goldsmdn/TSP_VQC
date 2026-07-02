@@ -1,5 +1,5 @@
-import numpy as np
 import nevergrad as ng
+import numpy as np
 
 from modules.quantum_circuits import (
     mode_1,
@@ -82,13 +82,14 @@ LOCATIONS = 12  # number of locations to be visited
 SHOTS = 1_024  # shots used for each call of the quantum circuit
 
 ITERATIONS = 1_250  # updates, or iterations
-PRINT_FREQUENCY = 1_250  # how often results are printed out
-
+PRINT_FREQUENCY = 1_250
 GRAY = False  # Use Gray codes
-HOT_START = False  # Make a hot start
-GRADIENT_TYPE = 'SPSA'  # controls the optimiser used
+HOT_START = True  # Make a hot start
+GRADIENT_TYPE = 'SPSA2'  # controls the optimiser used
 # quantum - 'parameter_shift' - default
 # quantum - 'SPSA' is a stochastic gradient descent
+# quantum - 'SPSA2' is a stochastic gradient descent with only one cost evaluation
+# per optimiser cycle
 
 OPTIMIZER_DICT = {
     'NGOpt': {  # Hand-crafted optimiser selection wizard provided by Nevergrad
@@ -279,9 +280,12 @@ MODE_DISPATCH = {
 SLICES = [1.0]  # Slices to use when calculating the gradient
 # For example, 0.2 means that the best 20% of distances found is included in the average.
 ALPHA = 0.602  # constant that controls the learning rate for SPSA decays
-BIG_A = 25  # A for SPSA
+BIG_A = 100  # A for SPSA
 C = np.pi / 10  # initial CK for SPSA
-ETA = 0.1  # eta - learning rate for parameter shift
+# C = np.pi / 20  # initial CK for SPSA
+# ETA = 0.1  # eta - learning rate for parameter shift
+ETA = 0.005
+# ETA = 0.01
 GAMMA = 0.101  # constant that determines how quickly the SPSA perturbation decays
 S = 0.5  # parameter for parameter shift.  Default is 0.5
 SIMULATE_NOISE = False  # simulate noise in the quantum circuit
