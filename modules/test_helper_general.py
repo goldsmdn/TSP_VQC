@@ -1,14 +1,18 @@
 # test helper_function_general.py
 
-from modules.helper_functions_general import (validate_list_for_duplicates,
-                                              convert_list_to_dictionary)   
+from modules.helper_functions_general import (
+    convert_list_to_dictionary,
+    validate_list_for_duplicates,
+)
+
 
 def test_validate_list_for_duplicates():
     """Tests the validate_list_for_duplicates function"""
     input_list = [0, 1, 2, 3, 4]
-    assert validate_list_for_duplicates(input_list) == True
+    assert validate_list_for_duplicates(input_list)
     input_list = [0, 1, 2, 3, 4, 1]
-    assert validate_list_for_duplicates(input_list) == False    
+    assert not validate_list_for_duplicates(input_list)
+
 
 def test_convert_list_to_dictionary():
     """Tests the convert_list_to_dictionary function"""
