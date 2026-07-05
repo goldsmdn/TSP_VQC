@@ -1,48 +1,50 @@
-import numpy as np
-from pytest import raises
 import math
 from pathlib import Path
 
-from modules.helper_functions_tsp import(
-    validate_distance_array, 
-    find_distance, 
-    convert_binary_list_to_integer, 
-    check_loc_list, 
-    augment_loc_list, 
-    find_total_distance, 
-    find_problem_size,
-    convert_bit_string_to_cycle, 
-    find_stats, 
-    cost_fn_fact, 
-    hot_start_list_find,
-    hot_start_list_to_string, 
-    convert_integer_to_binary_list,
-    convert_binary_list_to_integer, 
-    find_run_stats,
-    find_local_quantum,
-    )
+import numpy as np
+from pytest import raises
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
-
 from modules.config import NETWORK_DIR
+from modules.helper_functions_tsp import (
+    augment_loc_list,
+    check_loc_list,
+    convert_binary_list_to_integer,
+    convert_bit_string_to_cycle,
+    convert_integer_to_binary_list,
+    cost_fn_fact,
+    find_distance,
+    find_local_quantum,
+    find_problem_size,
+    find_run_stats,
+    find_stats,
+    find_total_distance,
+    hot_start_list_find,
+    hot_start_list_to_string,
+    transform_counts,
+    validate_distance_array,
+)
+
 
 def test_wrong_shape():
-    """Checks that the correct error message is thrown for an array of the wrong shape """
+    """Checks that the correct error message is thrown for an array of the wrong shape"""
     file = 'wrong_shape.txt'
     filename = Path(NETWORK_DIR).joinpath(file)
     locs = 5
     array = np.genfromtxt(filename)
-    with raises(Exception, match = 'The distance array is not two dimensional'):
+    with raises(Exception, match='The distance array is not two dimensional'):
         validate_distance_array(array, locs)
-    
+
+
 def test_four_rows():
     """Checks that the correct error message is thrown for an array with 4 rows and 5 columns"""
     file = 'four_rows.txt'
     filename = Path(NETWORK_DIR).joinpath(file)
     locs = 5
     array = np.genfromtxt(filename)
-    with raises(Exception, match = 'The shape of the array does not match 5 locations'):
+    with raises(Exception, match='The shape of the array does not match 5 locations'):
         validate_distance_array(array, locs)
+
 
 def test_six_locs():
     """Checks that the correct error message is thrown for an 5 * 5 array when there are 6 locations"""
@@ -50,8 +52,9 @@ def test_six_locs():
     filename = Path(NETWORK_DIR).joinpath(file)
     locs = 6
     array = np.genfromtxt(filename)
-    with raises(Exception, match = 'The shape of the array does not match 6 locations'):
+    with raises(Exception, match='The shape of the array does not match 6 locations'):
         validate_distance_array(array, locs)
+
 
 def test_four_cols():
     """Checks that the correct error message is thrown for an array with 5 rows and 4 columns"""
@@ -59,8 +62,9 @@ def test_four_cols():
     filename = Path(NETWORK_DIR).joinpath(file)
     locs = 5
     array = np.genfromtxt(filename)
-    with raises(Exception, match = 'The shape of the array does not match 5 locations'):
+    with raises(Exception, match='The shape of the array does not match 5 locations'):
         validate_distance_array(array, locs)
+
 
 def test_unsymmetric():
     """Checks that the correct error message is thrown for an unsymmetric array"""
@@ -68,8 +72,9 @@ def test_unsymmetric():
     filename = Path(NETWORK_DIR).joinpath(file)
     locs = 26
     array = np.genfromtxt(filename)
-    with raises(Exception, match = 'The array is not symmetrical'):
+    with raises(Exception, match='The array is not symmetrical'):
         validate_distance_array(array, locs)
+
 
 def test_distance_1():
     """Check distance read for an array element"""
@@ -82,6 +87,7 @@ def test_distance_1():
     distance = find_distance(loc1, loc2, distance_array)
     assert expected_distance == distance
 
+
 def test_distance_2():
     """Check distance read for a diagonal element"""
     file = 'fri26_bad.txt'
@@ -92,6 +98,7 @@ def test_distance_2():
     distance_array = np.genfromtxt(filename)
     distance = find_distance(loc1, loc2, distance_array)
     assert expected_distance == distance
+
 
 def test_distance_3():
     """Check distance read for end of row"""
@@ -104,6 +111,7 @@ def test_distance_3():
     distance = find_distance(loc1, loc2, distance_array)
     assert expected_distance == distance
 
+
 def test_distance_4():
     """Check distance read for end of column"""
     file = 'four_d.txt'
@@ -113,114 +121,129 @@ def test_distance_4():
     expected_distance = 9
     distance_array = np.genfromtxt(filename)
     distance = find_distance(loc1, loc2, distance_array)
-    assert distance == expected_distance 
+    assert distance == expected_distance
+
 
 def test_list_00():
     """Check conversion of list [0,0]"""
-    binary_list = [0,0]
+    binary_list = [0, 0]
     expected_result = 0
-    result = convert_binary_list_to_integer(binary_list )
+    result = convert_binary_list_to_integer(binary_list)
     assert result == expected_result
+
 
 def test_list_00_gray():
     """Check conversion of list [0,0] with gray codes"""
     gray = True
-    binary_list = [0,0]
+    binary_list = [0, 0]
     expected_result = 0
     result = convert_binary_list_to_integer(binary_list, gray)
     assert result == expected_result
 
+
 def test_list_01():
     """Check conversion of list [0,1]"""
-    binary_list = [0,1]
+    binary_list = [0, 1]
     expected_result = 1
     result = convert_binary_list_to_integer(binary_list)
     assert result == expected_result
+
 
 def test_list_01_gray():
     """Check conversion of list [0,1] with gray codes"""
     gray = True
-    binary_list = [0,1]
+    binary_list = [0, 1]
     expected_result = 1
     result = convert_binary_list_to_integer(binary_list, gray)
     assert result == expected_result
 
+
 def test_list_10():
     """Check conversion of list [1,0]"""
-    binary_list = [1,0]
+    binary_list = [1, 0]
     expected_result = 2
     result = convert_binary_list_to_integer(binary_list)
     assert result == expected_result
+
 
 def test_list_10_gray():
     """Check conversion of list [1,0] with gray codes"""
     gray = True
-    binary_list = [1,0]
+    binary_list = [1, 0]
     expected_result = 3
     result = convert_binary_list_to_integer(binary_list, gray)
     assert result == expected_result
 
+
 def test_list_11():
     """Check conversion of list [1,1]"""
-    binary_list = [1,1]
+    binary_list = [1, 1]
     expected_result = 3
     result = convert_binary_list_to_integer(binary_list)
     assert result == expected_result
+
 
 def test_list_11_gray():
     """Check conversion of list [1,1]"""
     gray = True
-    binary_list = [1,1]
+    binary_list = [1, 1]
     expected_result = 2
     result = convert_binary_list_to_integer(binary_list, gray)
     assert result == expected_result
 
+
 def test_list_1110():
     """Check conversion of list [1,1,1,0]"""
-    binary_list = [1,1,1,0]
+    binary_list = [1, 1, 1, 0]
     expected_result = 14
     result = convert_binary_list_to_integer(binary_list)
     assert result == expected_result
 
+
 def test_list_1110_gray():
     """Check conversion of list [1,1,1,0] with gray codes"""
     gray = True
-    binary_list = [1,1,1,0]
+    binary_list = [1, 1, 1, 0]
     expected_result = 11
     result = convert_binary_list_to_integer(binary_list, gray)
     assert result == expected_result
 
+
 def test_list_1000_gray():
     """Check conversion of list [1,0,0,0] with gray codes"""
     gray = True
-    binary_list = [1,0,0,0]
+    binary_list = [1, 0, 0, 0]
     expected_result = 15
     result = convert_binary_list_to_integer(binary_list, gray)
     assert result == expected_result
 
+
 def test_check_loc_list_valid1():
     """Test validation of location list with a valid solution"""
     locs = 4
-    loc_list = [0,1,2]
+    loc_list = [0, 1, 2]
     result = check_loc_list(loc_list, locs)
     expected_result = True
     assert expected_result == result
 
+
 def test_check_loc_list_valid2():
     """Test validation of location list with a valid solution"""
     locs = 5
-    loc_list = [0,1,2,3,4]
+    loc_list = [0, 1, 2, 3, 4]
     result = check_loc_list(loc_list, locs)
     expected_result = True
-    assert  expected_result == result
-     
+    assert expected_result == result
+
+
 def test_check_loc_list_invalid1():
     """Test validation of location list with an invalid solution"""
     locs = 4
-    loc_list = [0,1,1]
+    loc_list = [0, 1, 1]
     result = check_loc_list(loc_list, locs)
     expected_result = False
     assert expected_result == result
+
 
 def test_check_loc_list_invalid2():
     """Test validation of location list with an integer out of range"""
@@ -230,6 +253,7 @@ def test_check_loc_list_invalid2():
     expected_result = False
     assert expected_result == result
 
+
 def test_check_loc_list_invalid3():
     """Test validation of location list with an integer out of range at end"""
     locs = 5
@@ -237,6 +261,7 @@ def test_check_loc_list_invalid3():
     result = check_loc_list(loc_list, locs)
     expected_result = False
     assert expected_result == result
+
 
 def test_check_loc_list_invalid4():
     """Test validation of location list with an integer just out of range at end"""
@@ -246,21 +271,24 @@ def test_check_loc_list_invalid4():
     expected_result = False
     assert expected_result == result
 
+
 def test_augment_loc_list1():
     """Check adding location to the end of a simple list"""
     locs = 4
-    loc_list = [0,1,2]
+    loc_list = [0, 1, 2]
     result = augment_loc_list(loc_list, locs)
-    expected_result = [0,1,2,3]
+    expected_result = [0, 1, 2, 3]
     assert expected_result == result
+
 
 def test_augment_loc_list2():
     """Check adding location to the end of a jumbled list"""
     locs = 4
-    loc_list = [2,0,3]
+    loc_list = [2, 0, 3]
     result = augment_loc_list(loc_list, locs)
-    expected_result = [2,0,3,1]
+    expected_result = [2, 0, 3, 1]
     assert expected_result == result
+
 
 def test_find_total_distance():
     """Check total distance calculation for a simple circuit"""
@@ -272,6 +300,7 @@ def test_find_total_distance():
     result = find_total_distance(int_list, locs, distance_array)
     assert expected_result == result
 
+
 def test_find_problem_size_4():
     """Check problem size for 4 locations"""
     expected_result = 3
@@ -279,6 +308,7 @@ def test_find_problem_size_4():
     formulation = 'original'
     result = find_problem_size(locations, formulation)
     assert expected_result == result
+
 
 def test_find_problem_size_4_new():
     """Check problem size for 4 locations"""
@@ -288,6 +318,7 @@ def test_find_problem_size_4_new():
     result = find_problem_size(locations, formulation)
     assert expected_result == result
 
+
 def test_find_problem_size_5_new():
     """Check problem size for 5 locations"""
     locations = 5
@@ -295,6 +326,7 @@ def test_find_problem_size_5_new():
     expected_result = 7
     result = find_problem_size(locations, formulation)
     assert expected_result == result
+
 
 def test_find_problem_size_26():
     """Check problem size for 26 locations"""
@@ -304,6 +336,7 @@ def test_find_problem_size_26():
     result = find_problem_size(locations, formulation)
     assert expected_result == result
 
+
 def test_convert_bit_string_to_cycle_000():
     """Example for 4 locations"""
     locs = 4
@@ -311,6 +344,7 @@ def test_convert_bit_string_to_cycle_000():
     expected_result = [0, 1, 2, 3]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
+
 
 def test_convert_bit_string_to_cycle_001():
     """Example for 4 locations"""
@@ -320,6 +354,7 @@ def test_convert_bit_string_to_cycle_001():
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
 
+
 def test_convert_bit_string_to_cycle_010():
     """Example for 4 locations"""
     locs = 4
@@ -327,6 +362,7 @@ def test_convert_bit_string_to_cycle_010():
     expected_result = [0, 2, 1, 3]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
+
 
 def test_convert_bit_string_to_cycle_011():
     """Example for 4 locations"""
@@ -336,6 +372,7 @@ def test_convert_bit_string_to_cycle_011():
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
 
+
 def test_convert_bit_string_to_cycle_100():
     """Example for 4 locations"""
     locs = 4
@@ -343,6 +380,7 @@ def test_convert_bit_string_to_cycle_100():
     expected_result = [0, 3, 1, 2]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
+
 
 def test_convert_bit_string_to_cycle_101():
     """Example for 4 locations"""
@@ -352,6 +390,7 @@ def test_convert_bit_string_to_cycle_101():
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
 
+
 def test_convert_bit_string_to_cycle_110():
     """Example for 4 locations"""
     locs = 4
@@ -360,6 +399,7 @@ def test_convert_bit_string_to_cycle_110():
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
 
+
 def test_convert_bit_string_to_cycle_111():
     """Example for 4 locations"""
     locs = 4
@@ -367,6 +407,7 @@ def test_convert_bit_string_to_cycle_111():
     expected_result = [0, 1, 3, 2]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
+
 
 def test_convert_bit_string_to_cycle_111_gray():
     """Example for 4 locations"""
@@ -377,42 +418,78 @@ def test_convert_bit_string_to_cycle_111_gray():
     result = convert_bit_string_to_cycle(bit_string, locs, gray)
     assert expected_result == result
 
+
 def test_convert_bit_string_to_cycle_3():
     """Example for 5 locations"""
     locs = 5
-    bit_string = [1, 1, 1, 1, 1] 
+    bit_string = [1, 1, 1, 1, 1]
     expected_result = [0, 4, 1, 3, 2]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
 
+
 def test_convert_bit_string_to_cycle_4():
     """Example for 5 locations"""
     locs = 5
-    bit_string = [1, 0, 1, 1, 1] 
+    bit_string = [1, 0, 1, 1, 1]
     expected_result = [0, 3, 1, 4, 2]
     result = convert_bit_string_to_cycle(bit_string, locs)
     assert expected_result == result
+
 
 def test_convert_bit_string_to_cycle_15_gray():
     """Example for 15 locations with Gray code"""
     locs = 15
     gray = True
     expected_result = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
-    
-    bit_string = [1, 0, 1, 1, \
-                  1 ,0 ,1, 0, \
-                  1, 1, 1, 0, \
-                  1, 1, 1, 1, \
-                  1, 1, 0, 1, \
-                  1, 1, 0, 0, \
-                  1, 0, 0, \
-                  1, 0, 1, \
-                  1, 1, 1, \
-                  1, 1, 0, \
-                  1, 0, 1, 1, 1]
-    
+
+    bit_string = [
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+    ]
+
     result = convert_bit_string_to_cycle(bit_string, locs, gray)
-    assert expected_result == result   
+    assert expected_result == result
+
 
 def test_convert_bit_string_to_cycle_15():
     """Example for 15 locations without Gray code"""
@@ -420,21 +497,54 @@ def test_convert_bit_string_to_cycle_15():
     gray = False
     expected_result = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
 
-    bit_string = [1, 1, 0, 1, \
-                  1 ,1 ,0, 0, \
-                  1, 0, 1, 1, \
-                  1, 0, 1, 0, \
-                  1, 0, 0, 1, \
-                  1, 0, 0, 0, \
-                  1, 1, 1, \
-                  1, 1, 0, \
-                  1, 0, 1, \
-                  1, 0, 0, \
-                  1, 1, 1, 0, 1]
+    bit_string = [
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+    ]
 
     result = convert_bit_string_to_cycle(bit_string, locs, gray)
-    assert expected_result == result 
-  
+    assert expected_result == result
+
+
 def test_convert_bit_string_to_cycle_00010__not_gray():
     """Example for 4 locations"""
     locs = 4
@@ -444,58 +554,78 @@ def test_convert_bit_string_to_cycle_00010__not_gray():
     result = convert_bit_string_to_cycle(bit_string, locs, gray, method='new')
     assert expected_result == result
 
+
 def test_find_average():
     """Test find_stats in average mode"""
-    counts = {'100': 145, '111': 131, '101': 183, '001': 65, 
-              '010': 84, '011': 304, '000': 59, '110': 29}
+    counts = {
+        '100': 145,
+        '111': 131,
+        '101': 183,
+        '001': 65,
+        '010': 84,
+        '011': 304,
+        '000': 59,
+        '110': 29,
+    }
     locations = 4
     gray = False
     formulation = 'original'
-    qubits = find_problem_size(locations, formulation)
     filename = 'networks/four_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     cost_fn = cost_fn_fact(
         locations=locations,
-        qubits=qubits,
         gray=gray,
         formulation=formulation,
         distance_array=distance_array,
-        target='local_qiskit'
-        )
-    average, _, _ = find_stats(cost_fn, counts, SHOTS,)
+    )
+    average, _, _ = find_stats(
+        cost_fn,
+        counts,
+        SHOTS,
+    )
     expected_result = 21.916
     assert expected_result == average
 
+
 def test_find_lowest():
     """Test find_stats in lowest mode"""
-    counts = {'100': 145, '111': 131, '101': 183, '001': 65, 
-              '010': 84, '011': 304, '000': 59, '110': 29}
+    counts = {
+        '100': 145,
+        '111': 131,
+        '101': 183,
+        '001': 65,
+        '010': 84,
+        '011': 304,
+        '000': 59,
+        '110': 29,
+    }
     locations = 4
     gray = False
     formulation = 'original'
-    qubits = find_problem_size(locations, formulation)
     filename = 'networks/four_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     cost_fn = cost_fn_fact(
         locations=locations,
-        qubits=qubits,
         gray=gray,
         formulation=formulation,
         distance_array=distance_array,
-        target='local_qiskit'
-        )
-    _ , lowest, _ = find_stats(cost_fn, counts, SHOTS,)
+    )
+    _, lowest, _ = find_stats(
+        cost_fn,
+        counts,
+        SHOTS,
+    )
     expected_result = 21.0
     assert expected_result == lowest
+
 
 def test_find_average_slice1():
     """Test average slice functionality"""
     counts = {'11010': 1000}
     locations = 5
     gray = True
-    qubits = find_problem_size(locations, 'original')
     formulation = 'original'
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
@@ -503,20 +633,19 @@ def test_find_average_slice1():
     AVERAGE_SLICE = 0.6
     cost_fn = cost_fn_fact(
         locations=locations,
-        qubits=qubits,
         gray=gray,
         formulation=formulation,
         distance_array=distance_array,
-        target='local_aws'
-        )
-    average , _ , _ = find_stats(
-        cost_fn, 
-        counts, 
-        SHOTS, 
-        AVERAGE_SLICE, 
-        )
+    )
+    average, _, _ = find_stats(
+        cost_fn,
+        counts,
+        SHOTS,
+        AVERAGE_SLICE,
+    )
     expected_result = 21.0
     assert expected_result == average
+
 
 def test_find_average_slice2():
     """Test average slice functionality - ensure no change"""
@@ -524,25 +653,23 @@ def test_find_average_slice2():
     locations = 5
     gray = True
     formulation = 'original'
-    qubits = find_problem_size(locations, formulation)
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     cost_fn = cost_fn_fact(
         locations=locations,
-        qubits=qubits,
         gray=gray,
         formulation=formulation,
         distance_array=distance_array,
-        target='local_aws'
-        )
-    average , _ , _ = find_stats(
-        cost_fn, 
-        counts, 
-        SHOTS, 
-        )
+    )
+    average, _, _ = find_stats(
+        cost_fn,
+        counts,
+        SHOTS,
+    )
     expected_result = 21.0
     assert expected_result == average
+
 
 def test_find_average_slice2b():
     """Test average slice functionality - ensure no change"""
@@ -550,178 +677,165 @@ def test_find_average_slice2b():
     locations = 5
     gray = True
     formulation = 'original'
-    qubits = find_problem_size(locations, formulation)
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     cost_fn = cost_fn_fact(
         locations=locations,
-        qubits=qubits,
         gray=gray,
         formulation=formulation,
         distance_array=distance_array,
-        target='local_aws'
-        )
-    average , _ , _ = find_stats(
-        cost_fn, 
-        counts, 
-        SHOTS, 
-        )
+    )
+    average, _, _ = find_stats(
+        cost_fn,
+        counts,
+        SHOTS,
+    )
     expected_result = 25.0
     assert expected_result == average
 
+
 def test_find_average_slice3():
     """Test average slice functionality - ensure no change"""
-    counts = {'11010': 500,
-              '00000': 500}
+    counts = {'11010': 500, '00000': 500}
     locations = 5
     gray = True
     formulation = 'original'
-    qubits = find_problem_size(locations, formulation)
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     AVERAGE_SLICE = 0.4
     cost_fn = cost_fn_fact(
         locations=locations,
-        qubits=qubits,
         gray=gray,
         formulation=formulation,
         distance_array=distance_array,
-        target='local_aws'
-        )
-    average , _ , _ = find_stats(
-        cost_fn, 
-        counts, 
-        SHOTS, 
-        AVERAGE_SLICE, 
-        )
+    )
+    average, _, _ = find_stats(
+        cost_fn,
+        counts,
+        SHOTS,
+        AVERAGE_SLICE,
+    )
     expected_result = 21
     assert expected_result == average
 
+
 def test_find_average_slice4():
     """Test average slice functionality - ensure no change"""
-    counts = {'11010': 500,
-              '00000': 500}
+    counts = {'11010': 500, '00000': 500}
     locations = 5
     gray = True
     formulation = 'original'
-    qubits = find_problem_size(locations, formulation)
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     AVERAGE_SLICE = 0.6
     cost_fn = cost_fn_fact(
         locations=locations,
-        qubits=qubits,
         gray=gray,
         formulation=formulation,
         distance_array=distance_array,
-        target='local_aws'
-        )
-    average , _ , _ = find_stats(
-        cost_fn, 
-        counts, 
-        SHOTS, 
-        AVERAGE_SLICE, 
-        )
+    )
+    average, _, _ = find_stats(
+        cost_fn,
+        counts,
+        SHOTS,
+        AVERAGE_SLICE,
+    )
     expected_result = 21.3333
     assert expected_result - average < 0.0001
 
+
 def test_find_average_slice5():
-    """Test average slice functionality - ensure no change  """
-    counts = {'11010': 200, #Energy = 21
-          '00000': 300, #Energy = 25
-          '01101': 500} #Energy = 19
+    """Test average slice functionality - ensure no change"""
+    counts = {
+        '11010': 200,  # Energy = 21
+        '00000': 300,  # Energy = 25
+        '01101': 500,
+    }  # Energy = 19
     locations = 5
     gray = True
     formulation = 'original'
-    qubits = find_problem_size(locations, formulation)
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     AVERAGE_SLICE = 0.8
     cost_fn = cost_fn_fact(
         locations=locations,
-        qubits=qubits,
         gray=gray,
         formulation=formulation,
         distance_array=distance_array,
-        target='local_aws'
-        )
-    average , _ , _ = find_stats(
-        cost_fn, 
-        counts, 
-        SHOTS, 
-        AVERAGE_SLICE, 
-        )
+    )
+    average, _, _ = find_stats(
+        cost_fn,
+        counts,
+        SHOTS,
+        AVERAGE_SLICE,
+    )
     expected_result = 20.25
     assert expected_result == average
+
 
 def test_find_average_slice6():
     """Test finding average slice"""
     counts = {
-        '11010': 200, #Energy = 21
-        '00000': 300, #Energy = 25
-        '01101': 500, #Energy = 19 
-        } 
+        '11010': 200,  # Energy = 21
+        '00000': 300,  # Energy = 25
+        '01101': 500,  # Energy = 19
+    }
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     locations = 5
     gray = True
     formulation = 'original'
-    qubits = find_problem_size(locations, formulation)
     SHOTS = 1000
     AVERAGE_SLICE = 1
     cost_fn = cost_fn_fact(
         locations=locations,
-        qubits=qubits,
         gray=gray,
         formulation=formulation,
         distance_array=distance_array,
-        target='local_aws'
-        )
-    average , _ , _ = find_stats(
-        cost_fn, 
-        counts, 
-        SHOTS, 
-        AVERAGE_SLICE, 
-        )
+    )
+    average, _, _ = find_stats(
+        cost_fn,
+        counts,
+        SHOTS,
+        AVERAGE_SLICE,
+    )
     expected_result = 21.2
     assert expected_result == average
 
+
 def test_find_average_slice7():
-    """Test average slice functionality - ensure no change  """
+    """Test average slice functionality - ensure no change"""
     locations = 5
     gray = True
     formulation = 'original'
-    qubits = find_problem_size(locations, formulation)
     counts = {
-        '11010': 200, #Energy = 21
-        '00000': 300, #Energy = 25
-
-        '01101': 500
-        } #Energy = 19
+        '11010': 200,  # Energy = 21
+        '00000': 300,  # Energy = 25
+        '01101': 500,
+    }  # Energy = 19
     filename = 'networks/five_d.txt'
     distance_array = np.genfromtxt(filename)
     SHOTS = 1000
     AVERAGE_SLICE = 0.2
     cost_fn = cost_fn_fact(
         locations=locations,
-        qubits=qubits,
         gray=gray,
         formulation=formulation,
         distance_array=distance_array,
-        target='local_aws'
-        )
-    average , _ , _ = find_stats(
-        cost_fn, 
-        counts, 
-        SHOTS, 
-        AVERAGE_SLICE, 
-        )
+    )
+    average, _, _ = find_stats(
+        cost_fn,
+        counts,
+        SHOTS,
+        AVERAGE_SLICE,
+    )
     expected_result = 19.0
     assert expected_result == average
+
 
 def test_hot_start_4():
     """Hot start list with four locations"""
@@ -732,6 +846,7 @@ def test_hot_start_4():
     expected_result = [0, 1, 2, 3]
     assert expected_result == actual_result
 
+
 def test_hot_start_5_list():
     """Hot start list with five locations"""
     locations = 5
@@ -740,6 +855,7 @@ def test_hot_start_5_list():
     actual_result = hot_start_list_find(locations, distance_array)
     expected_result = [0, 3, 2, 1, 4]
     assert expected_result == actual_result
+
 
 def test_hot_start_5_distance():
     """Hot start distance with five locations"""
@@ -751,6 +867,7 @@ def test_hot_start_5_distance():
     expected_result = 21
     assert expected_result == actual_result
 
+
 def test_hot_start_list_to_string_101():
     """Hot start list with four locations in descending order"""
     locations = 4
@@ -761,10 +878,11 @@ def test_hot_start_list_to_string_101():
         locations=locations,
         gray=gray,
         formulation=formulation,
-        hot_start_list=hot_start_list
+        hot_start_list=hot_start_list,
     )
     expected_result = [1, 0, 1]
     assert expected_result == actual_result
+
 
 def test_hot_start_list_to_string_101_gray():
     """Hot start list with four locations in descending order with Gray code"""
@@ -776,10 +894,11 @@ def test_hot_start_list_to_string_101_gray():
         locations=locations,
         gray=gray,
         formulation=formulation,
-        hot_start_list=hot_start_list
+        hot_start_list=hot_start_list,
     )
     expected_result = [1, 1, 1]
     assert expected_result == actual_result
+
 
 def test_hot_start_list_to_string_15_locs_no_gray():
     """Hot start list with fifteen locations in descending order without Gray code"""
@@ -791,45 +910,111 @@ def test_hot_start_list_to_string_15_locs_no_gray():
         locations=locations,
         gray=gray,
         formulation=formulation,
-        hot_start_list=hot_start_list
+        hot_start_list=hot_start_list,
     )
-    expected_result = [1, 1, 0, 1, \
-                       1 ,1 ,0, 0, \
-                       1, 0, 1, 1, \
-                       1, 0, 1, 0, \
-                       1, 0, 0, 1, \
-                       1, 0, 0, 0, \
-                       1, 1, 1, \
-                       1, 1, 0, \
-                       1, 0, 1, \
-                       1, 0, 0, \
-                       1, 1, 1, 0, 1]
+    expected_result = [
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+    ]
     assert expected_result == actual_result
+
 
 def test_hot_start_list_to_string_15_locs_gray():
     """Hot start list with fifteen locations in descending order with Gray code"""
     locations = 15
     formulation = 'original'
-    gray = True 
+    gray = True
     hot_start_list = [0, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
     actual_result = hot_start_list_to_string(
         locations=locations,
         gray=gray,
         formulation=formulation,
-        hot_start_list=hot_start_list
-        )
-    expected_result = [1, 0, 1, 1, \
-                       1 ,0 ,1, 0, \
-                       1, 1, 1, 0, \
-                       1, 1, 1, 1, \
-                       1, 1, 0, 1, \
-                       1, 1, 0, 0, \
-                       1, 0, 0, \
-                       1, 0, 1, \
-                       1, 1, 1, \
-                       1, 1, 0, \
-                       1, 0, 1, 1, 1]
+        hot_start_list=hot_start_list,
+    )
+    expected_result = [
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+    ]
     assert expected_result == actual_result
+
 
 def test_bit_string_list_to_bit_string():
     """Test LRC cache conversion of list to bit string"""
@@ -838,6 +1023,7 @@ def test_bit_string_list_to_bit_string():
     obj = LRUCacheUnhashable()
     actual_result = obj.list_to_bit_string(bit_string_list)
     assert expected_result == actual_result
+
 
 def test_binary_string_conversion():
     """Test conversion of binary string to integer and back without gray code"""
@@ -851,6 +1037,7 @@ def test_binary_string_conversion():
         actual_result.append(integer)
     assert expected_result == actual_result
 
+
 def test_binary_string_conversion_gray():
     """Test conversion of binary string to integer and back with gray code"""
     length = 5
@@ -863,9 +1050,10 @@ def test_binary_string_conversion_gray():
         actual_result.append(integer)
     assert expected_result == actual_result
 
+
 def test_bit_string_cycle_conversion_orig():
     """Test conversion of integers to binary lists without Gray code"""
-    locations=4
+    locations = 4
     formulation = 'new'
     gray = False
     f = math.factorial(locations)
@@ -877,23 +1065,22 @@ def test_bit_string_cycle_conversion_orig():
         expected_result.append(binary_list)
     for binary_list in expected_result:
         cycle = convert_bit_string_to_cycle(
-            bit_string=binary_list, 
-            locs=locations, 
-            gray=gray, 
-            method=formulation)
+            bit_string=binary_list, locs=locations, gray=gray, method=formulation
+        )
         new_binary_list = hot_start_list_to_string(
-            locations=locations, 
-            gray=gray, 
-            formulation=formulation, 
-            hot_start_list=cycle
-            )
+            locations=locations,
+            gray=gray,
+            formulation=formulation,
+            hot_start_list=cycle,
+        )
         actual_result.append(new_binary_list)
     assert expected_result == actual_result
+
 
 def test_bit_string_cycle_conversion_orig2():
     """Test conversion of integers to binary lists with Gray code"""
     locations = 4
-    formulation = 'new' 
+    formulation = 'new'
     gray = True
     f = math.factorial(locations)
     dim = find_problem_size(locations, formulation)
@@ -904,19 +1091,17 @@ def test_bit_string_cycle_conversion_orig2():
         expected_result.append(binary_list)
     for binary_list in expected_result:
         cycle = convert_bit_string_to_cycle(
-            bit_string=binary_list, 
-            locs=locations, 
-            gray=gray, 
-            method=formulation
-            )
+            bit_string=binary_list, locs=locations, gray=gray, method=formulation
+        )
         new_binary_list = hot_start_list_to_string(
-            locations=locations, 
-            gray=gray, 
-            formulation=formulation, 
+            locations=locations,
+            gray=gray,
+            formulation=formulation,
             hot_start_list=cycle,
-            )
+        )
         actual_result.append(new_binary_list)
     assert expected_result == actual_result
+
 
 def test_lowest_list1():
     """Test run stats with two low items"""
@@ -925,23 +1110,41 @@ def test_lowest_list1():
     actual_result = find_run_stats(test_list)
     assert expected_result == actual_result
 
+
 def test_lowest_list2():
     """Test run stats with for identical items"""
     test_list = [100, 100, 100, 100]
     expected_result = (100, 0)
     actual_result = find_run_stats(test_list)
-    assert expected_result == actual_result 
+    assert expected_result == actual_result
+
 
 def test_local_quantum1():
     """Test finding out if a target is local"""
     target = 'local_qiskit'
     expected_result = True
     actual_result = find_local_quantum(target)
-    assert expected_result == actual_result 
+    assert expected_result == actual_result
+
 
 def test_local_quantum2():
     """Test finding out if a target is local"""
     target = 'cephus'
     expected_result = False
     actual_result = find_local_quantum(target)
-    assert expected_result == actual_result 
+    assert expected_result == actual_result
+
+
+def test_transform_counts():
+    counts = {'0000': 9, '1000': 8, '0100': 7, '1101': 6, '1110': 5, '1111': 4}
+    actual_output = transform_counts(counts=counts, qubits=3, target='local_aws_test')
+
+    expected_output = {
+        '000': 9,
+        '100': 8,
+        '010': 7,
+        '111': 10,
+        '110': 5,
+    }
+
+    assert actual_output == expected_output

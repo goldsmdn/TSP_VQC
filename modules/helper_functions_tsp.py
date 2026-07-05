@@ -2,6 +2,7 @@
 import copy
 import math
 import random
+from collections import defaultdict
 from pathlib import Path
 from typing import Callable
 
@@ -25,8 +26,6 @@ from modules.config import (
     PRINT_FREQUENCY,
     TARGETS,
 )
-
-# from torch import mps # Import Callable for type hinting
 from modules.helper_functions_general import (
     binary_string_format,
     convert_physical_to_logical_bit_string,
@@ -393,13 +392,18 @@ def find_sdk_from_dispatch_dir(mode) -> str:
 
 
 def find_params_per_qubit(mode: int) -> int:
-    """finds params per qubits for a mdoe from MODE_DISPATCH dictionary"""
+    """finds params per qubits for a mode from MODE_DISPATCH dictionary"""
     return MODE_DISPATCH[mode]['params_per_qubit']
 
 
 def find_multi_layers_allowed(mode) -> bool:
     """finds if multiple layers are allowed from MODE_DISPATCH dictionary"""
     return MODE_DISPATCH[mode]['allow_multiple_layers']
+
+
+def find_valid_targets(mode) -> list:
+    """find a list of all the allowed targets for a mode"""
+    return MODE_DISPATCH[mode]['valid_targets']
 
 
 def find_type(target: str) -> str:
@@ -556,6 +560,14 @@ def vqc_circuit(
     return qc
 
 
+def transform_qiskit_index(
+    i: int,
+    qubits: int,
+) -> int:
+    """reverses order because of quiskit convention"""
+    return qubits - i - 1
+
+
 def create_initial_rotations(
     qubits: int,
     num_params: int,
@@ -587,16 +599,21 @@ def create_initial_rotations(
 
     """
     circuit_sdk = find_sdk(target)
+    print(f'{circuit_sdk=}')
+    print(f'{bin_hot_start_list=}')
     if hot_start:
-        init_rots = [0 for i in range(num_params)]
+        init_rots = [0 for j in range(num_params)]
         for i, item in enumerate(bin_hot_start_list):
+            # print(f'{i=}')
             if item == 1:
                 match circuit_sdk:
                     case 'aws':
                         init_rots[i] = np.pi
                     case 'qiskit':
-                        init_rots[qubits - i - 1] = np.pi
-                # need to reverse order because of qiskit convention
+                        # init_rots[qubits - i - 1] = np.pi
+                        init_rots[transform_qiskit_index(i, qubits)]
+            # print(f'{i=}, {init_rots=}')
+            # need to reverse order because of qiskit convention
     elif not hot_start:
         init_rots = [random.random() * 2 * math.pi for i in range(num_params)]
     else:
@@ -605,7 +622,26 @@ def create_initial_rotations(
     return init_rots_array
 
 
+def transform_counts(counts: dict, qubits: int, target: str) -> dict:
+    """transform the counts dictionary to hold counts in order matching parameters"""
+    new_counts = defaultdict(int)
+    for key, value in counts.items():
+        new_key = convert_physical_to_logical_bit_string(
+            input_bitstring=key, qubits=qubits, target=target
+        )
+        new_counts[new_key] += value
+    return new_counts
+
+
+def print_counts_summary(counts: dict, shots: int):
+    threshold = shots / 100
+    for key, value in counts.items():
+        if value > threshold:
+            print(f'{key=}, {value=}')
+
+
 def cost_func_evaluate(
+    qubits: int,
     noise_bool: bool,
     shots: int,
     cost_fn: Callable,
@@ -661,7 +697,6 @@ def cost_func_evaluate(
                 counts = job.result().get_counts()
             elif mps:
                 simulator = AerSimulator(method='matrix_product_state')
-                # results = simulator.run(model).result()
                 results = simulator.run(model, shots=shots).result()
                 counts = results.get_counts(model)
             else:
@@ -675,6 +710,12 @@ def cost_func_evaluate(
                     counts = results.get_counts(model)
         case _:
             raise Exception(f'SDK {sdk_type} has not been coded for')
+
+    print('Before transformation')
+    print_counts_summary(counts, shots)
+    counts = transform_counts(counts=counts, qubits=qubits, target=target)
+    print('After transformation')
+    print_counts_summary(counts, shots)
 
     cost, lowest, lowest_energy_bit_string = find_stats(
         cost_fn=cost_fn,
@@ -868,6 +909,7 @@ def update_parameters_using_gradient(
         # find initial gradient.
         abs_gradient = np.abs(
             my_gradient(
+                qubits=qubits,
                 noise_bool=noise_bool,
                 shots=shots,
                 s=s,
@@ -885,7 +927,6 @@ def update_parameters_using_gradient(
         magnitude_g0 = abs_gradient.mean()
         # stop div by zero error
         a = eta * ((big_a + 1) ** alpha) / (magnitude_g0 + 0.001)
-        # print(f'{abs_gradient=}, {magnitude_g0=}, {a=}, {eta=}, {big_a=}, {alpha=}')
     if calls == 1:
         # need to get started so that have a value when calculate delta
         bc = bind_weights(
@@ -896,6 +937,7 @@ def update_parameters_using_gradient(
         )
         print('evaluating cost function')
         average, lowest, lowest_energy_bit_string = cost_func_evaluate(
+            qubits=qubits,
             noise_bool=noise_bool,
             shots=shots,
             cost_fn=cost_fn,
@@ -912,10 +954,10 @@ def update_parameters_using_gradient(
             qc=qc,
             target=target,
         )
-        # if gradient_type != 'SPSA2':
         if calls > 1:
             # find the cost
             average, lowest, lowest_energy_bit_string = cost_func_evaluate(
+                qubits=qubits,
                 noise_bool=noise_bool,
                 shots=shots,
                 cost_fn=cost_fn,
@@ -926,6 +968,7 @@ def update_parameters_using_gradient(
             )
             if evaluate_av_slice_separately:
                 cost, lowest, lowest_energy_bit_string = cost_func_evaluate(
+                    qubits=qubits,
                     noise_bool=noise_bool,
                     shots=shots,
                     cost_fn=cost_fn,
@@ -944,33 +987,27 @@ def update_parameters_using_gradient(
         if i == 0:
             lowest_string_to_date = lowest_energy_bit_string
             lowest_to_date = lowest
-            # print(f'{lowest_string_to_date}')
+
         else:
             if lowest < lowest_to_date:
                 lowest_to_date = lowest
                 lowest_string_to_date = lowest_energy_bit_string
-            # only need this code for AWS non-essential reporting
-            lowest_string_to_date = convert_physical_to_logical_bit_string(
-                input_bitstring=lowest_string_to_date,
-                qubits=qubits,
-                target=target,
-            )
-            # print(f'{lowest_string_to_date}')
+
         route_list = convert_bit_string_to_cycle(
             bit_string=lowest_string_to_date,
             locs=locations,
             gray=gray,
             method=formulation,
         )
-        # print(f'{route_list=}')
+
         index_list.append(i)
         cost_list.append(cost)
         lowest_list.append(lowest_to_date)
         average_list.append(average)
         parameter_list.append(rots)
-        # if gradient_type == 'parameter_shift':
         if not SPSA_like:
             gradient = my_gradient(
+                qubits=qubits,
                 noise_bool=noise_bool,
                 shots=shots,
                 s=s,
@@ -989,6 +1026,7 @@ def update_parameters_using_gradient(
                 ak = a / ((i + 1 + big_a) ** (alpha))
                 ck = c / ((i + 1) ** (gamma))
                 gradient = my_gradient(
+                    qubits=qubits,
                     noise_bool=noise_bool,
                     shots=shots,
                     s=s,
@@ -1012,10 +1050,7 @@ def update_parameters_using_gradient(
                 deltak = np.random.choice([-1, 1], size=length)
                 # simultaneous perturbations
                 ck_deltak = ck * deltak
-                # print(f'{ck_deltak=}')
                 new_rots = rots + ck_deltak
-                # old_rots = rots  # for prining
-                # print(f'{new_rots=}')
 
                 # gradient approximation
                 bc = bind_weights(
@@ -1024,12 +1059,9 @@ def update_parameters_using_gradient(
                     qc=qc,
                     target=target,
                 )
-                # set verbose for debugging
-                # if print_results and i % PRINT_FREQUENCY == 0:
-                #    verbose = True
-                # else:
-                #    verbose = False
+
                 new_average, lowest, lowest_energy_bit_string = cost_func_evaluate(
+                    qubits=qubits,
                     noise_bool=noise_bool,
                     shots=shots,
                     cost_fn=cost_fn,
@@ -1037,15 +1069,11 @@ def update_parameters_using_gradient(
                     target=target,
                     mps=mps,
                     average_slice=average_slice,
-                    # verbose=verbose,
                 )
 
-                # print(f'evalulated average cost as {new_average=} in iteration {i=}')
                 delta = new_average - average
                 gradient = delta / ck_deltak
-                # print(f'{gradient=}')
                 rots = rots - ak * gradient
-                # print(f'{rots=}')
             else:
                 raise ValueError(f'{calls=} is not coded for')
 
@@ -1065,14 +1093,7 @@ def update_parameters_using_gradient(
                     f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date}',
                     flush=True,
                 )
-                # print(
-                #    f'{ak=} {ck=} \n ',
-                # f'Rotations from last iterations = {old_rots} \n'
-                #    f'Rotations after this iteration = {rots} \n',
-                # f'Rotations used for gradient evaluation =  {new_rots} \n'
-                # f'{gradient=} \n {ck_deltak=}',
-                #    flush=True,
-                # )
+
                 print(f'and route {route_list}')
                 # AWS hybrid job
                 log_metric(
@@ -1089,7 +1110,6 @@ def update_parameters_using_gradient(
                     iteration_number=i,
                     value=lowest_to_date,
                 )
-        # if gradient_type == 'SPSA2':
         if calls == 1:
             average = new_average
             cost = new_average
@@ -1104,11 +1124,12 @@ def update_parameters_using_gradient(
 
 
 def my_gradient(
+    qubits: int,
     noise_bool: bool,
     shots: int,
     s: float,
     gradient_type: str,
-    cost_fn,
+    cost_fn: Callable,
     qc: Circuit,
     params: list,
     rots: np.ndarray,
@@ -1166,6 +1187,7 @@ def my_gradient(
                 target=target,
             )
             cost_plus, _, _ = cost_func_evaluate(
+                qubits=qubits,
                 noise_bool=noise_bool,
                 shots=shots,
                 cost_fn=cost_fn,
@@ -1183,6 +1205,7 @@ def my_gradient(
                 target=target,
             )
             cost_minus, _, _ = cost_func_evaluate(
+                qubits=qubits,
                 noise_bool=noise_bool,
                 shots=shots,
                 cost_fn=cost_fn,
@@ -1194,8 +1217,6 @@ def my_gradient(
             delta = s * (cost_plus - cost_minus)
             gradient_list.append(delta)
         gradient_array = np.array(gradient_list)
-    # elif gradient_type == 'SPSA':
-    # elif gradient_type in ['SPSA', 'SPSA2']:
     elif SPSA_like:
         # spsa 2 is only called to find original gradient.
         # number of parameters
@@ -1205,7 +1226,6 @@ def my_gradient(
 
         # simultaneous perturbations
         ck_deltak = ck * deltak
-        # print(f'{ck_deltak=}')
         new_rots = rots + ck_deltak
 
         # gradient approximation
@@ -1216,6 +1236,7 @@ def my_gradient(
             target=target,
         )
         cost_plus, _, _ = cost_func_evaluate(
+            qubits=qubits,
             noise_bool=noise_bool,
             shots=shots,
             cost_fn=cost_fn,
@@ -1233,6 +1254,7 @@ def my_gradient(
             target=target,
         )
         cost_minus, _, _ = cost_func_evaluate(
+            qubits=qubits,
             noise_bool=noise_bool,
             shots=shots,
             cost_fn=cost_fn,
@@ -1247,14 +1269,12 @@ def my_gradient(
         # need to return an array to match parameter shift
     else:
         raise Exception(f'Gradient type {gradient_type} is not an allowed choice')
-    # print(f'evaluated gradient with {gradient_type=} and returned {gradient_array=}')
     return gradient_array
 
 
 def validate_gradient_type(gradient_type):
     """Check that the gradient type is valid"""
-    allowed_types = ['parameter_shift', 'SPSA', 'SPSA2']
-    if gradient_type not in allowed_types:
+    if gradient_type not in OPTIMIZER_DICT:
         raise Exception(f'Gradient type {gradient_type} is not coded for')
 
 
@@ -1288,7 +1308,6 @@ def convert_bit_string_to_cycle(
         # need to avoid changing the original bit_string
         bit_string_copy = copy.deepcopy(bit_string)
         end_cycle_list.append(start_cycle_list.pop(0))  # end point of cycle is always 0
-
         for i in range(locs - 1, 1, -1):
             bin_len = find_bin_length(i)
             bin_string = []
@@ -1329,11 +1348,9 @@ def convert_bit_string_to_cycle(
 
 def cost_fn_fact(
     locations: int,
-    qubits,
     gray: bool,
     formulation: str,
     distance_array: np.ndarray,
-    target: str,
 ) -> Callable[[list], int]:
     """Returns a cost function inside a decorator,
 
@@ -1354,7 +1371,11 @@ def cost_fn_fact(
     Returns
     -------
     cost_fn: cost function
-        A function of a bit string evaluating a distance for that bit string
+        A function of a bit string evaluating a distance for that bit string.  This bit
+        string has the same length as the number of qubits,
+        and is in the order of parameters and logical qubits, not in the order of
+        physical qubits, if this is different.  The output from the quantum device is translated
+        to this logical string.
 
     """
 
@@ -1362,16 +1383,11 @@ def cost_fn_fact(
     def cost_fn(bit_string_input: list) -> float:
         """Returns the value of the objective function for a bit_string"""
         if isinstance(bit_string_input, list):
-            if target in ['ml', 'monte_carlo']:
-                # no need to convert from physical to logical bit string as
-                # the input is not from a quantum computer
-                bit_string = bit_string_input
-            else:
-                bit_string = convert_physical_to_logical_bit_string(
-                    input_bitstring=bit_string_input, qubits=qubits, target=target
-                )
             full_list_of_locs = convert_bit_string_to_cycle(
-                bit_string=bit_string, locs=locations, gray=gray, method=formulation
+                bit_string=bit_string_input,
+                locs=locations,
+                gray=gray,
+                method=formulation,
             )
             total_distance = find_total_distance(
                 int_list=full_list_of_locs,
@@ -1491,6 +1507,9 @@ def hot_start_list_to_string(
     -------
     result_list: list
         A list of bits that represents the bit string for the lowest cycle
+        The output returned is in the order of parameters, and needs to be converted to the
+        physical qubits number used, if the physical qubits, and the parameters,
+        have different numbering.
 
     """
 
@@ -1619,13 +1638,21 @@ def calculate_hot_start_data(
         locations=locations,
         distance_array=distance_array,
     )
+
     bin_hot_start_list = hot_start_list_to_string(
         locations=locations,
         gray=gray,
         formulation=formulation,
         hot_start_list=hot_start_list,
     )
+
     hot_start_distance = cost_fn(bin_hot_start_list)
+
+    print(
+        f'Hot start list is {hot_start_list} and this is converted to a binary list {bin_hot_start_list}'
+    )
+
+    # hot_start_distance = cost_fn(logical_bin_hot_start_list)
     if print_results:
         print(f'The hot start location list is {hot_start_list}')
         print(f'This is equivalent to a binary list: {bin_hot_start_list}')
@@ -1633,4 +1660,7 @@ def calculate_hot_start_data(
             f'The hot start distance is {hot_start_distance}, compared to a best distance of {best_dist}.'
         )
         print(f'The hot start distance is {hot_start_distance}')
+
+    # we carefully convert logical qubit numbers to physical qubit numbers later,
+    # so that the hot start is valid for the quantum computer used.
     return bin_hot_start_list, hot_start_distance
