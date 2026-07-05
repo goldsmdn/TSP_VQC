@@ -13,6 +13,9 @@ from modules.quantum_circuits import (
     mode_14,
     mode_15,
     mode_16,
+    mode_20,
+    mode_21,
+    mode_22,
 )
 
 # General control data - directories, file names, etc.
@@ -24,11 +27,11 @@ GRAPH_DIR = 'graphs'
 RESULTS_DIR = 'results'
 RESULTS_FILE = 'results.csv'
 ENCODING = 'utf-8-sig'  # Encoding of csv file
-AWS = False  # Whether runs are on AWS or Qiskit.
+AWS = True  # Whether runs are on AWS or Qiskit.
 
 CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
 
-TARGET = 'local_qiskit'  # Options from TARGETS dictionary below.  This controls which
+TARGET = 'local_aws_test'  # Options from TARGETS dictionary below.  This controls which
 # quantum device is used and whether the emulator is used.
 
 TARGETS = {
@@ -44,7 +47,13 @@ TARGETS = {
         'sdk': 'qiskit',
         'local_quantum': True,
     },
-    'local_aws_test': {  # test on local aws simulator using Cephus connectivity
+    'local_qiskit_test': {  # test on local qiskit simulator using Cepheus connectivity
+        'type': 'local_qiskit',
+        'emulator': True,
+        'sdk': 'qiskit',
+        'local_quantum': True,
+    },
+    'local_aws_test': {  # test on local aws simulator using Cepheus connectivity
         'type': 'local_aws',
         'emulator': True,
         'sdk': 'aws',
@@ -78,11 +87,11 @@ PLOT_TITLE = False  # Plot titles with graphs.  Not needed for publication.
 
 # configuration information used in ALL manual runs
 
-LOCATIONS = 12  # number of locations to be visited
+LOCATIONS = 15  # number of locations to be visited
 SHOTS = 1_024  # shots used for each call of the quantum circuit
 
-ITERATIONS = 1_250  # updates, or iterations
-PRINT_FREQUENCY = 1_250
+ITERATIONS = 2  # updates, or iterations
+PRINT_FREQUENCY = 1
 GRAY = False  # Use Gray codes
 HOT_START = True  # Make a hot start
 GRADIENT_TYPE = 'SPSA2'  # controls the optimiser used
@@ -181,7 +190,7 @@ DECODING_FORMULATION = 'original'  # 'original' or 'new' - new is formulation fr
 NUM_LAYERS = 1  # number of layers in the model
 
 # information needed in QML manual runs:
-MODE = 2  # See list of allowed modes in MODE_DISPATCH below.
+MODE = 21  # See list of allowed modes in MODE_DISPATCH below.
 # This controls the structure of the variational quantum circuit used in the QML runs.
 # The modes are described in the function that sets up the variational quantum circuit
 # in helper_functions_quantum.py.
@@ -194,6 +203,7 @@ MODE_DISPATCH = {
         'params_per_qubit': 2,
         'hot_start_valid': False,
         'allow_multiple_layers': True,
+        'valid_targets': ['local_qiskit'],
     },
     2: {
         'circuit': mode_2,  # Qiskit rxgate, XX gates -can be used with Hot Start
@@ -201,6 +211,7 @@ MODE_DISPATCH = {
         'params_per_qubit': 2,
         'hot_start_valid': True,
         'allow_multiple_layers': True,
+        'valid_targets': ['local_qiskit'],
     },
     3: {
         'circuit': mode_3,  # Qiskit IQP based
@@ -208,6 +219,7 @@ MODE_DISPATCH = {
         'params_per_qubit': 2,
         'hot_start_valid': False,
         'allow_multiple_layers': True,
+        'valid_targets': ['local_qiskit'],
     },
     4: {
         'circuit': mode_4,  # Qiskit rxgate
@@ -215,6 +227,7 @@ MODE_DISPATCH = {
         'params_per_qubit': 1,
         'hot_start_valid': True,
         'allow_multiple_layers': False,
+        'valid_targets': ['local_qiskit'],
     },
     5: {
         'circuit': mode_5,  # Qiskit test mode
@@ -222,6 +235,7 @@ MODE_DISPATCH = {
         'params_per_qubit': 2,
         'hot_start_valid': False,
         'allow_multiple_layers': True,
+        'valid_targets': ['local_qiskit'],
     },
     6: {
         'circuit': mode_6,  # Qiskit rxgate, ry gate
@@ -229,6 +243,7 @@ MODE_DISPATCH = {
         'params_per_qubit': 2,
         'hot_start_valid': False,
         'allow_multiple_layers': True,
+        'valid_targets': ['local_qiskit'],
     },
     7: {
         'circuit': mode_7,  # AWS rz gates, iswap gates
@@ -236,14 +251,17 @@ MODE_DISPATCH = {
         'params_per_qubit': 2,
         'hot_start_valid': False,
         'allow_multiple_layers': True,
+        'valid_targets': ['local_qiskit'],
     },
     8: {
         'sdk': 'ml',  # input is all zeros - with sine activation
         'allow_multiple_layers': True,
+        'valid_targets': ['ml'],
     },
     9: {
         'sdk': 'ml',  # input is 0.5 - with sine activation
         'allow_multiple_layers': True,
+        'valid_targets': ['ml'],
     },
     13: {
         'circuit': mode_13,  # AWS IQP with only RX, RZ and CZ
@@ -251,20 +269,23 @@ MODE_DISPATCH = {
         'params_per_qubit': 2,
         'hot_start_valid': False,
         'allow_multiple_layers': False,
+        'valid_targets': ['local_aws', 'local_aws_test'],
     },
     14: {
         'circuit': mode_14,  # Qiskit IQP with only RX, RZ and CZ
         'sdk': 'qiskit',
         'params_per_qubit': 2,
-        'hot_start_valid': True,
+        'hot_start_valid': False,
         'allow_multiple_layers': False,
+        'valid_targets': ['local_qiskit'],
     },
     15: {
         'circuit': mode_15,  # Qiskit IQP with only RX, RZ and CZ improved version of 14.
         'sdk': 'qiskit',
         'params_per_qubit': 2,
-        'hot_start_valid': True,
+        'hot_start_valid': False,
         'allow_multiple_layers': False,
+        'valid_targets': ['local_qiskit'],
     },
     16: {
         'circuit': mode_16,  # Qiskit IQP with only RX, RZ and CZ improved version of 14.
@@ -272,9 +293,44 @@ MODE_DISPATCH = {
         'params_per_qubit': 2,
         'hot_start_valid': False,
         'allow_multiple_layers': False,
+        'valid_targets': ['local_qiskit'],
     },
-    18: {'sdk': 'ml'},  # input is all zeros - with sigmoid activation
-    19: {'sdk': 'ml'},  # input is 0.5 - with sigmoid activation
+    18: {
+        'sdk': 'ml',  # input is all zeros - with sigmoid activation
+        'allow_multiple_layers': True,
+        'valid_targets': ['ml'],
+    },
+    19: {
+        'sdk': 'ml',  # input is 0.5 - with sigmoid activation
+        'allow_multiple_layers': True,
+        'valid_targets': ['ml'],
+    },
+    20: {
+        'circuit': mode_20,  # AWS copy of mode 2.
+        'sdk': 'aws',
+        'params_per_qubit': 2,
+        'hot_start_valid': True,
+        'allow_multiple_layers': False,
+        'valid_targets': ['local_aws', 'local_aws_test'],
+    },
+    21: {
+        'circuit': mode_21,  # AWS copy of mode 2 with RXX removed.
+        # final circuit used for Cephus runs
+        'sdk': 'aws',
+        'params_per_qubit': 2,
+        'hot_start_valid': True,
+        'allow_multiple_layers': False,
+        'valid_targets': ['local_aws', 'cephus', 'local_aws_test'],
+    },
+    22: {
+        'circuit': mode_22,  # Qiskit copy of circuit 21.  Mode 2 for AWS
+        # simulated on Qiskit
+        'sdk': 'qiskit',
+        'params_per_qubit': 2,
+        'hot_start_valid': True,
+        'allow_multiple_layers': False,
+        'valid_targets': ['local_qiskit'],
+    },
 }
 
 SLICES = [1.0]  # Slices to use when calculating the gradient
@@ -282,20 +338,18 @@ SLICES = [1.0]  # Slices to use when calculating the gradient
 ALPHA = 0.602  # constant that controls the learning rate for SPSA decays
 BIG_A = 100  # A for SPSA
 C = np.pi / 10  # initial CK for SPSA
-# C = np.pi / 20  # initial CK for SPSA
 # ETA = 0.1  # eta - learning rate for parameter shift
-ETA = 0.005
-# ETA = 0.01
+ETA = 0.005  # appropriate value for SPSA2
 GAMMA = 0.101  # constant that determines how quickly the SPSA perturbation decays
 S = 0.5  # parameter for parameter shift.  Default is 0.5
 SIMULATE_NOISE = False  # simulate noise in the quantum circuit
-MPS = True  # use MPS simulator
+MPS = False  # use MPS simulator
 
 ROTATIONS = 10  # number of rotations sampled in parameter graphs
 
 # information needed in ML manual runs:
 STD_DEV = 0.05  # standard deviation for warm start weight randomization
-LR = 1e-3  # Learning rate
+LR = 1e-3  # Learning rate for ML
 MOMENTUM = 0.9
 WEIGHT_DECAY = 0.0006  # importance of L2 regularization in optimiser
 
@@ -630,6 +684,16 @@ VALID_QUBIT_LOOPS = {
             1,
             10,
             9,
+        ],  # convention - loops return to qubit 0 at the end and this is assumed in the code
+        8: [
+            0,
+            1,
+            2,
+            3,
+            12,
+            11,
+            10,
+            9,
         ],
         14: [
             0,
@@ -645,6 +709,200 @@ VALID_QUBIT_LOOPS = {
             12,
             11,
             10,
+            9,
+        ],
+        29: [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            16,
+            15,
+            14,
+            13,
+            12,
+            11,
+            10,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            33,
+            32,
+            31,
+            30,
+            29,
+            28,
+            27,
+            18,
+            9,
+        ],
+    },
+    'local_qiskit_test': {
+        3: [
+            0,
+            1,
+            10,
+            9,
+        ],  # convention - loops return to qubit 0 at the end and this is assumed in the code
+        8: [
+            0,
+            1,
+            2,
+            3,
+            12,
+            11,
+            10,
+            9,
+        ],
+        14: [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            15,
+            14,
+            13,
+            12,
+            11,
+            10,
+            9,
+        ],
+        29: [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            16,
+            15,
+            14,
+            13,
+            12,
+            11,
+            10,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            33,
+            32,
+            31,
+            30,
+            29,
+            28,
+            27,
+            18,
+            9,
+        ],
+        41: [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            16,
+            15,
+            14,
+            13,
+            12,
+            11,
+            10,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            35,
+            34,
+            33,
+            32,
+            31,
+            30,
+            39,
+            48,
+            49,
+            58,
+            57,
+            56,
+            55,
+            54,
+            45,
+            36,
+            27,
+            18,
+            9,
+        ],
+        49: [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            16,
+            15,
+            14,
+            13,
+            12,
+            11,
+            10,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            35,
+            34,
+            33,
+            32,
+            31,
+            30,
+            39,
+            48,
+            49,
+            50,
+            51,
+            52,
+            61,
+            60,
+            59,
+            58,
+            57,
+            56,
+            65,
+            64,
+            55,
+            54,
+            45,
+            36,
+            27,
+            18,
             9,
         ],
     },

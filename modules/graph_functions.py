@@ -699,6 +699,7 @@ def plot_overall_results(
     AWS_results: pd.DataFrame = False,
     monte_carlo: pd.DataFrame = False,
     n_cols: int = 2,  # number of columns in the legend
+    legend_fontsize: str = 'small',  # font size for the bar labels
 ):
     """plots overall results for the paper"""
     x = np.arange(len(locs))
@@ -801,7 +802,7 @@ def plot_overall_results(
         labels,
         loc='upper right',
         ncols=n_cols,
-        fontsize='small',
+        fontsize=legend_fontsize,
         framealpha=1,
         shadow='true',
     )
