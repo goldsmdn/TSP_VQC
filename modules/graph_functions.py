@@ -746,7 +746,7 @@ def plot_overall_results(
     # --- Now add Greedy Classical line (centered over grouped bars) ---
     if greedy_classical:
         ax.plot(
-            x + center_offset,
+            x + center_offset - 0.2,
             greedy_classical,
             color='black',
             marker='D',
@@ -754,18 +754,20 @@ def plot_overall_results(
             linewidth=1,
             markersize=5,
             label='Greedy Classical',
+            zorder=3,
         )
 
     if AWS_results:
         ax.plot(
-            x + center_offset,
+            x + center_offset + 0.05,
             AWS_results,
-            color='black',
-            marker='P',
+            color='#9467bd',
+            marker='X',
             linestyle='--',
             linewidth=1,
-            markersize=15,
-            label='VQA: Hardware',
+            markersize=10,
+            label='VQA: Rigetti Cepheus',
+            zorder=2,
         )
 
     if monte_carlo:

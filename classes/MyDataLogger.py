@@ -166,21 +166,9 @@ class MySubDataLogger(MyDataLogger):
     def calculate_parameter_numbers(self) -> int:
         """Calculate the number of parameters in a variational quantum circuit"""
         num_params_per_qubit = find_params_per_qubit(self.mode)
-        print(f'{num_params_per_qubit=}')
-        # insert
         qubits_measured = find_qubits_measured(self.qubits, self.target)
+        print(f'{num_params_per_qubit=} {qubits_measured=} {self.layers=} ')
         num_params = num_params_per_qubit * qubits_measured * self.layers
-        # end insert
-        # targets_sdk = find_sdk_from_dispatch_dir(self.mode)
-        # match targets_sdk:
-        #    case 'aws':
-        #        qubits_measured = find_qubits_measured(self.qubits, self.target)
-        #        num_params =  num_params_per_qubit * qubits_measured * self.layers
-        #    case 'qiskit':
-        #        num_params = num_params_per_qubit * self.qubits * self.layers
-        #    case _:
-        #        raise Exception(f'Mode {self.mode} has not been coded for')
-
         return num_params
 
     def validate_input(self):
@@ -310,13 +298,17 @@ class MySubDataLogger(MyDataLogger):
             if self.gradient_type == 'SGD':
                 self.momentum = float(data_dict['momentum'])
         if self.quantum:
-            self.slice = float(data_dict['slice'])
-            self.alpha = float(data_dict['alpha'])
-            self.big_a = float(data_dict['big_a'])
-            self.c = float(data_dict['c'])
-            self.gamma = float(data_dict['gamma'])
-            self.eta = float(data_dict['eta'])
-            self.s = float(data_dict['s'])
+            optimizer_source = find_optimizer_source(self.gradient_type)
+            if optimizer_source != 'nevergrad':
+                # these constants are not used by Nevergrad optimizers
+                self.alpha = float(data_dict['alpha'])
+                self.big_a = float(data_dict['big_a'])
+                self.c = float(data_dict['c'])
+                self.gamma = float(data_dict['gamma'])
+                self.eta = float(data_dict['eta'])
+                self.s = float(data_dict['s'])
+            else:
+                self.sigma = float(data_dict['sigma'])
             self.noise = format_boolean(data_dict['noise'])
             self.mps = format_boolean(data_dict['mps'])
             self.aws = format_boolean(data_dict['aws'])
@@ -351,6 +343,7 @@ class MySubDataLogger(MyDataLogger):
             self.eta = ETA
             self.gamma = GAMMA
             self.s = S
+        # sigma is set in Nevergrad specific notebook.
 
     def update_ml_constants_from_config(self):
         """Update constants needed for ML from config file"""
@@ -398,29 +391,11 @@ class MySubDataLogger(MyDataLogger):
         average_list = list(map(float, self.average_list))
         lowest_list = list(map(float, self.lowest_list))
         sliced_list = list(map(float, self.sliced_list))
-        # if self.sliced_list != [] and self.best_av_list != []:
-        #    raise Exception(f'Cannot write to both sliced list and best_av')
-        # if self.sliced_list != []:
-        #    sliced_list = list(map(float, self.sliced_list))
-        #    field_name_list = ['index_list', 'average_list', 'lowest_list', 'sliced_list']
-        # if self.best_av_list != []:
-        #    best_av_list = list(map(float, self.best_av_list))
-        #    field_name_list = ['index_list', 'average_list', 'lowest_list', 'best_av_list']
-        # else:
         field_name_list = ['index_list', 'average_list', 'lowest_list', 'sliced_list']
         try:
             with open(file_path, mode='a', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(field_name_list)
-                # if self.sliced_list != [] and self.best_av_list != []:
-                #    raise Exception(f'Cannot write to both sliced list and best_av')
-                # if self.sliced_list != []:
-                #    for row in zip(index_list, average_list, lowest_list, sliced_list):
-                #        writer.writerow(row)
-                # elif self.best_av_list != []:
-                #    for row in zip(index_list, average_list, lowest_list, best_av_list):
-                #        writer.writerow(row)
-                # else:
                 for row in zip(index_list, average_list, lowest_list, sliced_list):
                     writer.writerow(row)
                 print(

@@ -156,18 +156,39 @@ def convert_physical_to_logical_bit_string(
     else:
         raise Exception(f'incorrect type for {input_bitstring}')
 
-    output_list = []
+    # print(f'{input_bitstring_list=}')
+    # output_list = []
     qubit_list = find_valid_device_loop(qubits, target)
     sorted_qubit_list = sorted(qubit_list)
+    # print(f'{sorted_qubit_list=}')
 
     physical_to_logical_dict = find_physical_to_logical_dictionary(qubits, target)
     # print(f'{physical_to_logical_dict=}')
 
-    for i in range(qubits):
+    # for i in range(qubits):
+    #    print(f'{i=} {sorted_qubit_list[i]=}')
+    #    logical_qubit = physical_to_logical_dict[sorted_qubit_list[i]]
+    #    print(f'{logical_qubit=}')
+    #    print(f'appending {input_bitstring_list[logical_qubit]=} to output list')
+    #    output_list.append(input_bitstring_list[logical_qubit])
+    #    print(f'{output_list=}')
+
+    # qubits_measured = find_qubits_measured(qubits, target)
+    output_list = [0 for i in range(qubits)]
+    for i in range(len(input_bitstring_list)):
+        # iterate of physical qubits to find logical qubit
         # print(f'{i=} {sorted_qubit_list[i]=}')
         logical_qubit = physical_to_logical_dict[sorted_qubit_list[i]]
         # print(f'{logical_qubit=}')
-        output_list.append(input_bitstring_list[logical_qubit])
+        if logical_qubit < qubits:
+            # not all physical qubits are linked to a logical qubit
+            output_list[logical_qubit] = input_bitstring_list[i]
+            # print(
+            #    f'output_list[{logical_qubit}] updated with input_bitstring_list[{i}] = {input_bitstring_list[i]}'
+            # )
+        # else:
+        # print(f'no processing for {logical_qubit=}')
+        # print(f'{output_list=}')
 
     # if the input was a string, output a string
     if isinstance(input_bitstring, str):

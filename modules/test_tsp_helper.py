@@ -1137,7 +1137,7 @@ def test_local_quantum2():
 
 def test_transform_counts():
     counts = {'0000': 9, '1000': 8, '0100': 7, '1101': 6, '1110': 5, '1111': 4}
-    actual_output = transform_counts(counts=counts, qubits=3, target='local_aws_test')
+    actual_output = transform_counts(counts=counts, qubits=3, target='generic_test')
 
     expected_output = {
         '000': 9,
