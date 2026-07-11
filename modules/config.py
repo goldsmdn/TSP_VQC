@@ -32,7 +32,7 @@ AWS = True  # Whether runs are on AWS or Qiskit.
 CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
 TARGET_FIDELITY = 0.4  # maximum loss through qubit loop
 
-TARGET = 'local_aws_test'  # Options from TARGETS dictionary below.  This controls which
+TARGET = 'cepheus'  # Options from TARGETS dictionary below.  This controls which
 # quantum device is used and whether the emulator is used.
 
 TARGETS = {
@@ -100,11 +100,11 @@ PLOT_TITLE = False  # Plot titles with graphs.  Not needed for publication.
 
 # configuration information used in ALL manual runs
 
-LOCATIONS = 6  # number of locations to be visited
+LOCATIONS = 11  # number of locations to be visited
 SHOTS = 1_024  # shots used for each call of the quantum circuit
 
 ITERATIONS = 2  # updates, or iterations
-COUNTS_THRESHOLD = 0.002  # triggers printing items in counts
+COUNTS_THRESHOLD = 0.02  # triggers printing items in counts
 PRINT_FREQUENCY = 50
 GRAY = False  # Use Gray codes
 HOT_START = True  # Make a hot start
@@ -952,6 +952,71 @@ VALID_QUBIT_LOOPS = {
             51,
             42,
             33,
+        ],
+        21: [
+            16,
+            17,
+            26,
+            25,
+            34,
+            43,
+            # 52,
+            # 51,
+            42,
+            33,
+            24,
+            23,
+            22,
+            31,
+            40,
+            39,
+            30,
+            # 29,
+            # 20,
+            21,
+            12,
+            13,
+            4,
+            5,
+            6,
+            7,
+        ],
+        25: [
+            16,
+            17,
+            26,
+            25,
+            34,
+            43,
+            # 44,
+            # 53,
+            52,
+            # 61,
+            # 60,
+            # 59,
+            # 50,
+            51,
+            42,
+            33,
+            24,
+            23,
+            22,
+            31,
+            # 30,
+            # insert
+            40,
+            39,
+            30,
+            # end insrts
+            29,
+            20,
+            21,
+            12,
+            13,
+            4,
+            5,
+            6,
+            7,
         ],
         29: [
             16,

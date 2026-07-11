@@ -697,6 +697,8 @@ def plot_overall_results(
     title: str = 'Solution Quality by Number of Locations for VQA, ML, Monte Carlo and Greedy methods',
     greedy_classical: pd.DataFrame = False,
     AWS_results: pd.DataFrame = False,
+    AWS_color: str = '#9467bd',
+    AWS_xytext: tuple = (20, 5),
     monte_carlo: pd.DataFrame = False,
     n_cols: int = 2,  # number of columns in the legend
     legend_fontsize: str = 'small',  # font size for the bar labels
@@ -737,7 +739,7 @@ def plot_overall_results(
     center_offset = group_width / 2 - width / 2  # center alignment
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
-    ax.set_xlabel('Number of Locations', fontsize=14)
+    ax.set_xlabel('Number of network locations', fontsize=14)
     ax.set_ylabel('Solution Quality (%)', fontsize=14)
     ax.set_title(title)
     ax.set_xticks(x + width, locs)
@@ -746,7 +748,8 @@ def plot_overall_results(
     # --- Now add Greedy Classical line (centered over grouped bars) ---
     if greedy_classical:
         ax.plot(
-            x + center_offset - 0.2,
+            # x + center_offset - 0.2,
+            x + center_offset,
             greedy_classical,
             color='black',
             marker='D',
@@ -759,16 +762,28 @@ def plot_overall_results(
 
     if AWS_results:
         ax.plot(
-            x + center_offset + 0.05,
+            x + center_offset + 0.3,
             AWS_results,
-            color='#9467bd',
+            # color='#9467bd',
+            color=AWS_color,
             marker='X',
-            linestyle='--',
-            linewidth=1,
+            linestyle='None',
             markersize=10,
             label='VQA: Rigetti Cepheus',
             zorder=2,
         )
+
+        for xi, yi in zip(x, AWS_results):
+            ax.annotate(
+                f'{yi:.1f}',
+                (xi, yi),
+                xytext=AWS_xytext,
+                textcoords='offset points',
+                # color=AWS_color,
+                color='black',
+                fontsize=9,
+                rotation=90,
+            )
 
     if monte_carlo:
         ax.plot(

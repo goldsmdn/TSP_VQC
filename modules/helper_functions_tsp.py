@@ -776,13 +776,11 @@ def find_qubit_loop_fidelity(qubits: int, target: str):
         return
     else:
         loop_list = find_valid_device_loop(qubits, target)
-        # print(f'{loop_list=}')
         props = device.properties.dict()
         fidelity_dict = props['standardized']['twoQubitProperties']
         length = len(loop_list)
         for i in range(0, len(loop_list)):
             comment = ''
-            # print(f'{length=}')
             i1 = i % length
             i2 = (i + 1) % length
             q1 = loop_list[i1]
