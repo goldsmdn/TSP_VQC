@@ -19,6 +19,7 @@ from qiskit_ibm_runtime.fake_provider import FakeAuckland
 
 from classes.LRUCacheUnhashable import LRUCacheUnhashable
 from modules.config import (
+    COUNTS_THRESHOLD,
     DATA_SOURCES,
     MODE_DISPATCH,
     NETWORK_DIR,
@@ -633,11 +634,11 @@ def transform_counts(counts: dict, qubits: int, target: str) -> dict:
     return new_counts
 
 
-def print_counts_summary(counts: dict, shots: int):
-    threshold = shots / 100
+def print_counts_summary(counts: dict, shots: int, message: str):
+    threshold = shots * COUNTS_THRESHOLD
     for key, value in counts.items():
         if value > threshold:
-            print(f'{key=}, {value=}')
+            print(f'{message} {key=}, {value=}')
 
 
 def cost_func_evaluate(
@@ -711,11 +712,12 @@ def cost_func_evaluate(
         case _:
             raise Exception(f'SDK {sdk_type} has not been coded for')
 
-    print('Before transformation')
-    print_counts_summary(counts, shots)
+    # print('Before transformation')
+    print_counts_summary(counts=counts, shots=shots, message='Before transformation')
     counts = transform_counts(counts=counts, qubits=qubits, target=target)
-    print('After transformation')
-    print_counts_summary(counts, shots)
+    # print('After transformation')
+    # print_counts_summary(counts, shots)
+    print_counts_summary(counts=counts, shots=shots, message='After transformation')
 
     cost, lowest, lowest_energy_bit_string = find_stats(
         cost_fn=cost_fn,
@@ -731,7 +733,8 @@ def is_even(n):
     return n % 2 == 0
 
 
-def validate_qubit_loops(qubits, loop_dict, target):
+def validate_qubit_loops(qubits: int, loop_dict: dict, target: str):
+    """checks that connectivity exists for all items in the list"""
     device = find_device(target=target)
     print(f'Found device as {device}')
     if not hasattr(device, 'properties'):
@@ -760,6 +763,37 @@ def validate_qubit_loops(qubits, loop_dict, target):
             raise Exception(f'{len(loop_list)=} and {qubits=} for {target=}')
         print(f'No errors found for {target=} {qubits=} \n')
     return
+
+
+def find_qubit_loop_fidelity(qubits: int, target: str):
+    """finds the fidelity for each item in the loop"""
+    device = find_device(target=target)
+    print(f'Found device as {device}')
+    total_fidelity = 1
+    if not hasattr(device, 'properties'):
+        # handle local emulators
+        print('Local device detected — skipping connectivity check.')
+        return
+    else:
+        loop_list = find_valid_device_loop(qubits, target)
+        props = device.properties.dict()
+        fidelity_dict = props['standardized']['twoQubitProperties']
+        length = len(loop_list)
+        for i in range(0, len(loop_list)):
+            comment = ''
+            i1 = i % length
+            i2 = (i + 1) % length
+            q1 = loop_list[i1]
+            q2 = loop_list[i2]
+            edge = f'{min(q1, q2)}-{max(q1, q2)}'
+            fidelity = fidelity_dict[edge]['twoQubitGateFidelity'][0]['fidelity']
+            if fidelity < 0.9:
+                comment = 'LOW FIDELITY DETECTED!'
+            total_fidelity *= fidelity
+            print(f'For edge={edge}, error={fidelity:.4f}: {comment}')
+    print(f'The total fidelity is {total_fidelity:.3f}')
+
+    return total_fidelity
 
 
 def find_stats(
@@ -1652,7 +1686,6 @@ def calculate_hot_start_data(
         f'Hot start list is {hot_start_list} and this is converted to a binary list {bin_hot_start_list}'
     )
 
-    # hot_start_distance = cost_fn(logical_bin_hot_start_list)
     if print_results:
         print(f'The hot start location list is {hot_start_list}')
         print(f'This is equivalent to a binary list: {bin_hot_start_list}')

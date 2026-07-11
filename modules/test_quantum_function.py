@@ -212,7 +212,8 @@ def test_calculate_parameter_numbers_1():
     sdl.qubits = 3
     sdl.mode = 1
     sdl.layers = 2
-    sdl.target = 'local_qiskit_test'
+    # sdl.target = 'local_qiskit_test'
+    sdl.target = 'generic_test'
     expected_result = 16
     actual_result = sdl.calculate_parameter_numbers()
     assert expected_result == actual_result
