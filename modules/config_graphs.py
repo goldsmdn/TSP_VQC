@@ -63,9 +63,14 @@ KEY_FIELDS_ML_OPTIMIZER_COMPARISON = [
 
 LOCATIONS = [10, 11, 12, 15, 17, 26, 42, 48]
 LOCS_ANALYSED = 12  # used in Nevergrad
+CACHE_LOCATIONS = [4, 5, 6, 7, 8, 9, 10, 11, 12]
 
 FILTERS_LOCATIONS = {
     'locations': LOCATIONS,
+}
+
+FILTERS_CACHE_LOCATIONS = {
+    'locations': CACHE_LOCATIONS,
 }
 
 FILTERS_GENERAL = {
@@ -73,14 +78,14 @@ FILTERS_GENERAL = {
     'hot_start': False,
     'gray': False,
     'iterations': 250,
-    'noise': False,
+    #'noise': False,
 }
 
 FILTERS_OVERALL = {
     'locations': LOCATIONS,
     'hot_start': False,
     'gray': False,
-    'noise': False,
+    #'noise': False,
 }
 
 FILTERS_VQA_SPSA = {
