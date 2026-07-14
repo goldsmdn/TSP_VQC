@@ -27,12 +27,12 @@ GRAPH_DIR = 'graphs'
 RESULTS_DIR = 'results'
 RESULTS_FILE = 'results.csv'
 ENCODING = 'utf-8-sig'  # Encoding of csv file
-AWS = True  # Whether runs are on AWS or Qiskit.
+AWS = False  # Whether runs are on AWS or Qiskit.
 
 CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
 TARGET_FIDELITY = 0.4  # maximum loss through qubit loop
 
-TARGET = 'cepheus'  # Options from TARGETS dictionary below.  This controls which
+TARGET = 'local_qiskit'  # Options from TARGETS dictionary below.  This controls which
 # quantum device is used and whether the emulator is used.
 
 TARGETS = {
@@ -104,10 +104,12 @@ LOCATIONS = 11  # number of locations to be visited
 SHOTS = 1_024  # shots used for each call of the quantum circuit
 
 ITERATIONS = 2  # updates, or iterations
-COUNTS_THRESHOLD = 0.02  # triggers printing items in counts
-PRINT_FREQUENCY = 50
+COUNTS_THRESHOLD = (
+    1.01  # triggers printing items in counts.  Set as 1.01 her to stop printing
+)
+PRINT_FREQUENCY = 1_500  # don't need results in this case.
 GRAY = False  # Use Gray codes
-HOT_START = True  # Make a hot start
+HOT_START = False  # Make a hot start
 GRADIENT_TYPE = 'SPSA2'  # controls the optimiser used
 # quantum - 'parameter_shift' - default
 # quantum - 'SPSA' is a stochastic gradient descent
@@ -204,7 +206,7 @@ DECODING_FORMULATION = 'original'  # 'original' or 'new' - new is formulation fr
 NUM_LAYERS = 1  # number of layers in the model
 
 # information needed in QML manual runs:
-MODE = 21  # See list of allowed modes in MODE_DISPATCH below.
+MODE = 22  # See list of allowed modes in MODE_DISPATCH below.
 # This controls the structure of the variational quantum circuit used in the QML runs.
 # The modes are described in the function that sets up the variational quantum circuit
 # in helper_functions_quantum.py.
@@ -349,6 +351,7 @@ MODE_DISPATCH = {
 
 SLICES = [1.0]  # Slices to use when calculating the gradient
 # For example, 0.2 means that the best 20% of distances found is included in the average.
+# SPSA setting - not relevant for Nevergrad
 ALPHA = 0.602  # constant that controls the learning rate for SPSA decays
 BIG_A = 100  # A for SPSA
 C = np.pi / 10  # initial CK for SPSA
@@ -356,8 +359,9 @@ C = np.pi / 10  # initial CK for SPSA
 ETA = 0.005  # appropriate value for SPSA2
 GAMMA = 0.101  # constant that determines how quickly the SPSA perturbation decays
 S = 0.5  # parameter for parameter shift.  Default is 0.5
+# End SPSA settings
 SIMULATE_NOISE = False  # simulate noise in the quantum circuit
-MPS = False  # use MPS simulator
+MPS = True  # use MPS simulator
 
 ROTATIONS = 10  # number of rotations sampled in parameter graphs
 
@@ -367,7 +371,7 @@ LR = 1e-3  # Learning rate for ML
 MOMENTUM = 0.9
 WEIGHT_DECAY = 0.0006  # importance of L2 regularization in optimiser
 
-VALID_QUBIT_LOOPS = {
+VALID_QUBIT_LOOPS = {  # used for Rigetti device runs
     'ankaa': {  # old device - retained for reference
         3: [
             0,

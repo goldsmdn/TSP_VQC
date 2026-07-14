@@ -78,14 +78,14 @@ FILTERS_GENERAL = {
     'hot_start': False,
     'gray': False,
     'iterations': 250,
-    #'noise': False,
+    'noise': False,
 }
 
 FILTERS_OVERALL = {
     'locations': LOCATIONS,
     'hot_start': False,
     'gray': False,
-    #'noise': False,
+    'noise': False,
 }
 
 FILTERS_VQA_SPSA = {
@@ -100,10 +100,10 @@ FILTERS_VQA_SPSA = {
     'shots': 1_024,
 }
 
-FILTERS_VQA_SPSA2_UPDATED = {  # mode 2 only
+FILTERS_VQA_SPSA2 = {
     'quantum': True,
     'shots': 1_024,
-    'mode': 2,
+    #'mode': 2,
     'gradient_type': 'SPSA2',
     'iterations': 1_250,
     'layers': 1,
@@ -113,15 +113,15 @@ FILTERS_VQA_SPSA2_UPDATED = {  # mode 2 only
     'gamma': 0.101,
     'eta': 0.005,
     's': 0.5,
-    'locations': LOCATIONS,
+    #'locations': LOCATIONS,
     'monte_carlo': False,
 }
 
-FILTERS_VQA_SPSA_417 = {  # 417 iterations
+FILTERS_VQA_SPSA_417 = {  # 417 iterations - fair comparison
     'quantum': True,
     'slice': 1,
     'shots': 1_024,
-    'mode': 2,
+    #'mode': 2,
     'gradient_type': 'SPSA',
     'iterations': 417,
     'layers': 1,
@@ -131,7 +131,7 @@ FILTERS_VQA_SPSA_417 = {  # 417 iterations
     'gamma': 0.101,
     'eta': 0.1,
     's': 0.5,
-    'locations': LOCATIONS,
+    #'locations': LOCATIONS,
     'monte_carlo': False,
 }
 

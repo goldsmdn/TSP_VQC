@@ -703,6 +703,7 @@ def plot_overall_results(
     monte_carlo: pd.DataFrame = False,
     n_cols: int = 2,  # number of columns in the legend
     legend_fontsize: str = 'small',  # font size for the bar labels
+    show_labels: bool = True,  # show labels for bars
 ):
     """plots overall results for the paper"""
     x = np.arange(len(locs))
@@ -724,15 +725,15 @@ def plot_overall_results(
             edgecolor='black',
             linewidth=0.6,
         )
-
-        ax.bar_label(
-            container=rects,
-            padding=5,
-            fmt='%.1f',
-            label_type='edge',
-            fontsize=8,
-            rotation=90,
-        )
+        if show_labels:
+            ax.bar_label(
+                container=rects,
+                padding=5,
+                fmt='%.1f',
+                label_type='edge',
+                fontsize=8,
+                rotation=90,
+            )
         multiplier += 1
 
     num_bar_groups = 4  # total plotted groups including spacing
@@ -791,10 +792,10 @@ def plot_overall_results(
             x + center_offset,
             monte_carlo,
             color='#D81B60',  # magenta accent',
-            marker='x',
+            marker='X',
             linestyle='--',
-            linewidth=1,
-            markersize=5,
+            linewidth=2,
+            markersize=8,
             label='Monte Carlo comparison',
         )
 
