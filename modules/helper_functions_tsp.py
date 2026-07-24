@@ -605,15 +605,12 @@ def create_initial_rotations(
     if hot_start:
         init_rots = [0 for j in range(num_params)]
         for i, item in enumerate(bin_hot_start_list):
-            # print(f'{i=}')
             if item == 1:
                 match circuit_sdk:
                     case 'aws':
                         init_rots[i] = np.pi
                     case 'qiskit':
-                        # init_rots[qubits - i - 1] = np.pi
                         init_rots[transform_qiskit_index(i, qubits)] = np.pi
-            # print(f'{i=}, {init_rots=}')
             # need to reverse order because of qiskit convention
     elif not hot_start:
         init_rots = [random.random() * 2 * math.pi for i in range(num_params)]
@@ -712,11 +709,8 @@ def cost_func_evaluate(
         case _:
             raise Exception(f'SDK {sdk_type} has not been coded for')
 
-    # print('Before transformation')
     print_counts_summary(counts=counts, shots=shots, message='Before transformation')
     counts = transform_counts(counts=counts, qubits=qubits, target=target)
-    # print('After transformation')
-    # print_counts_summary(counts, shots)
     print_counts_summary(counts=counts, shots=shots, message='After transformation')
 
     cost, lowest, lowest_energy_bit_string = find_stats(
@@ -827,18 +821,19 @@ def find_stats(
     lowest_energy_bit_string: list
         A list of the bits for the lowest energy bit string
     """
-    if average_slice > 1:
-        raise Exception(
-            f'The average_slice must be less or equal to 1, not {average_slice}'
-        )
-    elif average_slice <= 0:
-        raise Exception(
-            f'The average_slice must be greater than zero, not {average_slice}'
-        )
-    elif average_slice == 1:
-        slicing = False
-    else:
-        slicing = True
+    # if average_slice > 1:
+    #    raise Exception(
+    #        f'The average_slice must be less or equal to 1, not {average_slice}'
+    #    )
+    # elif average_slice <= 0:
+    #    raise Exception(
+    #        f'The average_slice must be greater than zero, not {average_slice}'
+    #    )
+    # elif average_slice == 1:
+    #    slicing = False
+    # else:
+    #    slicing = True
+    slicing = find_if_slicing_is_relevant(average_slice)
     total_counts, total_energy = 0, 0
     first = True
     if slicing:
@@ -888,6 +883,20 @@ def find_stats(
     return (average_energy, lowest_energy, lowest_energy_bit_string)
 
 
+def find_if_slicing_is_relevant(slice: int):
+    """if the slice is close to 1 slicing is not relevant"""
+    if slice > 1:
+        raise Exception(f'The average_slice must be less or equal to 1, not {slice}')
+    elif slice <= 0:
+        raise Exception(f'The average_slice must be greater than zero, not {slice}')
+    if (
+        abs(slice - 1) < 0.001
+    ):  # average slice is close to 1, so don't need to evaluate separately.
+        return False
+    else:
+        return True
+
+
 def update_parameters_using_gradient(
     locations: int,
     qubits: int,
@@ -917,14 +926,19 @@ def update_parameters_using_gradient(
     calls = find_optimiser_cost_fn_calls(gradient_type)
     SPSA_like = find_if_optimiser_is_SPSA_like(gradient_type)
 
-    if (
-        abs(average_slice - 1) < 0.001
-    ):  # average slice is close to 1, so don't need to evaluate separately.
-        evaluate_av_slice_separately = False
+    evaluate_av_slice_separately = find_if_slicing_is_relevant(average_slice)
+    print(f'{evaluate_av_slice_separately=}')
+
+    # if (
+    #    abs(average_slice - 1) < 0.001
+    # ):  # average slice is close to 1, so don't need to evaluate separately.
+    #    evaluate_av_slice_separately = False
+    # else:
+    #    evaluate_av_slice_separately = True
 
     if evaluate_av_slice_separately and calls == 1:
         raise Exception(
-            f'Cannot evaluate the average slice not equal to 1 with {calls=} at present'
+            f'{evaluate_av_slice_separately=} and cannot evaluate the average slice not equal to 1 with {calls=} at present'
         )
 
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
@@ -1013,7 +1027,7 @@ def update_parameters_using_gradient(
                 )
         elif calls == 1:
             cost = average  # set as found above, or as reset at end of loop
-            lowest_to_date = lowest
+            # lowest_to_date = lowest
             # need to set lowest to date in case found in first iterations
         else:
             raise Exception(f'{calls=} is invalid')
@@ -1034,7 +1048,10 @@ def update_parameters_using_gradient(
         )
 
         index_list.append(i)
-        cost_list.append(cost)
+        if evaluate_av_slice_separately:
+            cost_list.append(cost)
+        else:
+            cost_list.append(average)
         lowest_list.append(lowest_to_date)
         average_list.append(average)
         parameter_list.append(rots)
@@ -1107,10 +1124,6 @@ def update_parameters_using_gradient(
                 delta = new_average - average
                 gradient = delta / ck_deltak
                 rots = rots - ak * gradient
-                # if lowest < lowest_to_date:
-                #    lowest_to_date = lowest
-                #    lowest_string_to_date = lowest_energy_bit_string
-                # need to make sure set before results are printed out.
             else:
                 raise ValueError(f'{calls=} is not coded for')
 
@@ -1122,9 +1135,11 @@ def update_parameters_using_gradient(
                     flush=True,
                 )
                 print(
-                    f'The average cost from the sample is {average:.3f} and the top-sliced average of the best results is {cost:.3f}',
+                    f'The average cost from the sample is {average:.3f}',
                     flush=True,
                 )
+                if evaluate_av_slice_separately:
+                    print(f'The top-sliced average of the best results is {cost:.3f}')
                 print(f'The lowest cost from the sample is {lowest:.3f}', flush=True)
                 print(
                     f'The lowest cost to date before this sample was {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date}',
@@ -1136,9 +1151,12 @@ def update_parameters_using_gradient(
                 log_metric(
                     metric_name='average_sample_cost', iteration_number=i, value=average
                 )
-                log_metric(
-                    metric_name='top_sliced_sample_cost', iteration_number=i, value=cost
-                )
+                if evaluate_av_slice_separately:
+                    log_metric(
+                        metric_name='top_sliced_sample_cost',
+                        iteration_number=i,
+                        value=cost,
+                    )
                 log_metric(
                     metric_name='lowest_sample_cost', iteration_number=i, value=lowest
                 )
