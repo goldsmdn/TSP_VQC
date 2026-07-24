@@ -93,10 +93,6 @@ def mode_2(context_dict: dict) -> QuantumCircuit:
     qubits = context_dict['qubits']
     params = context_dict['params']
     layers = context_dict['layers']
-    # qubit_dict = context_dict['qubit_dict']
-
-    # qubits_needed = find_maximum_qubits_needed(qubit_dict)
-    # qc = QuantumCircuit(qubits_needed, qubits_needed)
 
     qc = QuantumCircuit(qubits, qubits)
     for layer in range(layers):
@@ -202,8 +198,6 @@ def mode_5(context_dict: dict) -> QuantumCircuit:
     """
 
     qubits = context_dict['qubits']
-    # params = context_dict['params']
-    # layers = context_dict['layers']
 
     if qubits != 5:
         raise Exception(
@@ -430,7 +424,6 @@ def mode_15(context_dict: dict) -> Circuit:
 
     qc = QuantumCircuit(qubits, qubits)
     for layer in range(layers):
-        # print(f'{qubit_dict=}, {qubits_measured=}, {qubits=}')
         offset = layer * qubits_measured * 2
         # hadamard
         for i in range(qubits_measured):
@@ -761,9 +754,6 @@ def mode_22(context_dict: dict) -> QuantumCircuit:
                 np.pi / 2,
                 qubit_dict[i],
             )
-
-    # print('After circuit set up, the circuit is:')
-    # print(qc.draw())
 
     print('Instruction count:', len(qc.data))
     print('Qubits:', qc.qubits)

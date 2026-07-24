@@ -1,19 +1,23 @@
-#LRUCacheUnhashable
-#own implementation of LRU cache to handle unhashable lists
+# LRUCacheUnhashable
+# own implementation of LRU cache to handle unhashable lists
 
 from collections import OrderedDict
-from modules.config import VERBOSE, CACHE_MAX_SIZE
 from typing import Callable, Optional
+
+from modules.config import CACHE_MAX_SIZE, VERBOSE
+
 
 class LRUCacheUnhashable:
     """
     A decorator class that caches results for functions with unhashable arguments.
     Uses an OrderedDict to implement a simple LRU eviction policy.
     """
-    def __init__(self, 
-                 orig_func: Optional[Callable] = None,
-                 maxsize: int = CACHE_MAX_SIZE,
-                 ):
+
+    def __init__(
+        self,
+        orig_func: Optional[Callable] = None,
+        maxsize: int = CACHE_MAX_SIZE,
+    ):
         """initialisation"""
         self.orig_func = orig_func
         self.maxsize = maxsize
@@ -21,9 +25,10 @@ class LRUCacheUnhashable:
         self.cache_hits = 0
         self.cache_misses = 0
 
-    def __call__(self, 
-                 bit_string_list: list[int],
-                 ) -> float:
+    def __call__(
+        self,
+        bit_string_list: list[int],
+    ) -> float:
         """Call wrapper and return result"""
         key = self.list_to_bit_string(bit_string_list)
         if key in self.cache:
@@ -36,7 +41,7 @@ class LRUCacheUnhashable:
         else:
             self.cache_misses += 1
             result = self.orig_func(bit_string_list)
-            self.cache[key] = result # store the result in the cache
+            self.cache[key] = result  # store the result in the cache
             if VERBOSE:
                 print(f'Updating cache with key = {key}')
             if len(self.cache) > self.maxsize:
@@ -65,9 +70,11 @@ class LRUCacheUnhashable:
         print(f'cache_hit = {self.cache_hits}')
         print(f'cache_miss = {self.cache_misses}')
         if self.cache_hits + self.cache_misses == 0:
-            print(f'The cache is empty - no stats available')
+            print('The cache is empty - no stats available')
         else:
-            self.cache_hit_rate = self.cache_hits/(self.cache_hits+self.cache_misses)
+            self.cache_hit_rate = self.cache_hits / (
+                self.cache_hits + self.cache_misses
+            )
             print(f'cache_hit_rate = {self.cache_hit_rate:.3f}')
 
     def report_cache_stats(self):

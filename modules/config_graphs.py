@@ -103,7 +103,6 @@ FILTERS_VQA_SPSA = {
 FILTERS_VQA_SPSA2 = {
     'quantum': True,
     'shots': 1_024,
-    #'mode': 2,
     'gradient_type': 'SPSA2',
     'iterations': 1_250,
     'layers': 1,
@@ -113,7 +112,6 @@ FILTERS_VQA_SPSA2 = {
     'gamma': 0.101,
     'eta': 0.005,
     's': 0.5,
-    #'locations': LOCATIONS,
     'monte_carlo': False,
 }
 
@@ -121,7 +119,6 @@ FILTERS_VQA_SPSA_417 = {  # 417 iterations - fair comparison
     'quantum': True,
     'slice': 1,
     'shots': 1_024,
-    #'mode': 2,
     'gradient_type': 'SPSA',
     'iterations': 417,
     'layers': 1,
@@ -131,7 +128,6 @@ FILTERS_VQA_SPSA_417 = {  # 417 iterations - fair comparison
     'gamma': 0.101,
     'eta': 0.1,
     's': 0.5,
-    #'locations': LOCATIONS,
     'monte_carlo': False,
 }
 

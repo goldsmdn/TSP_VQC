@@ -54,7 +54,6 @@ def test_convert_list_to_dictionary_with_duplicates():
 def test_find_logical_to_physical_dictionary():
     """Tests the find_logical_to_physical_dictionary function"""
     qubits = 3
-    # target = 'local_aws_test'
     target = 'generic_test'
     expected_dict = {0: 24, 1: 25, 2: 34, 3: 33}
     actual_dict = find_logical_to_physical_dictionary(qubits, target)
@@ -64,7 +63,6 @@ def test_find_logical_to_physical_dictionary():
 def test_find_physical_to_logical_dictionary():
     """Tests the find_physical_to_logical_dictionary function"""
     qubits = 3
-    # target = 'local_aws_test'
     target = 'generic_test'
     expected_dict = {24: 0, 25: 1, 34: 2, 33: 3}
     actual_dict = find_physical_to_logical_dictionary(qubits, target)
@@ -75,7 +73,6 @@ def test_convert_physical_to_logical_bit_string1():
     """Tests the convert_physical_to_logical_bit_string function"""
     input_bitstring = [1, 1, 1, 1]
     qubits = 3
-    # target = 'local_qiskit_test'
     target = 'generic_test'
     expected_output = [1, 1, 1]
     actual_output = convert_physical_to_logical_bit_string(
@@ -88,7 +85,6 @@ def test_convert_physical_to_logical_bit_string2():
     """Tests the convert_physical_to_logical_bit_string function"""
     input_bitstring = [1, 1, 1, 0]
     qubits = 3
-    # target = 'local_qiskit_test'
     target = 'generic_test'
     expected_output = [1, 1, 0]
     actual_output = convert_physical_to_logical_bit_string(
@@ -101,7 +97,6 @@ def test_convert_physical_to_logical_bit_string3():
     """Tests the convert_physical_to_logical_bit_string function"""
     input_bitstring = [1, 1, 0, 1]
     qubits = 3
-    # target = 'local_qiskit_test'
     target = 'generic_test'
     expected_output = [1, 1, 1]
     actual_output = convert_physical_to_logical_bit_string(
@@ -114,7 +109,6 @@ def test_convert_physical_to_logical_bit_string4():
     """Tests the convert_physical_to_logical_bit_string function"""
     input_bitstring = '0110'
     qubits = 3
-    # target = 'local_qiskit_test'
     target = 'generic_test'
     expected_output = '010'
     actual_output = convert_physical_to_logical_bit_string(
