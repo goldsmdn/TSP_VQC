@@ -4,6 +4,7 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 import torch
 
 from classes.MyModel import MySine
@@ -702,6 +703,7 @@ def plot_overall_results(
     monte_carlo: pd.DataFrame = False,
     n_cols: int = 2,  # number of columns in the legend
     legend_fontsize: str = 'small',  # font size for the bar labels
+    show_labels: bool = True,  # show labels for bars
 ):
     """plots overall results for the paper"""
     x = np.arange(len(locs))
@@ -723,15 +725,15 @@ def plot_overall_results(
             edgecolor='black',
             linewidth=0.6,
         )
-
-        ax.bar_label(
-            container=rects,
-            padding=5,
-            fmt='%.1f',
-            label_type='edge',
-            fontsize=8,
-            rotation=90,
-        )
+        if show_labels:
+            ax.bar_label(
+                container=rects,
+                padding=5,
+                fmt='%.1f',
+                label_type='edge',
+                fontsize=8,
+                rotation=90,
+            )
         multiplier += 1
 
     num_bar_groups = 4  # total plotted groups including spacing
@@ -790,10 +792,10 @@ def plot_overall_results(
             x + center_offset,
             monte_carlo,
             color='#D81B60',  # magenta accent',
-            marker='x',
+            marker='X',
             linestyle='--',
-            linewidth=1,
-            markersize=5,
+            linewidth=2,
+            markersize=8,
             label='Monte Carlo comparison',
         )
 
@@ -865,4 +867,157 @@ def plot_circuit_comparison(
     plt.ylabel('Quality')
     plt.title('Quality vs Locations by Mode')
     plt.legend(shadow='true')
+    plt.show()
+
+
+def plot_individual_run(df_detailed: pd.DataFrame):
+    """plots results from individual runs"""
+    plt.plot(
+        df_detailed.index,
+        df_detailed['average_list'],
+        linewidth=1.0,
+        color='blue',
+        label='Simple average distance',
+    )
+    plt.plot(
+        df_detailed.index,
+        df_detailed['sliced_list'],
+        linewidth=1.0,
+        color='orange',
+        label='Sliced average distance',
+    )
+    plt.plot(
+        df_detailed.index,
+        df_detailed['lowest_list'],
+        linewidth=1.0,
+        color='red',
+        label='Lowest distance found so far',
+    )
+    plt.plot(
+        df_detailed.index,
+        df_detailed['best_dist'],
+        linewidth=1.0,
+        color='black',
+        label='Lowest known distance',
+    )
+    title = 'Average_and_lowest_distance_found by_iteration'
+    plt.title('Average_and_lowest_distance_found by_iteration')
+    plt.xlabel('Iteration')
+    plt.ylabel('Distance')
+    plt.legend()
+    plt.tight_layout()
+
+    filename = Path(GRAPH_DIR).joinpath(f'{title}.pdf')
+    plt.savefig(filename, bbox_inches='tight')
+    plt.show()
+    plt.close()
+
+
+def plot_network(df: pd.DataFrame):
+    """points out a network"""
+    plt.scatter(df['x'], df['y'])
+
+    # Add labels from 'location' column
+    for i, row in df.iterrows():
+        plt.text(row['x'], row['y'], str(row['Location']), fontsize=9, ha='right')
+
+    # Axis labels and title
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.title('Scatter plot of x vs y with location labels')
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_summary(setting: list, simulation_means: list):
+    """Plot summary values in pretty colours"""
+    # Colors
+    colors = sns.color_palette('Set2', n_colors=len(simulation_means))
+
+    # Create bar plot
+    plt.figure(figsize=(8, 5))
+    bars = plt.bar(setting, simulation_means, color=colors, edgecolor='black')
+
+    # Labels and styling
+    plt.xlabel('Setting', fontsize=12)
+    plt.ylabel('Solution Quality (%)', fontsize=12)
+    plt.title(
+        'Solution Quality for Default, Warm Start, Factorial Formulation, and Gray Encoding',
+        fontsize=13,
+    )
+    plt.ylim(0, 130)
+    plt.grid(axis='y', linestyle='--', alpha=0.5)
+
+    # Add value labels on bars
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(
+            bar.get_x() + bar.get_width() / 2,
+            height + 1,
+            f'{height:.1f}',
+            ha='center',
+            va='bottom',
+            fontsize=10,
+        )
+
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_cache_calls(
+    locations: list, total_cache_calls: list, permutations: list, limit: float
+):
+    """plot total cache calls by location"""
+
+    # Choose Set2 colors
+    colors = sns.color_palette('Set2', n_colors=4)
+
+    plt.bar(
+        locations,
+        total_cache_calls,
+        color=colors[2],
+        alpha=0.8,
+        edgecolor='black',
+        label='Average bit strings sampled',
+    )
+    plt.yscale('log')  # Log scale for the bar axis
+    plt.ylabel('Average values (log scale)', fontsize=14)
+    plt.tick_params(
+        axis='y',
+    )
+
+    plt.plot(
+        locations,
+        permutations,
+        marker='D',
+        markersize=5,
+        color='black',
+        label='Distinct cycles',
+    )
+
+    plt.axhline(
+        y=limit,
+        color=colors[1],
+        linestyle='--',
+        linewidth=3,
+        label='Maximum bit strings that could be sampled',
+    )
+
+    # --- Formatting ---
+    title = 'Permutations_and_Total_Cache_Calls_by_Location'
+    if PLOT_TITLE:
+        plt.title(title, fontsize=18)
+    plt.xlabel('Number of Locations', fontsize=14)
+    plt.xticks(locations)
+    plt.legend(
+        loc='upper left',
+    )
+
+    # --- Layout adjustments ---
+    plt.tight_layout()
+
+    filename = Path(GRAPH_DIR).joinpath(f'{title}.pdf')
+    plt.savefig(filename, bbox_inches='tight')
+
     plt.show()

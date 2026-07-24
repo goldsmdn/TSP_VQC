@@ -612,7 +612,7 @@ def create_initial_rotations(
                         init_rots[i] = np.pi
                     case 'qiskit':
                         # init_rots[qubits - i - 1] = np.pi
-                        init_rots[transform_qiskit_index(i, qubits)]
+                        init_rots[transform_qiskit_index(i, qubits)] = np.pi
             # print(f'{i=}, {init_rots=}')
             # need to reverse order because of qiskit convention
     elif not hot_start:
@@ -1011,17 +1011,16 @@ def update_parameters_using_gradient(
                     mps=mps,
                     average_slice=average_slice,
                 )
-            else:
-                cost = average
         elif calls == 1:
             cost = average  # set as found above, or as reset at end of loop
+            lowest_to_date = lowest
+            # need to set lowest to date in case found in first iterations
         else:
             raise Exception(f'{calls=} is invalid')
         # average is the average energy with no top slicing
         if i == 0:
             lowest_string_to_date = lowest_energy_bit_string
             lowest_to_date = lowest
-
         else:
             if lowest < lowest_to_date:
                 lowest_to_date = lowest
@@ -1108,6 +1107,10 @@ def update_parameters_using_gradient(
                 delta = new_average - average
                 gradient = delta / ck_deltak
                 rots = rots - ak * gradient
+                # if lowest < lowest_to_date:
+                #    lowest_to_date = lowest
+                #    lowest_string_to_date = lowest_energy_bit_string
+                # need to make sure set before results are printed out.
             else:
                 raise ValueError(f'{calls=} is not coded for')
 
@@ -1124,7 +1127,7 @@ def update_parameters_using_gradient(
                 )
                 print(f'The lowest cost from the sample is {lowest:.3f}', flush=True)
                 print(
-                    f'The lowest cost to date is {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date}',
+                    f'The lowest cost to date before this sample was {lowest_to_date:.3f} corresponding to bit string {lowest_string_to_date}',
                     flush=True,
                 )
 
