@@ -101,7 +101,7 @@ class MySubDataLogger(MyDataLogger):
     # general inputs
     quantum: bool = None  # Fixed: Use 'bool' instead of 'Bool'
     locations: int = None
-    slice: float = 1.0
+    slice: float = None  # default = 1.0
     shots: int = None
     mode: str = None
     iterations: int = None
@@ -291,6 +291,7 @@ class MySubDataLogger(MyDataLogger):
         self.mode = int(data_dict['mode'])
         self.layers = int(data_dict['layers'])
         self.target = data_dict['target']
+        self.slice = float(data_dict['slice'])
         if not self.quantum:
             self.std_dev = float(data_dict['std_dev'])
             self.lr = float(data_dict['lr'])
