@@ -81,6 +81,14 @@ FILTERS_GENERAL = {
     'noise': False,
 }
 
+FILTERS_GENERAL_417 = {
+    'formulation': 'original',
+    'hot_start': False,
+    'gray': False,
+    'iterations': 417,
+    'noise': False,
+}
+
 FILTERS_OVERALL = {
     'locations': LOCATIONS,
     'hot_start': False,
@@ -155,7 +163,7 @@ FILTERS_VQA_CEPHEUS = {
 }
 
 FILTERS_SLICING = {
-    'locations': [9, 10, 11, 12, 15],
+    'locations': [10, 11, 12, 15],
     'mode': 2,
     'mps': True,
     'monte_carlo': False,

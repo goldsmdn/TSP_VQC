@@ -107,7 +107,7 @@ ITERATIONS = 50  # updates, or iterations
 COUNTS_THRESHOLD = (
     1.01  # triggers printing items in counts.  Set as 1.01 her to stop printing
 )
-PRINT_FREQUENCY = 10  # don't need results in this case.
+PRINT_FREQUENCY = 500  # don't need results in this case.
 GRAY = False  # Use Gray codes
 HOT_START = True  # Make a hot start
 GRADIENT_TYPE = 'SPSA2'  # controls the optimiser used
