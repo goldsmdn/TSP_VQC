@@ -40,10 +40,6 @@ from modules.helper_functions_general import (
 def validate_optimiser(optimiser: str) -> object:
     """validate that the optimiser is in OPTIMIZER_DICT"""
     return optimiser in OPTIMIZER_DICT
-    # if optimiser in OPTIMIZER_DICT:
-    #    return True
-    # else:
-    #    return False
 
 
 def find_if_optimiser_is_SPSA_like(optimiser: str) -> object:
@@ -85,7 +81,6 @@ def find_bin_length(i: int) -> int:
     """find the length of a binary string to represent integer i"""
     if i <= 0:
         raise ValueError('n must be a positive integer')
-    # bin_len = math.ceil((math.log2(i)))
     bin_len = math.ceil(math.log2(i))
     return bin_len
 
@@ -115,7 +110,6 @@ def read_file_name(locations: int, data_sources: dict, file_type: str = 'file') 
         filename = data_sources[locations]['points']
         print('Reading co-ordinate data')
     else:
-        # raise Exception(f'File type {file_type} is not coded for')
         raise ValueError(f'File type {file_type} is not coded for')
     return filename
 
@@ -134,17 +128,14 @@ def validate_distance_array(array: np.ndarray, locs: int):
 
     """
     if len(np.shape(array)) != 2:
-        # raise Exception('The distance array is not two dimensional')
         raise ValueError('The distance array is not two dimensional')
     for index in [0, 1]:
         if np.shape(array)[index] != locs:
-            # raise Exception(f'The shape of the array does not match {locs} locations')
             raise ValueError(f'The shape of the array does not match {locs} locations')
     # check symmetry
     for i in range(locs):
         for j in range(locs):
             if array[i, j] != array[j, i]:
-                # raise Exception('The array is not symmetrical')
                 raise ValueError('The array is not symmetrical')
 
 
@@ -279,13 +270,8 @@ def check_loc_list(loc_list: list, locs: int) -> bool:
     for i in range(len(loc_list)):
         if loc_list[i] > (locs - 1):
             valid = False
-    # for i in range(0, locs - 1):
     for i in range(locs - 1):
-        # for j in range(0, locs - 1):
         for j in range(locs - 1):
-            # if i != j:
-            #    if loc_list[i] == loc_list[j]:
-            #        valid = False
             if i != j and loc_list[i] == loc_list[j]:
                 valid = False
     return valid
@@ -308,7 +294,6 @@ def augment_loc_list(loc_list: list, locs: int) -> list:
 
     """
 
-    # full_list = [i for i in range(0, locs)]
     full_list = [i for i in range(locs)]
     for item in full_list:
         if item not in loc_list:
@@ -335,15 +320,11 @@ def find_total_distance(int_list: list, locs: int, distance_array: np.ndarray) -
         The total distance for the cycle represented by that integer list
     """
     if len(int_list) != locs:
-        # raise Exception(
-        #    f'The list supplied has {len(int_list)} entries and {locs} are expected'
-        # )
         raise ValueError(
             f'The list supplied has {len(int_list)} entries and {locs} are expected'
         )
 
     total_distance = 0
-    # for i in range(0, locs):
     for i in range(locs):
         if i < locs - 1:
             j = i + 1
@@ -351,7 +332,6 @@ def find_total_distance(int_list: list, locs: int, distance_array: np.ndarray) -
             # complete cycle
             j = 0
         else:
-            # raise Exception('Unexpected values of i in loop')
             raise ValueError('Unexpected values of i in loop')
         distance = find_distance(int_list[i], int_list[j], distance_array)
         total_distance += distance
@@ -791,7 +771,6 @@ def find_qubit_loop_fidelity(qubits: int, target: str):
         props = device.properties.dict()
         fidelity_dict = props['standardized']['twoQubitProperties']
         length = len(loop_list)
-        # for i in range(0, len(loop_list)):
         for i in range(len(loop_list)):
             comment = ''
             i1 = i % length
@@ -859,12 +838,6 @@ def find_stats(
                 energy_dict[energy] += count
             else:
                 energy_dict[energy] = count
-        # if first:
-        #    lowest_energy = energy
-        #    first = False
-        #    lowest_energy_bit_string = bit_list
-        # else:
-        #    if energy < lowest_energy:
         if energy < lowest_energy:
             lowest_energy = energy
             lowest_energy_bit_string = bit_list
@@ -900,12 +873,6 @@ def find_if_slicing_is_relevant(slice: int):
         raise ValueError(f'The average_slice must be less or equal to 1, not {slice}')
     elif slice <= 0:
         raise ValueError(f'The average_slice must be greater than zero, not {slice}')
-    # if (
-    #    abs(slice - 1) < 0.001
-    # ):  # average slice is close to 1, so don't need to evaluate separately.
-    #    return False
-    # else:
-    #    return True
     return abs(slice - 1) >= 0.001
 
 
@@ -940,13 +907,6 @@ def update_parameters_using_gradient(
 
     evaluate_av_slice_separately = find_if_slicing_is_relevant(average_slice)
     print(f'{evaluate_av_slice_separately=}')
-
-    # if (
-    #    abs(average_slice - 1) < 0.001
-    # ):  # average slice is close to 1, so don't need to evaluate separately.
-    #    evaluate_av_slice_separately = False
-    # else:
-    #    evaluate_av_slice_separately = True
 
     if evaluate_av_slice_separately and calls == 1:
         raise ValueError(
@@ -1243,7 +1203,6 @@ def my_gradient(
     SPSA_like = find_if_optimiser_is_SPSA_like(gradient_type)
 
     new_rots = copy.deepcopy(rots)
-    # if gradient_type == 'parameter_shift':
     if not SPSA_like:
         gradient_list = []
         for i, theta in enumerate(rots):
