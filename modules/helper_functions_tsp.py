@@ -427,13 +427,8 @@ def detect_quantum_GPU_support(target: str) -> bool:
             return False
         case 'qiskit':
             devices = AerSimulator().available_devices()
-            # if 'GPU' in devices:
-            #    return True
-            # else:
-            #    return False
             return 'GPU' in devices
         case _:
-            # raise Exception(f'SDK {sdk_type} has not been coded for')
             raise ValueError(f'SDK {sdk_type} has not been coded for')
 
 
