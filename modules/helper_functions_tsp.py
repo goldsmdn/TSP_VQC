@@ -817,7 +817,6 @@ def find_stats(
     slicing = find_if_slicing_is_relevant(average_slice)
     total_counts, total_energy = 0, 0
     lowest_energy, lowest_energy_bit_string = math.inf, None
-    # first = True
     if slicing:
         energy_dict = {}
 
@@ -828,7 +827,6 @@ def find_stats(
             print(f'{key=} {count=} {energy=}')
         if slicing:
             # if already in dictionary increment
-            # if energy in energy_dict.keys():
             if energy in energy_dict:
                 energy_dict[energy] += count
             else:
