@@ -908,6 +908,8 @@ def update_parameters_using_gradient(
 
     cost_list, lowest_list, index_list, gradient_list = [], [], [], []
     parameter_list, average_list = [], []
+    # initialize lowest to date and lowest string to date
+    lowest_to_date, lowest_string_to_date = math.inf, None
 
     validate_gradient_type(gradient_type)
 
@@ -960,7 +962,6 @@ def update_parameters_using_gradient(
             average_slice=1,
         )
 
-    # for i in range(0, iterations):
     for i in range(iterations):
         bc = bind_weights(
             params=params,
@@ -993,18 +994,17 @@ def update_parameters_using_gradient(
                 )
         elif calls == 1:
             cost = average  # set as found above, or as reset at end of loop
-            # lowest_to_date = lowest
             # need to set lowest to date in case found in first iterations
         else:
             raise ValueError(f'{calls=} is invalid')
         # average is the average energy with no top slicing
-        if i == 0:
-            lowest_string_to_date = lowest_energy_bit_string
+        # if i == 0:
+        #    lowest_string_to_date = lowest_energy_bit_string
+        #    lowest_to_date = lowest
+        # else:
+        if lowest < lowest_to_date:
             lowest_to_date = lowest
-        else:
-            if lowest < lowest_to_date:
-                lowest_to_date = lowest
-                lowest_string_to_date = lowest_energy_bit_string
+            lowest_string_to_date = lowest_energy_bit_string
 
         route_list = convert_bit_string_to_cycle(
             bit_string=lowest_string_to_date,
@@ -1058,7 +1058,8 @@ def update_parameters_using_gradient(
                 )
                 rots = rots - ak * gradient
             elif calls == 1:
-                # need to correct for taking gradient less often
+                # need to correct for taking gradient less often with Q-SPSA,
+                # so that the step size is not too large
                 ak = a / ((i // 2 + 1 + big_a) ** (alpha))
                 ck = c / ((i // 2 + 1) ** (gamma))
                 length = len(rots)
