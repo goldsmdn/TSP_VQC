@@ -100,16 +100,16 @@ PLOT_TITLE = False  # Plot titles with graphs.  Not needed for publication.
 
 # configuration information used in ALL manual runs
 
-LOCATIONS = 11  # number of locations to be visited
+LOCATIONS = 10  # number of locations to be visited
 SHOTS = 1_024  # shots used for each call of the quantum circuit
 
-ITERATIONS = 2  # updates, or iterations
+ITERATIONS = 50  # updates, or iterations
 COUNTS_THRESHOLD = (
     1.01  # triggers printing items in counts.  Set as 1.01 her to stop printing
 )
-PRINT_FREQUENCY = 1_500  # don't need results in this case.
+PRINT_FREQUENCY = 500  # don't need results in this case.
 GRAY = False  # Use Gray codes
-HOT_START = False  # Make a hot start
+HOT_START = True  # Make a hot start
 GRADIENT_TYPE = 'SPSA2'  # controls the optimiser used
 # quantum - 'parameter_shift' - default
 # quantum - 'SPSA' is a stochastic gradient descent
@@ -355,7 +355,7 @@ SLICES = [1.0]  # Slices to use when calculating the gradient
 ALPHA = 0.602  # constant that controls the learning rate for SPSA decays
 BIG_A = 100  # A for SPSA
 C = np.pi / 10  # initial CK for SPSA
-# ETA = 0.1  # eta - learning rate for parameter shift
+# ETA = 0.1  # eta - learning rate for parameter shift, SPSA
 ETA = 0.005  # appropriate value for SPSA2
 GAMMA = 0.101  # constant that determines how quickly the SPSA perturbation decays
 S = 0.5  # parameter for parameter shift.  Default is 0.5
@@ -964,8 +964,6 @@ VALID_QUBIT_LOOPS = {  # used for Rigetti device runs
             25,
             34,
             43,
-            # 52,
-            # 51,
             42,
             33,
             24,
@@ -975,8 +973,6 @@ VALID_QUBIT_LOOPS = {  # used for Rigetti device runs
             40,
             39,
             30,
-            # 29,
-            # 20,
             21,
             12,
             13,
@@ -992,13 +988,7 @@ VALID_QUBIT_LOOPS = {  # used for Rigetti device runs
             25,
             34,
             43,
-            # 44,
-            # 53,
             52,
-            # 61,
-            # 60,
-            # 59,
-            # 50,
             51,
             42,
             33,
@@ -1006,12 +996,9 @@ VALID_QUBIT_LOOPS = {  # used for Rigetti device runs
             23,
             22,
             31,
-            # 30,
-            # insert
             40,
             39,
             30,
-            # end insrts
             29,
             20,
             21,
@@ -1041,20 +1028,14 @@ VALID_QUBIT_LOOPS = {  # used for Rigetti device runs
             33,
             24,
             23,
-            # 14,
-            # 13,
             22,
             31,
             30,
-            # insert
             29,
             20,
-            # end insser
             21,
             12,
-            # insert
             13,
-            # 3,
             4,
             5,
             6,
@@ -1089,23 +1070,16 @@ VALID_QUBIT_LOOPS = {  # used for Rigetti device runs
             33,
             24,
             23,
-            # 14,
-            # 13,
             22,
             31,
-            # insert
             40,
             39,
-            # end insert
             30,
             29,
             20,
             21,
             12,
-            # insert
             13,
-            # end insert
-            # 3,
             4,
             5,
             6,
@@ -1148,23 +1122,16 @@ VALID_QUBIT_LOOPS = {  # used for Rigetti device runs
             33,
             24,
             23,
-            # 14,
-            # 13,
             22,
             31,
-            # insert
             40,
             39,
-            # end insert
             30,
             29,
             20,
             21,
             12,
-            # insert
             13,
-            # end insert
-            # 3,
             4,
             5,
             6,

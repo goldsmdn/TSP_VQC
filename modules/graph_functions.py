@@ -125,7 +125,6 @@ def cost_graph_multi(
         axs[i, j].legend(fontsize=6, loc='upper right', shadow='true')
     fig.tight_layout()
     fig.savefig(filename)
-    # plt.close(fig)
 
 
 def plot_shortest_routes(points: list, route1: list, route2: list = None):
@@ -750,7 +749,6 @@ def plot_overall_results(
     # --- Now add Greedy Classical line (centered over grouped bars) ---
     if greedy_classical:
         ax.plot(
-            # x + center_offset - 0.2,
             x + center_offset,
             greedy_classical,
             color='black',
@@ -766,7 +764,6 @@ def plot_overall_results(
         ax.plot(
             x + center_offset + 0.3,
             AWS_results,
-            # color='#9467bd',
             color=AWS_color,
             marker='X',
             linestyle='None',
@@ -781,7 +778,6 @@ def plot_overall_results(
                 (xi, yi),
                 xytext=AWS_xytext,
                 textcoords='offset points',
-                # color=AWS_color,
                 color='black',
                 fontsize=9,
                 rotation=90,

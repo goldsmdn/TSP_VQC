@@ -14,6 +14,7 @@ from modules.helper_functions_tsp import (
     convert_integer_to_binary_list,
     cost_fn_fact,
     find_distance,
+    find_if_slicing_is_relevant,
     find_local_quantum,
     find_problem_size,
     find_run_stats,
@@ -1136,6 +1137,7 @@ def test_local_quantum2():
 
 
 def test_transform_counts():
+    """test transforming counts for qubit loops"""
     counts = {'0000': 9, '1000': 8, '0100': 7, '1101': 6, '1110': 5, '1111': 4}
     actual_output = transform_counts(counts=counts, qubits=3, target='generic_test')
 
@@ -1146,5 +1148,23 @@ def test_transform_counts():
         '111': 10,
         '110': 5,
     }
+
+    assert actual_output == expected_output
+
+
+def test_find_if_slicing_is_relevant_1():
+    """test if slicing is relevant"""
+
+    expected_output = False
+    actual_output = find_if_slicing_is_relevant(1.0)
+
+    assert actual_output == expected_output
+
+
+def test_find_if_slicing_is_relevant_2():
+    """test if slicing is relevant"""
+
+    expected_output = True
+    actual_output = find_if_slicing_is_relevant(0.5)
 
     assert actual_output == expected_output

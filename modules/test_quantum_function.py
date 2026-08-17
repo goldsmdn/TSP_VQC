@@ -175,11 +175,9 @@ def test_simple_circuit():
     distance_array = np.genfromtxt(filename)
     cost_fn = cost_fn_fact(
         locations=locations,
-        # qubits=qubits,
         gray=gray,
         formulation=formulation,
         distance_array=distance_array,
-        # target=target,
     )
 
     qc = vqc_circuit(
@@ -212,7 +210,6 @@ def test_calculate_parameter_numbers_1():
     sdl.qubits = 3
     sdl.mode = 1
     sdl.layers = 2
-    # sdl.target = 'local_qiskit_test'
     sdl.target = 'generic_test'
     expected_result = 16
     actual_result = sdl.calculate_parameter_numbers()
