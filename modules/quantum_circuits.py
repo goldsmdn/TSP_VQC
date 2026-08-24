@@ -1,11 +1,9 @@
 # quantum circuits.py
-# from braket.parametric import FreeParameter
+
 import numpy as np
 from braket.circuits import Circuit
 from IPython.display import display
 from qiskit import QuantumCircuit
-
-# from modules.helper_functions_general import find_maximum_qubits_needed
 
 LARGEST_QUANTUM_CIRCUIT_TO_PRINT = 15
 
@@ -36,8 +34,9 @@ def print_quantum_circuits(
                 )
                 display(fig)
                 fig.savefig(filename, format='pdf', bbox_inches='tight')
+                print(f'Saved quantum circuit to {filename} in PDF format')
             case '_':
-                raise Exception(f'{sdk_type=} is not an allowed value')
+                raise ValueError(f'{sdk_type=} is not an allowed value')
 
 
 def mode_1(context_dict: dict) -> QuantumCircuit:
@@ -144,12 +143,11 @@ def mode_3(context_dict: dict) -> QuantumCircuit:
                     i,
                     i + 1,
                 )
-        else:
-            qc.rzz(
-                params[qubits + i + offset],
-                i,
-                0,
-            )
+        qc.rzz(
+            params[qubits + i + offset],
+            i,
+            0,
+        )
     for i in range(qubits):
         qc.rz(params[i + offset], i)
         qc.h(i)
