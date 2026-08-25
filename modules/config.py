@@ -100,17 +100,17 @@ PLOT_TITLE = False  # Plot titles with graphs.  Not needed for publication.
 
 # configuration information used in ALL manual runs
 
-LOCATIONS = 10  # number of locations to be visited
+LOCATIONS = 4  # number of locations to be visited
 SHOTS = 1_024  # shots used for each call of the quantum circuit
 
-ITERATIONS = 50  # updates, or iterations
+ITERATIONS = 10  # updates, or iterations
 COUNTS_THRESHOLD = (
-    1.01  # triggers printing items in counts.  Set as 1.01 her to stop printing
+    1.01  # triggers printing items in counts.  Set as 1.01 here to stop printing
 )
-PRINT_FREQUENCY = 500  # don't need results in this case.
+PRINT_FREQUENCY = 5  # don't need results in this case.
 GRAY = False  # Use Gray codes
-HOT_START = True  # Make a hot start
-GRADIENT_TYPE = 'SPSA2'  # controls the optimiser used
+HOT_START = False  # Make a hot start
+GRADIENT_TYPE = 'SPSA'  # controls the optimiser used
 # quantum - 'parameter_shift' - default
 # quantum - 'SPSA' is a stochastic gradient descent
 # quantum - 'SPSA2' is a stochastic gradient descent with only one cost evaluation
@@ -223,6 +223,7 @@ MODE_DISPATCH = {
     },
     2: {
         'circuit': mode_2,  # Qiskit rxgate, XX gates -can be used with Hot Start
+        # called circuit 2a in paper.
         'sdk': 'qiskit',
         'params_per_qubit': 2,
         'hot_start_valid': True,
@@ -239,6 +240,7 @@ MODE_DISPATCH = {
     },
     4: {
         'circuit': mode_4,  # Qiskit rxgate
+        # called circuit 4 in paper
         'sdk': 'qiskit',
         'params_per_qubit': 1,
         'hot_start_valid': True,
@@ -247,6 +249,7 @@ MODE_DISPATCH = {
     },
     5: {
         'circuit': mode_5,  # Qiskit test mode
+        # not referenced in paper
         'sdk': 'qiskit',
         'params_per_qubit': 2,
         'hot_start_valid': False,
@@ -255,6 +258,7 @@ MODE_DISPATCH = {
     },
     6: {
         'circuit': mode_6,  # Qiskit rxgate, ry gate
+        # called circuit 5 in paper
         'sdk': 'qiskit',
         'params_per_qubit': 2,
         'hot_start_valid': False,
@@ -332,6 +336,7 @@ MODE_DISPATCH = {
     21: {
         'circuit': mode_21,  # AWS copy of mode 2 with RXX removed.
         # final circuit used for Cephus runs
+        # called circuit 2b in paper
         'sdk': 'aws',
         'params_per_qubit': 2,
         'hot_start_valid': True,
@@ -340,7 +345,8 @@ MODE_DISPATCH = {
     },
     22: {
         'circuit': mode_22,  # Qiskit copy of circuit 21.  Mode 2 for AWS
-        # simulated on Qiskit
+        # simulated on Qiskit.
+        # Called circuit 2b in paper.
         'sdk': 'qiskit',
         'params_per_qubit': 2,
         'hot_start_valid': True,
