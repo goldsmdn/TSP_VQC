@@ -1,9 +1,9 @@
-# Class to handle data logging
+# MyDataLogger.py  # noqa: N999
 import csv
+from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from time import strftime
-from typing import Callable
 
 from modules.config import (
     ALPHA,
@@ -28,6 +28,7 @@ from modules.config import (
     RESULTS_FILE,
     SHOTS,
     SIMULATE_NOISE,
+    SLICES,
     STD_DEV,
     TARGET,
     TARGETS,
@@ -176,13 +177,13 @@ class MySubDataLogger(MyDataLogger):
         targets_sdk = find_sdk_from_dispatch_dir(self.mode)
         valid_targets = find_valid_targets(self.mode)
         if self.target not in valid_targets:
-            raise Exception(
+            raise ValueError(
                 f'{self.target=} for {self.mode=} is not in {valid_targets=}'
             )
         if not isinstance(self.quantum, bool):
-            raise Exception('Input field quantum is not boolean')
+            raise TypeError('Input field quantum is not boolean')
         if not isinstance(self.hot_start, bool):
-            raise Exception('Input field hot start is not boolean')
+            raise TypeError('Input field hot start is not boolean')
         if not validate_optimiser(self.gradient_type):
             raise ValueError(f'{self.gradient_type} is not in OPTIMISER_DICT')
         if self.hot_start and not find_optimizer_hot_start(self.gradient_type):
@@ -191,48 +192,50 @@ class MySubDataLogger(MyDataLogger):
             validate_gradient_type(self.gradient_type)
             allow_multiple_layers = find_multi_layers_allowed(self.mode)
             if self.formulation not in ['original', 'new']:
-                raise Exception(
+                raise ValueError(
                     f'Value {self.formulation} is not allowed for formulation'
                 )
             if not isinstance(self.gray, bool):
-                raise Exception('Input field gray is not boolean')
+                raise ValueError('Input field gray is not boolean')
             if not isinstance(self.noise, bool):
-                raise Exception('Input field noise is not boolean')
+                raise ValueError('Input field noise is not boolean')
             if targets_sdk not in ['aws', 'qiskit']:
-                raise Exception(f'mode = {self.mode} is not permitted for quantum')
+                raise ValueError(f'mode = {self.mode} is not permitted for quantum')
             if not allow_multiple_layers and self.layers > 1:
-                raise Exception(f'mode = {self.mode} is only for 1 layer')
+                raise ValueError(f'mode = {self.mode} is only for 1 layer')
             if self.mps and self.aws:
-                raise Exception('MPS and AWS cannot both be true')
+                raise ValueError('MPS and AWS cannot both be true')
             if self.target not in TARGETS:
-                raise Exception(f'Target {self.target} is not in TARGETS dictionary')
+                raise ValueError(f'Target {self.target} is not in TARGETS dictionary')
             if TARGETS[self.target]['type'] not in ['local_aws', 'aws'] and self.aws:
-                raise Exception(
+                raise ValueError(
                     f'AWS is set to true, but target {self.target} is not an AWS device'
                 )
             circuit_sdk = find_sdk_from_dispatch_dir(self.mode)
             targets_sdk = find_sdk(self.target)
             if circuit_sdk != targets_sdk:
-                raise Exception(
+                raise ValueError(
                     f'Mode {self.mode} is set up for {circuit_sdk}, but target {self.target} is set up for {targets_sdk}'
                 )
             if self.noise and targets_sdk != 'aws':
-                raise Exception(
+                raise ValueError(
                     f'Noise simulation is currently only not set up for AWS devices, and {self.target=}'
                 )
         else:
             if find_optimizer_source(self.gradient_type) != 'pytorch':
-                raise Exception(
+                raise ValueError(
                     f'Only certain gradient type are allowed for non quantum, not {self.gradient_type}'
                 )
             if targets_sdk != 'ml':
-                raise Exception(f'mode = {self.mode} is not permitted for ml')
+                raise ValueError(f'mode = {self.mode} is not permitted for ml')
             if self.mps is True:
-                raise Exception('MPS simulator is only for quantum runs')
+                raise ValueError('MPS simulator is only for quantum runs')
             if self.aws is True:
-                raise Exception('AWS is only for quantum runs')
+                raise ValueError('AWS is only for quantum runs')
             if self.target != 'ml':
-                raise Exception(f'{self.target=} and should be ml for non quantum runs')
+                raise ValueError(
+                    f'{self.target=} and should be ml for non quantum runs'
+                )
 
     def save_results_to_csv(self):
         """Save the results to a CSV file"""
@@ -258,7 +261,7 @@ class MySubDataLogger(MyDataLogger):
                     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                     writer.writerows(data_row)
 
-            except Exception as e:
+            except OSError as e:
                 print(f'An error occurred while saving the data to {file_path}: {e}')
         else:
             try:
@@ -271,7 +274,7 @@ class MySubDataLogger(MyDataLogger):
                     writer.writerows(data_row)
                     print(f'Data saved to {file_path}')
 
-            except Exception as e:
+            except OSError as e:
                 print(f'An error occurred while saving the data to {file_path}: {e}')
 
     def update_constants_from_dict(
@@ -328,6 +331,13 @@ class MySubDataLogger(MyDataLogger):
         self.layers = NUM_LAYERS
         self.cache_max_size = CACHE_MAX_SIZE
         self.target = TARGET
+        if not isinstance(SLICES, list):
+            raise TypeError(f'Slice {SLICES} is not a list')
+        if len(SLICES) != 1:
+            raise ValueError(
+                f'The length of the slice list should be 1 and is {len(self.slice)}'
+            )
+        self.slice = SLICES[0]
 
     def update_quantum_constants_from_config(self):
         """Update constants needed for quantum from config file"""
@@ -403,7 +413,7 @@ class MySubDataLogger(MyDataLogger):
                     f'Detailed data for Run ID: {self.runid} - {self.subid} successfully added to {file_path}'
                 )
 
-        except Exception as e:
+        except OSError as e:
             print(f'An error occurred while saving the data to {file_path}: {e}')
 
     def save_plot(self):

@@ -1,7 +1,6 @@
-# Classical ML functions
-
+#   helper_ML_functions  # noqa: N999
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 def find_device() -> torch.device:
@@ -93,18 +92,19 @@ def train_model(
             lowest_cost = epoch_min
             epoch_lowest_cost_found = epoch
         lowest_history.append(lowest_cost)
-        if print_results:
-            if epoch % print_frequency == 0:
-                print(
-                    f'Epoch {epoch}, Average cost: {loss:.3f}',
-                    f'Epoch min cost:{epoch_min:.3f}, Lowest Cost to date: {lowest_cost:.3f}',
-                )
-                # Check gradients
-                for name, param in model.named_parameters():
-                    if param.grad is not None:
-                        print(f'Epoch {epoch}, {name} grad: {param.grad.norm():.2f}')
-                    else:
-                        print(f'Epoch {epoch}, {name} grad is None')
+        # if print_results:
+        #    if epoch % print_frequency == 0:
+        if print_results and epoch % print_frequency == 0:
+            print(
+                f'Epoch {epoch}, Average cost: {loss:.3f}',
+                f'Epoch min cost:{epoch_min:.3f}, Lowest Cost to date: {lowest_cost:.3f}',
+            )
+            # Check gradients
+            for name, param in model.named_parameters():
+                if param.grad is not None:
+                    print(f'Epoch {epoch}, {name} grad: {param.grad.norm():.2f}')
+                else:
+                    print(f'Epoch {epoch}, {name} grad is None')
         optimizer.zero_grad()
 
     return (
