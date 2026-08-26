@@ -236,15 +236,24 @@ FILTERS_ML = {
     'momentum': 0.8,
 }
 
-FILTERS_ML_LAYER_ANALYSIS = {'mode': 8, 'monte_carlo': False}
+FILTERS_ML_LAYER_ANALYSIS = {'mode': 8, 'monte_carlo': False, 'hot_start': False}
 
-FILTERS_ML_HOT_START = {
+FILTERS_ML_HOT_START_TRUE = {
+    'formulation': 'original',
+    'gray': False,
+    'iterations': 250,
+    'mode': 8,
+    'layers': 1,
+    'hot_start': True,
+    'target': 'ml',
+}
+
+FILTERS_ML_HOT_START_FALSE = {
     'formulation': 'original',
     'gray': False,
     'iterations': 250,
     'mode': 8,
     'layers': 4,
-    # 'monte_carlo': False,
 }
 
 FILTERS_ML_GRAY = {
