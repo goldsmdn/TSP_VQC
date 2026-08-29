@@ -25,7 +25,7 @@ def parameter_graph(
     """Plots a graph of the parameter evolution by iteration."""
     p = plt.plot(index_list, gradient_list)
     plt.grid(axis='x')
-    plt.legend(handles=p, labels=legend, ncols=3, fontsize='xx-small', shadow='true')
+    plt.legend(handles=p, labels=legend, ncols=3, fontsize='xx-small', shadow=True)
     plt.title(title)
     plt.tight_layout()
     plt.xlabel('Iteration')
@@ -122,7 +122,7 @@ def cost_graph_multi(
         if sub_title != '':
             sub_title_full = sub_title + f'{parameter_list[count]}'
             axs[i, j].set_title(sub_title_full, fontsize=6)
-        axs[i, j].legend(fontsize=6, loc='upper right', shadow='true')
+        axs[i, j].legend(fontsize=6, loc='upper right', shadow=True)
     fig.tight_layout()
     fig.savefig(filename)
 
@@ -170,7 +170,7 @@ def plot_shortest_routes(points: list, route1: list, route2: list[float] | None 
 
     red_patch = mpatches.Patch(color='red', label='The hot start route')
     blue_patch = mpatches.Patch(color='blue', label='The shortest route')
-    plt.legend(handles=[red_patch, blue_patch], shadow='true')
+    plt.legend(handles=[red_patch, blue_patch], shadow=True)
     plt.show()
     plt.close()
 
@@ -256,7 +256,7 @@ def plot_3d_graph_models(
         title=input2,
         loc='upper left',
         bbox_to_anchor=(1, 1),
-        shadow='true',
+        shadow=True,
     )
     plt.grid(color='green', linestyle='--', linewidth=0.5)
     formatted_input = input.replace('_', SPACE).lower()
@@ -365,7 +365,7 @@ def plot_3d_graph_slice(
         title='Locations',
         loc='upper left',
         bbox_to_anchor=(1, 1),
-        shadow='true',
+        shadow=True,
     )
 
     formatted_input = input.replace('_', SPACE).lower()
@@ -472,7 +472,7 @@ def plot_2d_graph_slice(
     plt.xlabel('Slice')
     plt.ylabel(input)
     plt.title(f'{input.capitalize()} across slices\n(Location = {location_value})')
-    plt.legend(shadow='true')
+    plt.legend(shadow=True)
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.show()
@@ -571,7 +571,7 @@ def plot_optimiser_performance1(
         loc='upper center',
         bbox_to_anchor=(0.5, 0.97),
         fontsize=14,
-        shadow='true',
+        shadow=True,
         ncols=3,
     )
 
@@ -676,7 +676,7 @@ def plot_optimiser_performance2(
         loc='center right',
         bbox_to_anchor=(1.07, 0.9),
         fontsize=14,
-        shadow='true',
+        shadow=True,
     )
 
     # Layout spacing
@@ -824,7 +824,7 @@ def plot_overall_results(
         ncols=n_cols,
         fontsize=legend_fontsize,
         framealpha=1,
-        shadow='true',
+        shadow=True,
     )
     filename = Path(GRAPH_DIR).joinpath(f'{title}.pdf')
     plt.savefig(filename, bbox_inches='tight')
@@ -867,7 +867,7 @@ def plot_circuit_comparison(
     plt.xlabel('Locations')
     plt.ylabel('Quality')
     plt.title('Quality vs Locations by Mode')
-    plt.legend(shadow='true')
+    plt.legend(shadow=True)
     plt.show()
 
 
