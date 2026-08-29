@@ -22,14 +22,15 @@ def read_data():
 
 
 def find_quality(
-    df: pd.DataFrame, factor: float = 1, round: bool = None
+    df_in: pd.DataFrame, factor: float = 1.0, decimals: int | None = None
 ) -> pd.DataFrame:
     """Find the quantum and error metrics"""
+    df = df_in.copy()
     df['quality'] = factor * df['best_dist'] / df['best_dist_found']
-    df['error'] = 1 * factor - df['quality']
-    if round:
-        df['quality'] = df['quality'].round(round)
-        df['error'] = df['error'].round(round)
+    df['error'] = factor - df['quality']
+    if decimals is not None:
+        df['quality'] = df['quality'].round(decimals)
+        df['error'] = df['error'].round(decimals)
     return df
 
 

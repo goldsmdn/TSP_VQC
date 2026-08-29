@@ -89,6 +89,22 @@ FILTERS_GENERAL_417 = {
     'noise': False,
 }
 
+FILTERS_FORMULATION = {
+    'locations': LOCATIONS,
+    'hot_start': False,
+    'noise': False,
+    'gray': False,
+    'formulation': 'new',
+}
+
+FILTERS_GRAY = {
+    'locations': LOCATIONS,
+    'hot_start': False,
+    'noise': False,
+    'gray': True,
+    'formulation': 'original',
+}
+
 FILTERS_OVERALL = {
     'locations': LOCATIONS,
     'hot_start': False,
@@ -120,7 +136,6 @@ FILTERS_VQA_SPSA2 = {
     'gamma': 0.101,
     'eta': 0.005,
     's': 0.5,
-    'monte_carlo': False,
 }
 
 FILTERS_VQA_SPSA_417 = {  # 417 iterations - fair comparison
@@ -136,7 +151,6 @@ FILTERS_VQA_SPSA_417 = {  # 417 iterations - fair comparison
     'gamma': 0.101,
     'eta': 0.1,
     's': 0.5,
-    'monte_carlo': False,
 }
 
 FILTERS_VQA_CMA = {
@@ -145,7 +159,6 @@ FILTERS_VQA_CMA = {
     'gradient_type': 'CMA',
     'iterations': 1_250,
     'sigma': 0.7,
-    'monte_carlo': False,
 }
 
 FILTERS_VQA_CEPHEUS = {
@@ -158,7 +171,6 @@ FILTERS_VQA_CEPHEUS = {
     'layers': 1,
     'target': 'cepheus',
     'locations': LOCATIONS,
-    'monte_carlo': False,
     'hot_start': True,
 }
 
@@ -173,7 +185,6 @@ FILTERS_MODEL_ANALYSIS = {
     'locations': 15,
     'slice': 1.0,
     'mps': True,
-    'monte_carlo': False,
 }
 
 FILTERS_VQA_HOT_START = {
@@ -183,7 +194,6 @@ FILTERS_VQA_HOT_START = {
     'mode': 2,
     'slice': lambda s: np.isclose(s, 1.0, atol=1e-3),
     'noise': False,
-    'monte_carlo': False,
 }
 
 FILTERS_VQA_GRAY = {
@@ -193,7 +203,6 @@ FILTERS_VQA_GRAY = {
     'mode': 2,
     'slice': lambda s: np.isclose(s, 1.0, atol=1e-3),
     'noise': False,
-    'monte_carlo': False,
 }
 
 FILTERS_VQA_FORMULATION = {
@@ -203,7 +212,6 @@ FILTERS_VQA_FORMULATION = {
     'mode': 2,
     'slice': lambda s: np.isclose(s, 1.0, atol=1e-3),
     'noise': False,
-    'monte_carlo': False,
 }
 
 FILTERS_VQA_NOISE = {
@@ -214,7 +222,6 @@ FILTERS_VQA_NOISE = {
     'slice': 0.8,
     'shots': 1_024,
     'mode': 2,
-    'monte_carlo': False,
 }
 
 FILTERS_VQA_NG1 = {
@@ -222,10 +229,8 @@ FILTERS_VQA_NG1 = {
     'shots': 1_024,
     'mode': 2,
     'gradient_type': list(find_nevergrad_optimizers()),
-    'monte_carlo': False,
     # show all Nevergrad optmisers explored.
 }
-
 
 FILTERS_ML = {
     'quantum': False,
@@ -236,15 +241,24 @@ FILTERS_ML = {
     'momentum': 0.8,
 }
 
-FILTERS_ML_LAYER_ANALYSIS = {'mode': 8, 'monte_carlo': False}
+FILTERS_ML_LAYER_ANALYSIS = {'mode': 8, 'monte_carlo': False, 'hot_start': False}
 
-FILTERS_ML_HOT_START = {
+FILTERS_ML_HOT_START_TRUE = {
+    'formulation': 'original',
+    'gray': False,
+    'iterations': 250,
+    'mode': 8,
+    'layers': 1,
+    'hot_start': True,
+    'target': 'ml',
+}
+
+FILTERS_ML_HOT_START_FALSE = {
     'formulation': 'original',
     'gray': False,
     'iterations': 250,
     'mode': 8,
     'layers': 4,
-    'monte_carlo': False,
 }
 
 FILTERS_ML_GRAY = {
@@ -254,7 +268,6 @@ FILTERS_ML_GRAY = {
     'mode': 8,
     'slice': lambda s: np.isclose(s, 1.0, atol=1e-3),
     'layers': 4,
-    'monte_carlo': False,
 }
 
 FILTERS_ML_FORMULATION = {
@@ -264,7 +277,6 @@ FILTERS_ML_FORMULATION = {
     'mode': 8,
     'layers': 4,
     'locations': lambda locs: locs < 26,
-    'monte_carlo': False,
 }
 
 FILTERS_ML_MINIBATCH = {
@@ -278,7 +290,6 @@ FILTERS_ML_MINIBATCH = {
     'layers': 4,
     'gradient_type': 'SGD',
     'noise': False,
-    'monte_carlo': False,
 }
 
 FILTERS_ML_OPTIMISERS_SGD = {
@@ -290,7 +301,6 @@ FILTERS_ML_OPTIMISERS_SGD = {
     'momentum': 0.8,
     'gradient_type': 'SGD',
     'layers': 4,
-    'monte_carlo': False,
 }
 
 FILTERS_ML_OPTIMISERS_ADAM = {
@@ -301,7 +311,6 @@ FILTERS_ML_OPTIMISERS_ADAM = {
     'weight_decay': 0.0032,
     'layers': 4,
     'gradient_type': 'Adam',
-    'monte_carlo': False,
 }
 
 FILTERS_ML_ADAMS_HYPERPARAMETERS = {
@@ -328,10 +337,9 @@ FILTERS_ML_SGD_HYPERPARAMETERS = {
 FILTERS_ML_INIT = {
     'gradient_type': 'SGD',
     'layers': 4,
-    'monte_carlo': False,
 }
 
-FILTERS_MC_TRUE = {'monte_carlo': False}
+FILTERS_MC_TRUE = {'monte_carlo': True}
 
 FILTERS_MC_FALSE = {'monte_carlo': False}
 

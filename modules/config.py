@@ -32,7 +32,7 @@ AWS = False  # Whether runs are on AWS or Qiskit.
 CEPHUS_DEVICE = 'arn:aws:braket:us-west-1::device/qpu/rigetti/Cepheus-1-108Q'
 TARGET_FIDELITY = 0.4  # maximum loss through qubit loop
 
-TARGET = 'local_qiskit'  # Options from TARGETS dictionary below.  This controls which
+TARGET = 'ml'  # Options from TARGETS dictionary below.  This controls which
 # quantum device is used and whether the emulator is used.
 
 TARGETS = {
@@ -100,17 +100,17 @@ PLOT_TITLE = False  # Plot titles with graphs.  Not needed for publication.
 
 # configuration information used in ALL manual runs
 
-LOCATIONS = 4  # number of locations to be visited
-SHOTS = 1_024  # shots used for each call of the quantum circuit
+LOCATIONS = 15  # number of locations to be visited
+SHOTS = 64  # shots used for each call of the quantum circuit
 
-ITERATIONS = 10  # updates, or iterations
+ITERATIONS = 2  # updates, or iterations
 COUNTS_THRESHOLD = (
     1.01  # triggers printing items in counts.  Set as 1.01 here to stop printing
 )
-PRINT_FREQUENCY = 5  # don't need results in this case.
+PRINT_FREQUENCY = 1_025  # don't need results in this case.
 GRAY = False  # Use Gray codes
-HOT_START = False  # Make a hot start
-GRADIENT_TYPE = 'SPSA'  # controls the optimiser used
+HOT_START = True  # Make a hot start
+GRADIENT_TYPE = 'SGD'  # controls the optimiser used
 # quantum - 'parameter_shift' - default
 # quantum - 'SPSA' is a stochastic gradient descent
 # quantum - 'SPSA2' is a stochastic gradient descent with only one cost evaluation
@@ -203,10 +203,10 @@ OPTIMIZER_DICT = {
 }
 
 DECODING_FORMULATION = 'original'  # 'original' or 'new' - new is formulation from paper
-NUM_LAYERS = 1  # number of layers in the model
+NUM_LAYERS = 4  # number of layers in the model
 
 # information needed in QML manual runs:
-MODE = 22  # See list of allowed modes in MODE_DISPATCH below.
+MODE = 8  # See list of allowed modes in MODE_DISPATCH below.
 # This controls the structure of the variational quantum circuit used in the QML runs.
 # The modes are described in the function that sets up the variational quantum circuit
 # in helper_functions_quantum.py.
@@ -373,8 +373,8 @@ ROTATIONS = 10  # number of rotations sampled in parameter graphs
 
 # information needed in ML manual runs:
 STD_DEV = 0.05  # standard deviation for warm start weight randomization
-LR = 1e-3  # Learning rate for ML
-MOMENTUM = 0.9
+LR = 1e-5  # Learning rate for ML
+MOMENTUM = 0.8
 WEIGHT_DECAY = 0.0006  # importance of L2 regularization in optimiser
 
 VALID_QUBIT_LOOPS = {  # used for Rigetti device runs

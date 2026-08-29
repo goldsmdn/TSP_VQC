@@ -77,12 +77,12 @@ def find_i_j(count: int, rows: int) -> tuple:
 
 def cost_graph_multi(
     filename: str,
-    parameter_list: list = None,
-    x_list: list = None,
-    av_list: list = None,
-    lowest_list: list = None,
-    sliced_list: list = None,
-    best: float = None,
+    parameter_list: list[str] | None = None,
+    x_list: list[float] | None = None,
+    av_list: list[float] | None = None,
+    lowest_list: list[float] | None = None,
+    sliced_list: list[float] | None = None,
+    best: float | None = None,
     main_title: str = '',
     sub_title: str = '',
     x_label: str = 'Epoch',
@@ -127,7 +127,7 @@ def cost_graph_multi(
     fig.savefig(filename)
 
 
-def plot_shortest_routes(points: list, route1: list, route2: list = None):
+def plot_shortest_routes(points: list, route1: list, route2: list[float] | None = None):
     """Plot the shortest route found and optionally a hot start route."""
     x = points[:, 0]
     y = points[:, 1]
@@ -487,8 +487,10 @@ def plot_optimiser_performance1(
     plot_last_av: bool,
     plot_best_found: bool,
     plot_best_dist: bool,
+    hide_plot_type: bool,
 ):
     """Plots a graph of the performance of optimisers for different sinam and iterations"""
+    text_map = {'CMA': 'CMA-ES', 'SPSA_ng': 'SPSA Nevergrad version'}
     sigmas = df_stats['sigma'].unique()
     gradient_types = df_stats['gradient_type'].unique()
     colors = plt.cm.tab10(range(len(gradient_types)))
@@ -496,16 +498,16 @@ def plot_optimiser_performance1(
 
     fig, axes = plt.subplots(4, 2, figsize=(16, 16), sharex=True, sharey=True)
     axes = axes.flatten()
+
     title = f'Optimser Performance by Sigma with Estimated Uncertainty for {locations} Locations and {shots} Shots'
 
-    fig.suptitle(title, fontsize=16)
+    fig.suptitle(title, fontsize=16, y=0.98)
 
     x_ticks = [10, 50, 250, 1_250]
     x_tick_labels = ['10', '50', '250', '1,250']
 
     for ax, sigma in zip(axes, sigmas):
         subset_sigma = df_stats[df_stats['sigma'] == sigma]
-
         for color, gt, marker in zip(colors, gradient_types, markers):
             subset = subset_sigma[subset_sigma['gradient_type'] == gt]
             subset = subset.sort_values('iterations')
@@ -513,16 +515,16 @@ def plot_optimiser_performance1(
                 continue
             x = subset['iterations']
 
+            my_text = text_map.get(gt)  # read from dictionary
+            if my_text is None:
+                my_text = gt
+
             if plot_last_av:
                 y_last_av = subset['last_av_mean']
                 y_last_av_std = subset['last_av_sem']
-                ax.plot(
-                    x,
-                    y_last_av,
-                    marker=marker,
-                    color=color,
-                    label=f'{gt} - Last average',
-                )
+                if not hide_plot_type:
+                    my_text += '- Last average'
+                ax.plot(x, y_last_av, marker=marker, color=color, label=my_text)
                 ax.fill_between(
                     x,
                     y_last_av - y_last_av_std,
@@ -533,13 +535,9 @@ def plot_optimiser_performance1(
             if plot_best_found:
                 y_best_found = subset['best_found_mean']
                 y_best_found_std = subset['best_found_sem']
-                ax.plot(
-                    x,
-                    y_best_found,
-                    marker=marker,
-                    color=color,
-                    label=f'{gt} - Best Found',
-                )
+                if not hide_plot_type:
+                    my_text += '- Best found'
+                ax.plot(x, y_best_found, marker=marker, color=color, label=my_text)
                 ax.fill_between(
                     x,
                     y_best_found - y_best_found_std,
@@ -556,7 +554,7 @@ def plot_optimiser_performance1(
             )
 
         # Titles and formatting per subplot
-        ax.set_title(f'Sigma = {sigma}')
+        ax.set_title(rf'$\sigma = $ {sigma}')
         ax.set_xscale('log')
         ax.set_xticks(x_ticks, labels=x_tick_labels)
         ax.grid(True)
@@ -570,14 +568,15 @@ def plot_optimiser_performance1(
     fig.legend(
         handles,
         labels,
-        loc='center right',
-        bbox_to_anchor=(1.07, 0.7),
+        loc='upper center',
+        bbox_to_anchor=(0.5, 0.97),
         fontsize=14,
         shadow='true',
+        ncols=3,
     )
 
     # Layout spacing
-    plt.tight_layout(rect=[0, 0, 0.85, 1])
+    plt.tight_layout(rect=[0, 0, 1.0, 0.90])
     filepath = Path(GRAPH_DIR).joinpath(f'{title}.pdf')
     plt.savefig(fname=filepath, bbox_inches='tight')
     plt.show()
@@ -694,7 +693,7 @@ def plot_overall_results(
     simulation_errors: pd.DataFrame,
     colors: list,  # list of colours to used for the bars
     locs: list,  # locations to be plotted
-    title: str = 'Solution Quality by Number of Locations for VQA, ML, Monte Carlo and Greedy methods',
+    title: str = 'Solution Quality by Number of Locations for VQA, Monte Carlo, ML and Greedy methods',
     greedy_classical: pd.DataFrame = False,
     AWS_results: pd.DataFrame = False,
     AWS_color: str = '#9467bd',
@@ -703,10 +702,11 @@ def plot_overall_results(
     n_cols: int = 2,  # number of columns in the legend
     legend_fontsize: str = 'small',  # font size for the bar labels
     show_labels: bool = True,  # show labels for bars
+    bespoke_order: list | None = None,  # used to sort labels
 ):
     """plots overall results for the paper"""
     x = np.arange(len(locs))
-    fig, ax = plt.subplots(layout='constrained')
+    _fig, ax = plt.subplots(layout='constrained')
 
     for attribute, measurement in simulation_means.items():
         offset = width * multiplier
@@ -812,6 +812,11 @@ def plot_overall_results(
         handles.append(handles.pop(idx))
         labels.append(labels.pop(idx))
 
+    if bespoke_order:
+        # sort into nice order for publication
+        handles = [handles[i] for i in bespoke_order]
+        labels = [labels[i] for i in bespoke_order]
+
     ax.legend(
         handles,
         labels,
@@ -821,7 +826,7 @@ def plot_overall_results(
         framealpha=1,
         shadow='true',
     )
-    filename = Path(GRAPH_DIR).joinpath('solution_quality_by_method.pdf')
+    filename = Path(GRAPH_DIR).joinpath(f'{title}.pdf')
     plt.savefig(filename, bbox_inches='tight')
 
     plt.show()
