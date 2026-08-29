@@ -89,6 +89,22 @@ FILTERS_GENERAL_417 = {
     'noise': False,
 }
 
+FILTERS_FORMULATION = {
+    'locations': LOCATIONS,
+    'hot_start': False,
+    'noise': False,
+    'gray': False,
+    'formulation': 'new',
+}
+
+FILTERS_GRAY = {
+    'locations': LOCATIONS,
+    'hot_start': False,
+    'noise': False,
+    'gray': True,
+    'formulation': 'original',
+}
+
 FILTERS_OVERALL = {
     'locations': LOCATIONS,
     'hot_start': False,
