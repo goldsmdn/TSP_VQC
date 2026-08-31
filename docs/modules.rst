@@ -9,10 +9,18 @@ modules.graph\_functions module
    :undoc-members:
    :show-inheritance:
 
-modules.helper\_ML\_functions module
-------------------------------------
+modules.helper\_functions\_general module
+-----------------------------------------
 
-.. automodule:: modules.helper_ML_functions
+.. automodule:: modules.helper_functions_general
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+modules.helper\_functions\_nevergrad module
+-------------------------------------------
+
+.. automodule:: modules.helper_functions_nevergrad
    :members:
    :undoc-members:
    :show-inheritance:
@@ -25,13 +33,30 @@ modules.helper\_functions\_tsp module
    :undoc-members:
    :show-inheritance:
 
-modules.test\_ML\_functions module
-----------------------------------
+modules.helper\_ML\_functions module
+------------------------------------
 
-.. automodule:: modules.test_ML_functions
+.. automodule:: modules.helper_ML_functions
    :members:
    :undoc-members:
    :show-inheritance:
+
+modules.helper\_results module
+------------------------------
+
+.. automodule:: modules.helper_results
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+modules.quantum\_circuits module
+--------------------------------
+
+.. automodule:: modules.quantum_circuits
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 modules.test\_quantum\_function module
 --------------------------------------
@@ -53,14 +78,6 @@ Module contents
 ---------------
 
 .. automodule:: modules
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-modules.helper\_results module
--------------------------------------
-
-.. automodule:: modules.helper_results
    :members:
    :undoc-members:
    :show-inheritance:
