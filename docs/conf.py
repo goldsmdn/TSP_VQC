@@ -45,3 +45,12 @@ autodoc_typehints_format = 'short'
 
 html_theme = 'sphinx_rtd_theme'
 # html_static_path = ['_static']
+
+autodoc_mock_imports = [
+    'nevergrad',
+    'bayes_opt',
+    'sklearn',
+    'scipy',
+    'numba',
+    'braket',
+]
