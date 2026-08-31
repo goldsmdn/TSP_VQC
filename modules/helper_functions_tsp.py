@@ -471,7 +471,6 @@ def define_parameters(mode: int, num_params: int, target: str) -> list:
 
     Parameters
     ----------
-    #qubits: int - The number of qubits in the circuit
     mode: int - Controls setting the circuit up in different modes
     num_params: int - The number of parameters to be defined
     target: str - This is a key in the TARGETS dictionary
@@ -504,13 +503,13 @@ def vqc_circuit(
 
     Parameters
     ----------
-    A sub data logger holding the parameters for the run with key fields:
     qubits: int
         The number of qubits in the circuit
     mode: int
         Controls setting the circuit up in different modes
-    noise: bool
-        Controls if noise is included in the circuit
+    noise_bool: bool
+        Controls if noise is included in the circuit.  Use noise_bool to avoid the
+        risk of shadowing
     layers: int
         The numnber of layers
     params: list
@@ -575,10 +574,8 @@ def create_initial_rotations(
     ----------
     qubits : int
         The number of qubits in the circuit
-    mode : int
-        Controls setting the circuit up in different modes
-    layers : int
-        The number of layers
+    num_params : int
+        The number of parameters used
     target : str
         The target quantum device
     hot_start : bool
@@ -625,7 +622,9 @@ def transform_counts(counts: dict, qubits: int, target: str) -> dict:
 
 
 def print_counts_summary(counts: dict, shots: int, message: str):
+    """print the counts summary dictionary item if bit string counts exceeds threshold"""
     threshold = shots * COUNTS_THRESHOLD
+    # don't want print out to be too long for large circuits
     for key, value in counts.items():
         if value > threshold:
             print(f'{message} {key=}, {value=}')
@@ -636,9 +635,9 @@ def cost_func_evaluate(
     noise_bool: bool,
     shots: int,
     cost_fn: Callable,
-    model,
-    target,
-    mps,
+    model: Circuit,
+    target: str,
+    mps: bool,
     average_slice: float = 1,
     verbose: bool = False,
 ) -> tuple[float, float, list[int]]:
@@ -646,10 +645,10 @@ def cost_func_evaluate(
 
     Parameters
     ----------
+    qubits: int
+        The number of qubits in the circuit
     noise: bool
         If True a noisy quantum computer is used
-    quantum: bool
-        If True a quantum computer is used.  If False a classical model is used
     shots: int
         The number of shots for which the quantum circuit is to be run
     cost_fn: function
@@ -659,10 +658,16 @@ def cost_func_evaluate(
             A quantum circuit with bound weights for which the energy is to be found
         Classical Model
             A classical model with bound weights for which the energy is to be found
+    target : str
+        The type of calculation, for example 'ml', 'local_qiskit' from config.py
+    mps : bool
+        Use matrix product state (Qiskit only)
     average_slice: float
         average over this slice of the energy.  For example:
         If average_slice = 1 then average over all energies.
         If average_slice = 0.2 then average over the bottom 20% of energies
+    verbose: bool
+        Print out extra details
 
     Returns
     -------
@@ -717,6 +722,7 @@ def cost_func_evaluate(
 
 
 def is_even(n):
+    """returns True if even, False otherwise"""
     return n % 2 == 0
 
 
@@ -753,7 +759,7 @@ def validate_qubit_loops(qubits: int, loop_dict: dict, target: str):
 
 
 def find_qubit_loop_fidelity(qubits: int, target: str):
-    """finds the fidelity for each item in the loop"""
+    """finds the fidelity for each item in the loop on AWS Braket"""
     device = find_device(target=target)
     print(f'Found device as {device}')
     total_fidelity = 1
@@ -804,6 +810,8 @@ def find_stats(
         average over this slice of the energy.  eg
         If average_slice = 1 then average over all energies.
         If average_slice = 0.2 then average over the bottom 20% of energies
+    verbose: bool
+        Prints out extra details
 
     Returns
     ----------
@@ -1016,7 +1024,7 @@ def update_parameters_using_gradient(
         lowest_list.append(lowest_to_date)
         average_list.append(average)
         parameter_list.append(rots)
-        if not SPSA_like:
+        if not SPSA_like:  # ie parameter shift
             gradient = my_gradient(
                 qubits=qubits,
                 noise_bool=noise_bool,
@@ -1033,7 +1041,7 @@ def update_parameters_using_gradient(
             )
             rots = rots - eta * gradient
         elif SPSA_like:
-            if calls == 3:
+            if calls == 3:  # SPSA standard
                 ak = a / ((i + 1 + big_a) ** (alpha))
                 ck = c / ((i + 1) ** (gamma))
                 gradient = my_gradient(
@@ -1052,7 +1060,7 @@ def update_parameters_using_gradient(
                     ck=ck,
                 )
                 rots = rots - ak * gradient
-            elif calls == 1:
+            elif calls == 1:  # Q-SPSA
                 # need to correct for taking gradient less often with Q-SPSA,
                 # so that the step size is not too large
                 ak = a / ((i // 2 + 1 + big_a) ** (alpha))
@@ -1159,6 +1167,8 @@ def my_gradient(
 
     Parameters
     ----------
+    qubits: int
+        number of qubits in the circuit
     noise: bool
         If True a noisy quantum computer is used
     shots: int
@@ -1169,8 +1179,6 @@ def my_gradient(
         controls the optimiser to be used.
         if 'parameter shift'  uses analytical expression
         if 'SPSA' uses a stochastical method
-    ck: float
-        SPSA parameter, small number controlling perturbations
     cost_fn: function
         A function of a bit string evaluating an energy (distance) for that bit string
     qc: Circuit
@@ -1182,6 +1190,12 @@ def my_gradient(
     average_slice: float
         Controls the amount of data to be included in the average.
         For example, 0.2 means that the lowest 20% of distances found is included in the average.
+    target : str
+        Type of calculation, for example 'qiskit_local' from config.py
+    mps : bool
+        Use Matrix Product state (qiskit only)
+    ck: float
+        SPSA parameter, small number controlling perturbations
 
     Returns
     -------
@@ -1190,9 +1204,10 @@ def my_gradient(
     """
 
     SPSA_like = find_if_optimiser_is_SPSA_like(gradient_type)
+    # is it SPSA / Q-SPSA or parameter shift?
 
     new_rots = copy.deepcopy(rots)
-    if not SPSA_like:
+    if not SPSA_like:  # ie parameter shift
         gradient_list = []
         for i, theta in enumerate(rots):
             new_rots[i] = theta + np.pi / (4 * s)
@@ -1233,8 +1248,8 @@ def my_gradient(
             delta = s * (cost_plus - cost_minus)
             gradient_list.append(delta)
         gradient_array = np.array(gradient_list)
-    elif SPSA_like:
-        # spsa 2 is only called to find original gradient.
+    elif SPSA_like:  # SPSA, Q-SPSA
+        # Q-SPSA is only called to find original gradient.
         # number of parameters
         length = len(rots)
         # bernoulli-like distribution
@@ -1374,8 +1389,6 @@ def cost_fn_fact(
     ----------
     locations: int
         The number of locations in the problem
-    qubits:int
-        The number of qubits required
     gray: bool
         If True Gray codes are used
     formulation: str
@@ -1516,9 +1529,9 @@ def hot_start_list_to_string(
     -------
     result_list: list
         A list of bits that represents the bit string for the lowest cycle
-        sdl.formulation: str
-            'original' => method from Goldsmith D, Day-Evans J.
-            'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
+    formulation: str
+        'original' => method from Goldsmith D, Day-Evans J.
+        'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
     hot_start_list: list
         A list of integers showing an estimate of the lowest cycle
 
@@ -1636,8 +1649,15 @@ def calculate_hot_start_data(
 
     Parameters
     ----------
-    sdl : SubDataLogger object
-        Containing key parameters
+    locations: int
+        number of locatoins
+    gray: bool
+        Is Gray encoding used?
+    formulation: str
+        'original' => method from Goldsmith D, Day-Evans J.
+        'new' => method from Schnaus M, Palackal L, Poggel B, Runge X, Ehm H, Lorenz JM, et al.
+    best_dist: float
+        Best distance possible for network
     distance_array: array
         Numpy symmetric array with distances between locations
     cost_fn : function

@@ -425,7 +425,10 @@ def plot_heatmap(
 
 
 def plot_2d_graph_slice(
-    sliced_summary, input='error', location_value=None, show_sem=True
+    sliced_summary: pd.DataFrame,
+    input: str = 'error',
+    location_value: str | int | None = None,
+    show_sem: bool = True,
 ):
     """
     Plot 2D means with optional SEM error bars for one location across slices.

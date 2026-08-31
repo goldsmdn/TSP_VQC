@@ -1,8 +1,10 @@
+# MyModel.py  # noqa: N999
+
 import math
-from typing import Callable
+from collections.abc import Callable
 
 import torch
-import torch.nn as nn
+import torch.nn as nn  # noqa: PLR0402
 
 from modules.helper_functions_tsp import cost_fn_tensor
 from modules.helper_ML_functions import find_device
@@ -70,7 +72,7 @@ class MySine(nn.Module):
     """Returns a sine function symmetric about 0.5"""
 
     def __init__(self):
-        super(MySine, self).__init__()  # Initialize parent class
+        super(MySine, self).__init__()  # Initialize parent class  # noqa: UP008
         self.register_buffer('pi', torch.tensor(math.pi))
 
     def forward(self, x):
@@ -81,7 +83,7 @@ class Sample_Binary(nn.Module):
     """Return probability in forward, linear backwards"""
 
     def __init__(self):
-        super(Sample_Binary, self).__init__()  # Initialize parent class
+        super(Sample_Binary, self).__init__()  # Initialize parent class  # noqa: UP008
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         sampled = (torch.rand_like(x) < x).float()  # 0/1 values as float
@@ -93,7 +95,7 @@ class BinaryToCost(nn.Module):
     """Convert a bit string to a cost in forwards, estimate gradient backwards"""
 
     def __init__(self, cost_fn: Callable[[list], int]):
-        super(BinaryToCost, self).__init__()  # Intialize parent class
+        super(BinaryToCost, self).__init__()  # Intialize parent class  # noqa: UP008
         self.cost_fn = cost_fn
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -107,7 +109,7 @@ class MyModel(nn.Module):
 
     def __init__(self, sdl, cost_fn: Callable[[list], int]):
         """Initialize the model"""
-        super(MyModel, self).__init__()
+        super(MyModel, self).__init__()  # noqa: UP008
         self.bits = sdl.qubits
         self.layers = sdl.layers
         self.std_dev = sdl.std_dev
@@ -120,7 +122,7 @@ class MyModel(nn.Module):
         elif self.mode in [18, 19]:
             self.activation = nn.Sigmoid()
         else:
-            raise Exception(f'Mode {self.mode} is not supported')
+            raise ValueError(f'Mode {self.mode} is not supported')
         self._build_layers()
 
     def _init_weights(self, fc, first_layer: bool = False):
@@ -150,7 +152,7 @@ class MyModel(nn.Module):
                             if fc.bias is not None:
                                 fc.bias.uniform_(-bound, bound)
                     else:
-                        raise Exception(
+                        raise TypeError(
                             'Activation function {self.activation} not supported for SGD+X'
                         )
 
