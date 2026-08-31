@@ -997,11 +997,6 @@ def update_parameters_using_gradient(
             # need to set lowest to date in case found in first iterations
         else:
             raise ValueError(f'{calls=} is invalid')
-        # average is the average energy with no top slicing
-        # if i == 0:
-        #    lowest_string_to_date = lowest_energy_bit_string
-        #    lowest_to_date = lowest
-        # else:
         if lowest < lowest_to_date:
             lowest_to_date = lowest
             lowest_string_to_date = lowest_energy_bit_string
@@ -1420,7 +1415,6 @@ def cost_fn_fact(
                 raise ValueError('Algorithm returned incorrect cycle')
             return total_distance
         else:
-            # raise Exception(f'bit_string {bit_string_input} is not a list or a tensor')
             raise TypeError(f'bit_string {bit_string_input} is not a list or a tensor')
 
     return cost_fn
@@ -1460,7 +1454,6 @@ def cost_fn_tensor(input: torch.tensor, cost_fn: Callable) -> torch.Tensor:
             distance_tensor[i] = distance
         return distance_tensor
     else:
-        # raise Exception(f'bit_string {input} is not a tensor')
         raise TypeError(f'bit_string {input} is not a tensor')
 
 
