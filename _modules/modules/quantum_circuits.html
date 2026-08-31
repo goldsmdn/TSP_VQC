@@ -1,0 +1,911 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>modules.quantum_circuits &mdash; Travelling Salesman Problem 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Travelling Salesman Problem
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">modules package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../classes.html">classes package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Travelling Salesman Problem</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">modules.quantum_circuits</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for modules.quantum_circuits</h1><div class="highlight"><pre>
+<span></span><span class="c1"># quantum circuits.py</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">braket.circuits</span><span class="w"> </span><span class="kn">import</span> <span class="n">Circuit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">qiskit</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantumCircuit</span>
+
+<span class="n">LARGEST_QUANTUM_CIRCUIT_TO_PRINT</span> <span class="o">=</span> <span class="mi">15</span>
+
+
+<div class="viewcode-block" id="find_maximum_qubits_needed">
+<a class="viewcode-back" href="../../modules.html#modules.quantum_circuits.find_maximum_qubits_needed">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_maximum_qubits_needed</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""find the maximum number of qubits needed for Qiskit circuit set up"""</span>
+    <span class="n">maximum_qubits_needed</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">qubit_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="c1"># lowest qubit is 0, highest is max(qubit_dict.values())</span>
+    <span class="c1"># the lowest qubit is always 0</span>
+    <span class="k">return</span> <span class="n">maximum_qubits_needed</span></div>
+
+
+
+<div class="viewcode-block" id="print_quantum_circuits">
+<a class="viewcode-back" href="../../modules.html#modules.quantum_circuits.print_quantum_circuits">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">print_quantum_circuits</span><span class="p">(</span>
+    <span class="n">qubits</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">sdk_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">qc</span><span class="p">:</span> <span class="n">QuantumCircuit</span><span class="p">,</span>
+    <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""prints a quantum circuit using Qiskit or AWS formats"""</span>
+    <span class="k">if</span> <span class="n">qubits</span> <span class="o">&lt;</span> <span class="n">LARGEST_QUANTUM_CIRCUIT_TO_PRINT</span><span class="p">:</span>
+        <span class="k">match</span> <span class="n">sdk_type</span><span class="p">:</span>
+            <span class="k">case</span> <span class="s1">'aws'</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">qc</span><span class="p">)</span>
+            <span class="k">case</span> <span class="s1">'qiskit'</span><span class="p">:</span>
+                <span class="n">fig</span> <span class="o">=</span> <span class="n">qc</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span>
+                    <span class="s1">'mpl'</span><span class="p">,</span>
+                    <span class="n">style</span><span class="o">=</span><span class="s1">'clifford'</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">display</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+                <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'pdf'</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">'tight'</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Saved quantum circuit to </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1"> in PDF format'</span><span class="p">)</span>
+            <span class="k">case</span><span class="w"> </span><span class="s1">'</span><span class="k">_</span><span class="s1">':</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">sdk_type</span><span class="si">=}</span><span class="s1"> is not an allowed value'</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="mode_1">
+<a class="viewcode-back" href="../../modules.html#modules.quantum_circuits.mode_1">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mode_1</span><span class="p">(</span><span class="n">context_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuantumCircuit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Creates a simple Qiskit circuit with multiple layera of Hadamards,</span>
+<span class="sd">        RY and RX rotations and one layer of CNOTs</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    context_dict: dict</span>
+<span class="sd">        A dictionary containing the context for the circuit, including the number of qubits, parameters, and layers</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    qc: Quantum Circuit</span>
+<span class="sd">        A quantum circuit</span>
+<span class="sd">    """</span>
+
+    <span class="n">qubits</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubits'</span><span class="p">]</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'params'</span><span class="p">]</span>
+    <span class="n">layers</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'layers'</span><span class="p">]</span>
+
+    <span class="n">qc</span> <span class="o">=</span> <span class="n">QuantumCircuit</span><span class="p">(</span><span class="n">qubits</span><span class="p">,</span> <span class="n">qubits</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">layers</span><span class="p">):</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">layer</span> <span class="o">*</span> <span class="n">qubits</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits</span><span class="p">):</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">h</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">ry</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">],</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">qubits</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">],</span> <span class="n">i</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">qubits</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">qc</span><span class="o">.</span><span class="n">cx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">qc</span><span class="o">.</span><span class="n">cx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">qc</span></div>
+
+
+
+<div class="viewcode-block" id="mode_2">
+<a class="viewcode-back" href="../../modules.html#modules.quantum_circuits.mode_2">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mode_2</span><span class="p">(</span><span class="n">context_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuantumCircuit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Creates a simple Qiskit circuit with multiple layers of Hadamards,</span>
+<span class="sd">        RX rotations and one layer of XX gates</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    context_dict: dict</span>
+<span class="sd">        A dictionary containing the context for the circuit,</span>
+<span class="sd">        including the number of qubits, parameters, and layers</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    qc: Quantum Circuit</span>
+<span class="sd">        A quantum circuit</span>
+<span class="sd">    """</span>
+
+    <span class="n">qubits</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubits'</span><span class="p">]</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'params'</span><span class="p">]</span>
+    <span class="n">layers</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'layers'</span><span class="p">]</span>
+
+    <span class="n">qc</span> <span class="o">=</span> <span class="n">QuantumCircuit</span><span class="p">(</span><span class="n">qubits</span><span class="p">,</span> <span class="n">qubits</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">layers</span><span class="p">):</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">layer</span> <span class="o">*</span> <span class="n">qubits</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits</span><span class="p">):</span>
+            <span class="n">theta1</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">]</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span><span class="n">theta1</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits</span><span class="p">):</span>
+            <span class="n">theta2</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">qubits</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">]</span>
+            <span class="n">q1</span><span class="p">,</span> <span class="n">q2</span> <span class="o">=</span> <span class="n">i</span> <span class="o">%</span> <span class="n">qubits</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">qubits</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rxx</span><span class="p">(</span>
+                <span class="n">theta2</span><span class="p">,</span>
+                <span class="n">q1</span><span class="p">,</span>
+                <span class="n">q2</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="k">return</span> <span class="n">qc</span></div>
+
+
+
+<div class="viewcode-block" id="mode_3">
+<a class="viewcode-back" href="../../modules.html#modules.quantum_circuits.mode_3">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mode_3</span><span class="p">(</span><span class="n">context_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuantumCircuit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Creates a simple Qiskit circuit inspired by IQP circuits,</span>
+<span class="sd">       with multiple layers of Hadamards,</span>
+<span class="sd">        RX and RZ rotations and one layer of CZ gates</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    context_dict: dict</span>
+<span class="sd">        A dictionary containing the context for the circuit, including the number of qubits, parameters, and layers</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    qc: Quantum Circuit</span>
+<span class="sd">        A quantum circuit</span>
+<span class="sd">    """</span>
+
+    <span class="n">qubits</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubits'</span><span class="p">]</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'params'</span><span class="p">]</span>
+    <span class="n">layers</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'layers'</span><span class="p">]</span>
+
+    <span class="n">qc</span> <span class="o">=</span> <span class="n">QuantumCircuit</span><span class="p">(</span><span class="n">qubits</span><span class="p">,</span> <span class="n">qubits</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">layers</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Mode 3 is only coded for one layer'</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">layers</span><span class="p">):</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">layer</span> <span class="o">*</span> <span class="n">qubits</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits</span><span class="p">):</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">h</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">qubits</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">qc</span><span class="o">.</span><span class="n">rzz</span><span class="p">(</span>
+                    <span class="n">params</span><span class="p">[</span><span class="n">qubits</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">],</span>
+                    <span class="n">i</span><span class="p">,</span>
+                    <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="n">qc</span><span class="o">.</span><span class="n">rzz</span><span class="p">(</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">qubits</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">],</span>
+            <span class="n">i</span><span class="p">,</span>
+            <span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits</span><span class="p">):</span>
+        <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">],</span> <span class="n">i</span><span class="p">)</span>
+        <span class="n">qc</span><span class="o">.</span><span class="n">h</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">qc</span></div>
+
+
+
+<div class="viewcode-block" id="mode_4">
+<a class="viewcode-back" href="../../modules.html#modules.quantum_circuits.mode_4">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mode_4</span><span class="p">(</span><span class="n">context_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuantumCircuit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Creates a simple Qiskit circuit with multiple layers of RX rotations</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    context_dict: dict</span>
+<span class="sd">        A dictionary containing the context for the circuit, including the number of qubits, parameters, and layers</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    qc: Quantum Circuit</span>
+<span class="sd">        A quantum circuit</span>
+<span class="sd">    """</span>
+
+    <span class="n">qubits</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubits'</span><span class="p">]</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'params'</span><span class="p">]</span>
+    <span class="n">layers</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'layers'</span><span class="p">]</span>
+
+    <span class="n">qc</span> <span class="o">=</span> <span class="n">QuantumCircuit</span><span class="p">(</span><span class="n">qubits</span><span class="p">,</span> <span class="n">qubits</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">layers</span><span class="p">):</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">layer</span> <span class="o">*</span> <span class="n">qubits</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits</span><span class="p">):</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">],</span> <span class="n">i</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">qc</span></div>
+
+
+
+<div class="viewcode-block" id="mode_5">
+<a class="viewcode-back" href="../../modules.html#modules.quantum_circuits.mode_5">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mode_5</span><span class="p">(</span><span class="n">context_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuantumCircuit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Creates a simple Qiskit circuit with multiple layers of Hadamards,</span>
+<span class="sd">        RX and RZ rotations and one layer of CNOT gates, but only 2 qubits</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    context_dict: dict</span>
+<span class="sd">        A dictionary containing the context for the circuit, including the number of qubits, parameters, and layers</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    qc: Quantum Circuit</span>
+<span class="sd">        A quantum circuit</span>
+<span class="sd">    """</span>
+
+    <span class="n">qubits</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubits'</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">qubits</span> <span class="o">!=</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">'test mode 5 is only to be used with 5 qubits.  </span><span class="si">{</span><span class="n">qubits</span><span class="si">}</span><span class="s1"> qubits are specified'</span>
+        <span class="p">)</span>
+
+    <span class="n">qc</span> <span class="o">=</span> <span class="n">QuantumCircuit</span><span class="p">(</span><span class="n">qubits</span><span class="p">,</span> <span class="n">qubits</span><span class="p">)</span>
+    <span class="n">qc</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">qc</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">qc</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">qc</span></div>
+
+
+
+<div class="viewcode-block" id="mode_6">
+<a class="viewcode-back" href="../../modules.html#modules.quantum_circuits.mode_6">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mode_6</span><span class="p">(</span><span class="n">context_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuantumCircuit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Creates a simple Qiskit circuit with multiple layers of Hadamards,</span>
+<span class="sd">        RX and RY rotations and one layer of CNOT gates</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    context_dict: dict</span>
+<span class="sd">        A dictionary containing the context for the circuit, including the number of qubits, parameters, and layers</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    qc: Quantum Circuit</span>
+<span class="sd">        A quantum circuit</span>
+<span class="sd">    """</span>
+
+    <span class="n">qubits</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubits'</span><span class="p">]</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'params'</span><span class="p">]</span>
+    <span class="n">layers</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'layers'</span><span class="p">]</span>
+
+    <span class="n">qc</span> <span class="o">=</span> <span class="n">QuantumCircuit</span><span class="p">(</span><span class="n">qubits</span><span class="p">,</span> <span class="n">qubits</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">layers</span><span class="p">):</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">layer</span> <span class="o">*</span> <span class="n">qubits</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits</span><span class="p">):</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">h</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">ry</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">],</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">qubits</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">],</span> <span class="n">i</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">qc</span></div>
+
+
+
+<div class="viewcode-block" id="mode_7">
+<a class="viewcode-back" href="../../modules.html#modules.quantum_circuits.mode_7">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mode_7</span><span class="p">(</span><span class="n">context_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Circuit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A simple circuit created in AWS Braket with multiple layers of RZ rotations and ISWAP gates</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    context_dict: dict</span>
+<span class="sd">        A dictionary containing the context for the circuit, including the number of qubits, parameters, and layers</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    qc: Quantum Circuit</span>
+<span class="sd">        A quantum circuit</span>
+<span class="sd">    """</span>
+
+    <span class="c1"># qubits = context_dict['qubits']</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'params'</span><span class="p">]</span>
+    <span class="n">layers</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'layers'</span><span class="p">]</span>
+    <span class="n">qubit_dict</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubit_dict'</span><span class="p">]</span>
+    <span class="n">qubits_measured</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubits_measured'</span><span class="p">]</span>
+
+    <span class="n">inner</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">layers</span><span class="p">):</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">layer</span> <span class="o">*</span> <span class="n">qubits_measured</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="n">inner</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">qubits_measured</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">inner</span><span class="o">.</span><span class="n">iswap</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">inner</span><span class="o">.</span><span class="n">iswap</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qubit_dict</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">inner</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="n">qubits_measured</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s1">'After circuit set up, the verbatim box receives the following circuit</span><span class="si">{</span><span class="n">inner</span><span class="o">.</span><span class="n">qubits</span><span class="si">}</span><span class="s1">'</span>
+    <span class="p">)</span>
+    <span class="n">qc</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">add_verbatim_box</span><span class="p">(</span><span class="n">inner</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">qc</span></div>
+
+
+
+<div class="viewcode-block" id="mode_13">
+<a class="viewcode-back" href="../../modules.html#modules.quantum_circuits.mode_13">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mode_13</span><span class="p">(</span><span class="n">context_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Circuit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""An IPQ inspired circuit created in AWS Braket</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    context_dict: dict</span>
+<span class="sd">        A dictionary containing the context for the circuit, including the</span>
+<span class="sd">        number of qubits, parameters, and layers</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    qc: Quantum Circuit</span>
+<span class="sd">        A quantum circuit</span>
+<span class="sd">    """</span>
+
+    <span class="n">qubits</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubits'</span><span class="p">]</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'params'</span><span class="p">]</span>
+    <span class="n">layers</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'layers'</span><span class="p">]</span>
+    <span class="n">qubit_dict</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubit_dict'</span><span class="p">]</span>
+    <span class="n">qubits_measured</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubits_measured'</span><span class="p">]</span>
+
+    <span class="n">inner</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">layers</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">qubit_dict</span><span class="si">=}</span><span class="s1">, </span><span class="si">{</span><span class="n">qubits_measured</span><span class="si">=}</span><span class="s1">, </span><span class="si">{</span><span class="n">qubits</span><span class="si">=}</span><span class="s1">'</span><span class="p">)</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">layer</span> <span class="o">*</span> <span class="n">qubits_measured</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="c1"># hadamard</span>
+            <span class="n">inner</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">inner</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">inner</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">inner</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">qubits_measured</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">inner</span><span class="o">.</span><span class="n">cz</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">inner</span><span class="o">.</span><span class="n">cz</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qubit_dict</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="n">inner</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">qubits_measured</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="c1"># hadamdard</span>
+            <span class="n">inner</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">inner</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">inner</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">'After circuit set up, the verbatim box receives the following circuit</span><span class="si">{</span><span class="n">inner</span><span class="o">.</span><span class="n">qubits</span><span class="si">}</span><span class="s1">'</span>
+        <span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'The qubit dictionary is </span><span class="si">{</span><span class="n">qubit_dict</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+    <span class="n">qc</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">add_verbatim_box</span><span class="p">(</span><span class="n">inner</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">qc</span></div>
+
+
+    <span class="c1"># find which qubits are measured and the logical to physical dictionary for the device</span>
+
+
+<div class="viewcode-block" id="mode_14">
+<a class="viewcode-back" href="../../modules.html#modules.quantum_circuits.mode_14">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mode_14</span><span class="p">(</span><span class="n">context_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Circuit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""An IPQ inspired circuit based on mode 13 for Qiskit</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    context_dict: dict</span>
+<span class="sd">        A dictionary containing the context for the circuit, including the</span>
+<span class="sd">        number of qubits, parameters, and layers</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    qc: Quantum Circuit</span>
+<span class="sd">        A quantum circuit</span>
+<span class="sd">    """</span>
+
+    <span class="n">qubits</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubits'</span><span class="p">]</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'params'</span><span class="p">]</span>
+    <span class="n">layers</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'layers'</span><span class="p">]</span>
+    <span class="n">qubit_dict</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubit_dict'</span><span class="p">]</span>
+    <span class="n">qubits_measured</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubits_measured'</span><span class="p">]</span>
+
+    <span class="n">qc</span> <span class="o">=</span> <span class="n">QuantumCircuit</span><span class="p">(</span><span class="n">qubits</span><span class="p">,</span> <span class="n">qubits</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">layers</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">qubit_dict</span><span class="si">=}</span><span class="s1">, </span><span class="si">{</span><span class="n">qubits_measured</span><span class="si">=}</span><span class="s1">, </span><span class="si">{</span><span class="n">qubits</span><span class="si">=}</span><span class="s1">'</span><span class="p">)</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">layer</span> <span class="o">*</span> <span class="n">qubits_measured</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="c1"># hadamard</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">],</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">qubits_measured</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">qc</span><span class="o">.</span><span class="n">cz</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">qc</span><span class="o">.</span><span class="n">cz</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qubit_dict</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">qubits_measured</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">],</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="c1"># hadamdard</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="p">)</span>
+    <span class="k">return</span> <span class="n">qc</span></div>
+
+
+
+<div class="viewcode-block" id="mode_15">
+<a class="viewcode-back" href="../../modules.html#modules.quantum_circuits.mode_15">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mode_15</span><span class="p">(</span><span class="n">context_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Circuit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""An improved version of mode 14.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    context_dict: dict</span>
+<span class="sd">        A dictionary containing the context for the circuit, including the</span>
+<span class="sd">        number of qubits, parameters, and layers</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    qc: Quantum Circuit</span>
+<span class="sd">        A quantum circuit</span>
+<span class="sd">    """</span>
+
+    <span class="n">qubits</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubits'</span><span class="p">]</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'params'</span><span class="p">]</span>
+    <span class="n">layers</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'layers'</span><span class="p">]</span>
+    <span class="n">qubit_dict</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubit_dict'</span><span class="p">]</span>
+    <span class="n">qubits_measured</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubits_measured'</span><span class="p">]</span>
+
+    <span class="n">qc</span> <span class="o">=</span> <span class="n">QuantumCircuit</span><span class="p">(</span><span class="n">qubits</span><span class="p">,</span> <span class="n">qubits</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">layers</span><span class="p">):</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">layer</span> <span class="o">*</span> <span class="n">qubits_measured</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="c1"># hadamard</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
+                <span class="n">q</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">q</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="c1"># entangling</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="c1"># find q1, q2 in modc qubits measured</span>
+            <span class="n">q1</span> <span class="o">=</span> <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="n">qubits_measured</span><span class="p">]</span>
+            <span class="n">q2</span> <span class="o">=</span> <span class="n">qubit_dict</span><span class="p">[(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">qubits_measured</span><span class="p">]</span>
+            <span class="n">theta1</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">]</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">cz</span><span class="p">(</span><span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">theta1</span><span class="p">,</span>
+                <span class="n">q2</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">cz</span><span class="p">(</span><span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="c1"># z rotation</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">theta2</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">qubits_measured</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">]</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">theta2</span><span class="p">,</span>
+                <span class="n">q</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># hadamdard</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">q</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="k">return</span> <span class="n">qc</span></div>
+
+
+
+<div class="viewcode-block" id="mode_16">
+<a class="viewcode-back" href="../../modules.html#modules.quantum_circuits.mode_16">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mode_16</span><span class="p">(</span><span class="n">context_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Circuit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Circuit 15 converted back into AWS format</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    context_dict: dict</span>
+<span class="sd">        A dictionary containing the context for the circuit, including the</span>
+<span class="sd">        number of qubits, parameters, and layers</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    qc: Quantum Circuit</span>
+<span class="sd">        A quantum circuit</span>
+<span class="sd">    """</span>
+
+    <span class="n">qubits</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubits'</span><span class="p">]</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'params'</span><span class="p">]</span>
+    <span class="n">layers</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'layers'</span><span class="p">]</span>
+    <span class="n">qubit_dict</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubit_dict'</span><span class="p">]</span>
+    <span class="n">qubits_measured</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubits_measured'</span><span class="p">]</span>
+
+    <span class="n">inner</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">layers</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">qubit_dict</span><span class="si">=}</span><span class="s1">, </span><span class="si">{</span><span class="n">qubits_measured</span><span class="si">=}</span><span class="s1">, </span><span class="si">{</span><span class="n">qubits</span><span class="si">=}</span><span class="s1">'</span><span class="p">)</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">layer</span> <span class="o">*</span> <span class="n">qubits_measured</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="c1"># hadamard</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="c1"># hadamard</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">inner</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">q</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">inner</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span>
+                <span class="n">q</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="c1"># find q1, q2 in modc qubits measured</span>
+            <span class="n">q1</span> <span class="o">=</span> <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="n">qubits_measured</span><span class="p">]</span>
+            <span class="n">q2</span> <span class="o">=</span> <span class="n">qubit_dict</span><span class="p">[(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">qubits_measured</span><span class="p">]</span>
+            <span class="n">theta1</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">]</span>
+            <span class="n">inner</span><span class="o">.</span><span class="n">cz</span><span class="p">(</span><span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">)</span>
+            <span class="n">inner</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">q2</span><span class="p">,</span>
+                <span class="n">theta1</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">inner</span><span class="o">.</span><span class="n">cz</span><span class="p">(</span><span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">theta2</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">qubits_measured</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">]</span>
+            <span class="n">inner</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">q</span><span class="p">,</span>
+                <span class="n">theta2</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># hadamdard</span>
+            <span class="n">inner</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span>
+                <span class="n">q</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">'After circuit set up, the verbatim box receives the following circuit</span><span class="si">{</span><span class="n">inner</span><span class="o">.</span><span class="n">qubits</span><span class="si">}</span><span class="s1">'</span>
+        <span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'The qubit dictionary is </span><span class="si">{</span><span class="n">qubit_dict</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+    <span class="n">qc</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">add_verbatim_box</span><span class="p">(</span><span class="n">inner</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">qc</span></div>
+
+
+
+<div class="viewcode-block" id="mode_20">
+<a class="viewcode-back" href="../../modules.html#modules.quantum_circuits.mode_20">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mode_20</span><span class="p">(</span><span class="n">context_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuantumCircuit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Creates a simple Braket circuit with based on Mode 2, which supports the hot start.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    context_dict: dict</span>
+<span class="sd">        A dictionary containing the context for the circuit,</span>
+<span class="sd">        including the number of qubits, parameters, and layers</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    qc: Quantum Circuit</span>
+<span class="sd">        A quantum circuit</span>
+<span class="sd">    """</span>
+
+    <span class="n">params</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'params'</span><span class="p">]</span>
+    <span class="n">layers</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'layers'</span><span class="p">]</span>
+    <span class="n">qubit_dict</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubit_dict'</span><span class="p">]</span>
+    <span class="n">qubits_measured</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubits_measured'</span><span class="p">]</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">qubits_measured</span>
+
+    <span class="n">required_params</span> <span class="o">=</span> <span class="n">layers</span> <span class="o">*</span> <span class="n">qubits_measured</span> <span class="o">*</span> <span class="mi">2</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">required_params</span>
+
+    <span class="n">qc</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">layers</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">qubit_dict</span><span class="si">=}</span><span class="s1">, </span><span class="si">{</span><span class="n">qubits_measured</span><span class="si">=}</span><span class="s1">'</span><span class="p">)</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">layer</span> <span class="o">*</span> <span class="n">qubits_measured</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="n">theta1</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">]</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">theta1</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="n">theta2</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">qubits_measured</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">]</span>
+            <span class="n">q1</span><span class="p">,</span> <span class="n">q2</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="n">qubits_measured</span><span class="p">],</span>
+                <span class="n">qubit_dict</span><span class="p">[(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">qubits_measured</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">xx</span><span class="p">(</span>
+                <span class="n">q1</span><span class="p">,</span>
+                <span class="n">q2</span><span class="p">,</span>
+                <span class="n">theta2</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'After circuit set up, the circuit is:'</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">qc</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'Instruction count:'</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">qc</span><span class="o">.</span><span class="n">instructions</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'Qubits:'</span><span class="p">,</span> <span class="n">qc</span><span class="o">.</span><span class="n">qubits</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'The qubit dictionary is </span><span class="si">{</span><span class="n">qubit_dict</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">qc</span></div>
+
+
+
+<div class="viewcode-block" id="mode_21">
+<a class="viewcode-back" href="../../modules.html#modules.quantum_circuits.mode_21">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mode_21</span><span class="p">(</span><span class="n">context_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuantumCircuit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Creates a simple Braket circuit with based on Mode 2, which supports the hot start.</span>
+<span class="sd">    This is based on circuit 20, but removing the non standard gates.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    context_dict: dict</span>
+<span class="sd">        A dictionary containing the context for the circuit,</span>
+<span class="sd">        including the number of qubits, parameters, and layers</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    qc: Quantum Circuit</span>
+<span class="sd">        A quantum circuit</span>
+<span class="sd">    """</span>
+
+    <span class="n">qubits</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubits'</span><span class="p">]</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'params'</span><span class="p">]</span>
+    <span class="n">layers</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'layers'</span><span class="p">]</span>
+    <span class="n">qubit_dict</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubit_dict'</span><span class="p">]</span>
+    <span class="n">qubits_measured</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubits_measured'</span><span class="p">]</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">qubits_measured</span>
+
+    <span class="n">required_params</span> <span class="o">=</span> <span class="n">layers</span> <span class="o">*</span> <span class="n">qubits_measured</span> <span class="o">*</span> <span class="mi">2</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">required_params</span>
+
+    <span class="n">qc</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">layers</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">qubit_dict</span><span class="si">=}</span><span class="s1">, </span><span class="si">{</span><span class="n">qubits_measured</span><span class="si">=}</span><span class="s1">'</span><span class="p">)</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">layer</span> <span class="o">*</span> <span class="n">qubits_measured</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="n">theta1</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">]</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">theta1</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># hadamard</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="n">theta2</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">qubits_measured</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">]</span>
+            <span class="n">q1</span><span class="p">,</span> <span class="n">q2</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="n">qubits_measured</span><span class="p">],</span>
+                <span class="n">qubit_dict</span><span class="p">[(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">qubits_measured</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">cz</span><span class="p">(</span><span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span><span class="n">q2</span><span class="p">,</span> <span class="n">theta2</span><span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">cz</span><span class="p">(</span><span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="c1"># hadamard</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'After circuit set up, the circuit is:'</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">qubits</span> <span class="o">&lt;</span> <span class="mi">15</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">qc</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'Instruction count:'</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">qc</span><span class="o">.</span><span class="n">instructions</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'Qubits:'</span><span class="p">,</span> <span class="n">qc</span><span class="o">.</span><span class="n">qubits</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'The qubit dictionary is </span><span class="si">{</span><span class="n">qubit_dict</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">qc</span></div>
+
+
+
+<div class="viewcode-block" id="mode_22">
+<a class="viewcode-back" href="../../modules.html#modules.quantum_circuits.mode_22">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mode_22</span><span class="p">(</span><span class="n">context_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuantumCircuit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Creates a simple qiskit circuit based on the Cephus compatible version</span>
+<span class="sd">    of Circuit 2, so that this can be simulated using the Qiskit MPS simulator.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    context_dict: dict</span>
+<span class="sd">        A dictionary containing the context for the circuit,</span>
+<span class="sd">        including the number of qubits, parameters, and layers</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    qc: Quantum Circuit</span>
+<span class="sd">        A quantum circuit</span>
+<span class="sd">    """</span>
+
+    <span class="c1"># qubits = context_dict['qubits']</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'params'</span><span class="p">]</span>
+    <span class="n">layers</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'layers'</span><span class="p">]</span>
+    <span class="n">qubit_dict</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubit_dict'</span><span class="p">]</span>
+    <span class="n">qubits_measured</span> <span class="o">=</span> <span class="n">context_dict</span><span class="p">[</span><span class="s1">'qubits_measured'</span><span class="p">]</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">qubits_measured</span>
+
+    <span class="n">required_params</span> <span class="o">=</span> <span class="n">layers</span> <span class="o">*</span> <span class="n">qubits_measured</span> <span class="o">*</span> <span class="mi">2</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span><span class="si">=}</span><span class="s1">, </span><span class="si">{</span><span class="n">required_params</span><span class="si">=}</span><span class="s1">, </span><span class="si">{</span><span class="n">qubits_measured</span><span class="si">=}</span><span class="s1">'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">required_params</span>
+
+    <span class="n">qubits_needed</span> <span class="o">=</span> <span class="n">find_maximum_qubits_needed</span><span class="p">(</span><span class="n">qubit_dict</span><span class="p">)</span>
+    <span class="n">qc</span> <span class="o">=</span> <span class="n">QuantumCircuit</span><span class="p">(</span><span class="n">qubits_needed</span><span class="p">,</span> <span class="n">qubits_needed</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">layers</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">qubit_dict</span><span class="si">=}</span><span class="s1">, </span><span class="si">{</span><span class="n">qubits_measured</span><span class="si">=}</span><span class="s1">, </span><span class="si">{</span><span class="n">qubits_needed</span><span class="si">=}</span><span class="s1">'</span><span class="p">)</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">layer</span> <span class="o">*</span> <span class="n">qubits_measured</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="n">theta1</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">]</span>
+            <span class="c1"># print(f'{qubit_dict[i]=}')</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span>
+                <span class="n">theta1</span><span class="p">,</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="p">)</span>
+
+            <span class="c1"># hadamard</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="n">theta2</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">qubits_measured</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">]</span>
+            <span class="n">q1</span><span class="p">,</span> <span class="n">q2</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="n">qubits_measured</span><span class="p">],</span>
+                <span class="n">qubit_dict</span><span class="p">[(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">qubits_measured</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">cz</span><span class="p">(</span><span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span><span class="n">theta2</span><span class="p">,</span> <span class="n">q2</span><span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">cz</span><span class="p">(</span><span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">qubits_measured</span><span class="p">):</span>
+            <span class="c1"># hadamard</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">qc</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">qubit_dict</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'Instruction count:'</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">qc</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'Qubits:'</span><span class="p">,</span> <span class="n">qc</span><span class="o">.</span><span class="n">qubits</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'Operation counts:'</span><span class="p">,</span> <span class="n">qc</span><span class="o">.</span><span class="n">count_ops</span><span class="p">())</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'The qubit dictionary is </span><span class="si">{</span><span class="n">qubit_dict</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">qc</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Daniel Goldsmitih.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
