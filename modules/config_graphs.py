@@ -105,6 +105,9 @@ FILTERS_GRAY = {
     'formulation': 'original',
 }
 
+FILTERS_OR_TOOLS = {'locations': LOCATIONS, 'target': 'ORTools'}
+
+
 FILTERS_OVERALL = {
     'locations': LOCATIONS,
     'hot_start': False,
@@ -259,6 +262,7 @@ FILTERS_ML_HOT_START_FALSE = {
     'iterations': 250,
     'mode': 8,
     'layers': 4,
+    'quantum': False,
 }
 
 FILTERS_ML_GRAY = {
@@ -268,6 +272,7 @@ FILTERS_ML_GRAY = {
     'mode': 8,
     'slice': lambda s: np.isclose(s, 1.0, atol=1e-3),
     'layers': 4,
+    'quantum': False,
 }
 
 FILTERS_ML_FORMULATION = {
@@ -277,6 +282,7 @@ FILTERS_ML_FORMULATION = {
     'mode': 8,
     'layers': 4,
     'locations': lambda locs: locs < 26,
+    'quantum': False,
 }
 
 FILTERS_ML_MINIBATCH = {

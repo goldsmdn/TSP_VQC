@@ -695,6 +695,8 @@ def plot_overall_results(
     locs: list,  # locations to be plotted
     title: str = 'Solution Quality by Number of Locations for VQA, Monte Carlo, ML and Greedy methods',
     greedy_classical: pd.DataFrame = False,
+    or_tools: pd.DataFrame = False,
+    or_color: str = '#9467bd',
     AWS_results: pd.DataFrame = False,
     AWS_color: str = '#9467bd',
     AWS_xytext: tuple = (20, 5),
@@ -783,6 +785,19 @@ def plot_overall_results(
                 rotation=90,
             )
 
+    if or_tools:
+        ax.plot(
+            x + center_offset - 0.3,
+            or_tools,
+            color=or_color,
+            marker='X',
+            linestyle='--',
+            linewidth=1,
+            markersize=4,
+            label='OR Tools',
+            zorder=1,
+        )
+
     if monte_carlo:
         ax.plot(
             x + center_offset,
@@ -808,6 +823,12 @@ def plot_overall_results(
 
     if 'Monte Carlo comparison' in labels:
         idx = labels.index('Monte Carlo comparison')
+        # Pop and append to end
+        handles.append(handles.pop(idx))
+        labels.append(labels.pop(idx))
+
+    if 'OR Tools' in labels:
+        idx = labels.index('OR Tools')
         # Pop and append to end
         handles.append(handles.pop(idx))
         labels.append(labels.pop(idx))
