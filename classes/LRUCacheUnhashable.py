@@ -1,8 +1,8 @@
-# LRUCacheUnhashable
+# LRUCacheUnhashable  # noqa: N999
 # own implementation of LRU cache to handle unhashable lists
 
 from collections import OrderedDict
-from typing import Callable, Optional
+from collections.abc import Callable
 
 from modules.config import CACHE_MAX_SIZE, VERBOSE
 
@@ -15,7 +15,7 @@ class LRUCacheUnhashable:
 
     def __init__(
         self,
-        orig_func: Optional[Callable] = None,
+        orig_func: Callable | None = None,
         maxsize: int = CACHE_MAX_SIZE,
     ):
         """initialisation"""
@@ -57,7 +57,7 @@ class LRUCacheUnhashable:
         if isinstance(bit_string_input, list):
             bit_string_list = bit_string_input
         else:
-            raise Exception(f'{bit_string_list} is not a list')
+            raise TypeError(f'{bit_string_list} is not a list')
         return ''.join(map(str, bit_string_list))
 
     def print_cache(self):

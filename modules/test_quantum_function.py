@@ -22,7 +22,7 @@ def my_cost_function1(bit_string_list: list) -> int:
     elif bit_string_list == [1]:
         return 1
     else:
-        raise Exception('Invalid bit string list')
+        raise ValueError('Invalid bit string list')
 
 
 def test_gradient_1_():

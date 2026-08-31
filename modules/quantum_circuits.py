@@ -132,7 +132,7 @@ def mode_3(context_dict: dict) -> QuantumCircuit:
 
     qc = QuantumCircuit(qubits, qubits)
     if layers > 1:
-        raise Exception('Mode 3 is only coded for one layer')
+        raise ValueError('Mode 3 is only coded for one layer')
     for layer in range(layers):
         offset = layer * qubits * 2
         for i in range(qubits):
@@ -198,7 +198,7 @@ def mode_5(context_dict: dict) -> QuantumCircuit:
     qubits = context_dict['qubits']
 
     if qubits != 5:
-        raise Exception(
+        raise ValueError(
             f'test mode 5 is only to be used with 5 qubits.  {qubits} qubits are specified'
         )
 

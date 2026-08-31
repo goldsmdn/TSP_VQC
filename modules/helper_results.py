@@ -9,6 +9,7 @@ from modules.config import (
 
 
 def apply_special_processing(df: pd.DataFrame) -> pd.DataFrame:
+    """if noise if blank (because it was not set in earlier runs) set to false"""
     df['noise'] = df['noise'].fillna(False)
     return df
 

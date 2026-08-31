@@ -14,7 +14,7 @@ def format_boolean(string_input: str) -> bool:
     elif string_input == 'FALSE':
         output = False
     else:
-        raise Exception(f'Unexpected boolean value {string_input}')
+        raise ValueError(f'Unexpected boolean value {string_input}')
     return output
 
 
@@ -72,7 +72,7 @@ def read_index(filename: str, encoding: str) -> dict:
 
 def validate_list_for_duplicates(input_list: list) -> bool:
     """Validate that a list does not contain duplicates"""
-    if len(input_list) != len(set(input_list)):
+    if len(input_list) != len(set(input_list)):  # noqa: SIM103
         return False
     else:
         return True
@@ -82,7 +82,7 @@ def convert_list_to_dictionary(input_list: list) -> dict:
     """Convert a list to a dictionary with the list elements as values and the keys as the index of the element in the list"""
     duplicates = validate_list_for_duplicates(input_list)
     if duplicates is False:
-        raise Exception(
+        raise ValueError(
             f'Qubit list {input_list} contains duplicates, not a valid input'
         )
     output_dict = {}
@@ -142,7 +142,7 @@ def convert_physical_to_logical_bit_string(
     elif isinstance(input_bitstring, list):
         input_bitstring_list = input_bitstring
     else:
-        raise Exception(f'incorrect type for {input_bitstring}')
+        raise TypeError(f'incorrect type for {input_bitstring}')
 
     qubit_list = find_valid_device_loop(qubits, target)
     sorted_qubit_list = sorted(qubit_list)

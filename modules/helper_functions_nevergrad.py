@@ -1,5 +1,5 @@
 # nevergrad helper functions
-from typing import Callable  # for function docs.
+from collections.abc import Callable  # for function docs.
 
 import numpy as np
 from braket.circuits import Circuit  # for function docs.

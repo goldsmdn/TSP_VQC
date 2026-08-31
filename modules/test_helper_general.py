@@ -45,7 +45,7 @@ def test_convert_list_to_dictionary_with_duplicates():
     input_list = [0, 1, 2, 4, 3, 1]
     try:
         convert_list_to_dictionary(input_list)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         assert (
             str(e) == f'Qubit list {input_list} contains duplicates, not a valid input'
         )
